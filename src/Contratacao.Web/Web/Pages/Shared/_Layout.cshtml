@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · Contratação</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/tema.css" asp-append-version="true" />
+</head>
+<body>
+    <header class="barra-topo">
+        <div class="container-xl d-flex align-items-center gap-2">
+            <i class="bi bi-briefcase-fill" aria-hidden="true"></i>
+            <span class="fw-semibold">Sistema de Contratação</span>
+        </div>
+    </header>
+
+    <main class="container-xl py-4">
+        @RenderBody()
+    </main>
+
+    <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
+    <script src="~/lib/htmx/htmx.min.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

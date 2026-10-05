@@ -1,0 +1,31 @@
+/* Tema base do sistema. Cores do farol (seções 9–11) como variáveis reutilizáveis. */
+:root {
+    --cor-marca: #0b5c8a;
+    --cor-marca-contraste: #ffffff;
+    --cor-fundo: #f4f6f9;
+    --cor-superficie: #ffffff;
+    --cor-borda: #dfe3ea;
+    --raio: 0.75rem;
+
+    --farol-cinza: #8a94a6;
+    --farol-verde: #1f9d55;
+    --farol-amarelo: #e0a800;
+    --farol-laranja: #e8710a;
+    --farol-vermelho: #d63939;
+}
+
+body {
+    background: var(--cor-fundo);
+}
+
+.barra-topo {
+    background: var(--cor-marca);
+    color: var(--cor-marca-contraste);
+    padding: 0.875rem 0;
+}
+
+.cartao {
+    background: var(--cor-superficie);
+    border: 1px solid var(--cor-borda);
+    border-radius: var(--raio);
+}

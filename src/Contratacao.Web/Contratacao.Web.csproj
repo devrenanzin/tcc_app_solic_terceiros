@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <RootNamespace>Contratacao.Web</RootNamespace>
+    <UserSecretsId>contratacao-web-tcc</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- Único InternalsVisibleTo permitido (seção 27): o projeto de testes. -->
+    <InternalsVisibleTo Include="Contratacao.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Compile liberado para o gerador de migrations internal (Infrastructure/Persistencia). -->
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.12">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="10.0.12" />
+  </ItemGroup>
+
+</Project>
