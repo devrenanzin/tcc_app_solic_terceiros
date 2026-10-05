@@ -1,0 +1,29 @@
+@page
+@using Contratacao.Web.Web.Pages.Shared
+@model Contratacao.Web.Web.Pages.Equipe.ContratoModel
+@{
+    ViewData["Title"] = "Contrato do funcionário";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a href="/Equipe" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Equipe SESI</a>
+        <h1 class="mt-1">Contrato de @Model.NomeFuncionario</h1>
+        <p>O funcionário passa a ver e tratar só as demandas do novo contrato.</p>
+    </div>
+</div>
+
+<form method="post" class="cartao formulario" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+    <input type="hidden" asp-for="Id" />
+
+    <fieldset class="mb-4">
+        <legend class="form-label fs-6">Contrato</legend>
+        <partial name="_EscolhaContratos" model="new EscolhaContratos(Model.ContratosDisponiveis, Model.Contrato is { } c ? [c] : [], nameof(Model.Contrato), false)" />
+    </fieldset>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Salvar contrato</button>
+        <a href="/Equipe" class="btn btn-light">Cancelar</a>
+    </div>
+</form>

@@ -1,0 +1,13 @@
+@page
+@model AcessoNegadoModel
+@{
+    ViewData["Title"] = "Acesso negado";
+    Layout = User.Identity?.IsAuthenticated == true ? "_Layout" : "_LayoutPublico";
+}
+
+<div class="cartao p-5 text-center" style="max-width: 560px">
+    <i class="bi bi-shield-lock fs-1 text-secondary"></i>
+    <h1 class="h4 mt-3">Acesso negado</h1>
+    <p class="text-body-secondary">Seu perfil não tem permissão para abrir esta página.</p>
+    <a href="/" class="btn btn-primary">Voltar ao início</a>
+</div>

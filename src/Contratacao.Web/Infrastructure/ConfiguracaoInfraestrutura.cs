@@ -1,3 +1,4 @@
+using Contratacao.Web.Application;
 using Contratacao.Web.Domain.Comum;
 using Contratacao.Web.Domain.Usuarios;
 using Contratacao.Web.Infrastructure.Carga;
@@ -22,6 +23,12 @@ internal static class ConfiguracaoInfraestrutura
 
         // A connection string só é exigida quando o banco é usado, para a aplicação subir sem ela.
         services.AddDbContext<ContratacaoDbContext>(opcoes => opcoes.UseSqlServer(ObterConnectionString(configuracao)));
+
+        services.AddScoped<IUsuarios, RepositorioUsuarios>();
+        services.AddScoped<IContratos, RepositorioContratos>();
+        services.AddScoped<IAuditoria, RegistroAuditoria>();
+        services.AddScoped<IUnidadeDeTrabalho, UnidadeDeTrabalho>();
+        services.AddSingleton<IHashSenha, HashSenha>();
 
         return services;
     }

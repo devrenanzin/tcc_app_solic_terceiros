@@ -1,10 +1,16 @@
 using Contratacao.Tests.Unitarios.Apoio;
+using Contratacao.Web.Application;
+using Contratacao.Web.Application.Usuarios;
+using Contratacao.Web.Domain.Comum;
 using Contratacao.Web.Domain.Demandas;
 using Contratacao.Web.Domain.Usuarios;
+using Contratacao.Web.Infrastructure;
 using Contratacao.Web.Infrastructure.Carga;
 using Contratacao.Web.Infrastructure.Persistencia;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Contratacao.Tests.Integracao.Apoio;
 
@@ -26,8 +32,54 @@ public sealed class BancoFixture : IAsyncLifetime
         Senha = "senha-de-teste-123",
     };
 
+    internal string ConnectionString => _connectionString;
+
     internal ContratacaoDbContext NovoContexto()
         => new(new DbContextOptionsBuilder<ContratacaoDbContext>().UseSqlServer(_connectionString).Options);
+
+    /// <summary>Os mesmos serviços da aplicação (Application e Infrastructure), ligados a este banco e ao relógio fixo.</summary>
+    internal ServiceProvider CriarServicos()
+    {
+        var configuracao = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:Contratacao"] = _connectionString })
+            .Build();
+
+        var servicos = new ServiceCollection();
+        servicos.AddLogging();
+        servicos.AdicionarAplicacao();
+        servicos.AdicionarInfraestrutura(configuracao);
+        servicos.AddSingleton<IRelogio>(Relogio);
+        return servicos.BuildServiceProvider();
+    }
+
+    /// <summary>Executa um caso de uso num escopo novo, como numa requisição.</summary>
+    internal async Task<TResultado> ExecutarAsync<TServico, TResultado>(Func<TServico, Task<TResultado>> acao)
+        where TServico : notnull
+    {
+        await using var servicos = CriarServicos();
+        await using var escopo = servicos.CreateAsyncScope();
+        return await acao(escopo.ServiceProvider.GetRequiredService<TServico>());
+    }
+
+    internal Task ExecutarAsync<TServico>(Func<TServico, Task> acao)
+        where TServico : notnull
+        => ExecutarAsync<TServico, bool>(async servico =>
+        {
+            await acao(servico);
+            return true;
+        });
+
+    /// <summary>Ator montado como numa requisição real: perfil e contratos lidos do banco.</summary>
+    internal async Task<Ator> AtorAsync(Guid usuarioId)
+        => await ExecutarAsync<ObterAtor, Ator?>(o => o.ExecutarAsync(usuarioId, "10.0.0.9", CancellationToken.None))
+            ?? throw new InvalidOperationException("Usuário inexistente ou desativado.");
+
+    internal async Task<Ator> AdminAsync()
+    {
+        await using var contexto = NovoContexto();
+        var id = await contexto.Usuarios.Where(u => u.Perfil == Perfil.Admin).Select(u => u.Id).SingleAsync();
+        return await AtorAsync(id);
+    }
 
     internal CargaInicial NovaCarga(ContratacaoDbContext contexto)
         => new(contexto, Relogio, new PasswordHasher<Usuario>(), Admin, PreparacaoBanco.PastaDados);

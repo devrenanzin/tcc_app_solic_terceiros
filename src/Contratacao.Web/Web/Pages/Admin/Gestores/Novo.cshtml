@@ -1,0 +1,46 @@
+@page
+@using Contratacao.Web.Domain.Usuarios
+@using Contratacao.Web.Web.Pages.Shared
+@model Contratacao.Web.Web.Pages.Admin.Gestores.NovoModel
+@{
+    ViewData["Title"] = "Novo Gestor";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a href="/Admin/Gestores" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Gestores</a>
+        <h1 class="mt-1">Novo Gestor</h1>
+        <p>O Gestor valida, devolve e cancela as demandas dos contratos marcados abaixo.</p>
+    </div>
+</div>
+
+<form method="post" class="cartao formulario" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+
+    <div class="mb-3">
+        <label asp-for="Entrada.Nome" class="form-label">Nome completo</label>
+        <input asp-for="Entrada.Nome" class="form-control" autofocus />
+        <span asp-validation-for="Entrada.Nome" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Entrada.Email" class="form-label">E-mail</label>
+        <input asp-for="Entrada.Email" type="email" class="form-control" placeholder="nome@ucl.br" />
+        <span asp-validation-for="Entrada.Email" class="text-danger small"></span>
+    </div>
+    <div class="mb-4">
+        <label asp-for="Entrada.SenhaInicial" class="form-label">Senha inicial</label>
+        <input asp-for="Entrada.SenhaInicial" type="password" class="form-control" autocomplete="new-password" />
+        <div class="ajuda mt-1">Mínimo de @Senha.TamanhoMinimo caracteres. Repasse ao Gestor por um canal seguro.</div>
+        <span asp-validation-for="Entrada.SenhaInicial" class="text-danger small"></span>
+    </div>
+
+    <fieldset class="mb-4">
+        <legend class="form-label fs-6">Contratos</legend>
+        <partial name="_EscolhaContratos" model="new EscolhaContratos(Model.ContratosDisponiveis, Model.Contratos, nameof(Model.Contratos), true)" />
+    </fieldset>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Cadastrar Gestor</button>
+        <a href="/Admin/Gestores" class="btn btn-light">Cancelar</a>
+    </div>
+</form>

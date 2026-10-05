@@ -4,7 +4,8 @@ namespace Contratacao.Web.Domain.Usuarios;
 
 /// <summary>
 /// Usuário do sistema (seções 4 e 4.5). Nunca é excluído, só desativado.
-/// As regras de cadastro por perfil entram na Etapa 3.
+/// Quem cadastra e gerencia quem: Admin → Gestores; Gestor → Funcionários SESI da sua equipe;
+/// o Solicitante se cadastra sozinho e é desativado pelo Admin ou por qualquer Gestor.
 /// </summary>
 internal sealed class Usuario
 {
@@ -28,6 +29,7 @@ internal sealed class Usuario
 
     /// <summary>Igual ao e-mail completo, usado para entrar no sistema.</summary>
     internal string Login { get; private set; } = string.Empty;
+
     internal bool Ativo { get; private set; }
     internal DateTime DataCadastro { get; private set; }
     internal DateTime? DataUltimoAcesso { get; private set; }
@@ -37,32 +39,111 @@ internal sealed class Usuario
 
     /// <summary>Admin inicial, criado pela preparação do banco a partir da configuração (seção 23).</summary>
     internal static Usuario CriarAdminInicial(string nome, string email, DateTime agoraUtc)
+        => Novo(Perfil.Admin, nome, email, agoraUtc, criadoPorId: null);
+
+    /// <summary>Autocadastro do Solicitante (UC13): qualquer pessoa com e-mail @ucl.br.</summary>
+    internal static Usuario CadastrarSolicitante(string nome, string email, DateTime agoraUtc)
+        => Novo(Perfil.Solicitante, nome, email, agoraUtc, criadoPorId: null);
+
+    /// <summary>Cadastro de Gestor pelo Admin (UC12). Os contratos ficam em GestorContrato.</summary>
+    internal static Usuario CadastrarGestor(Ator admin, string nome, string email, DateTime agoraUtc)
     {
-        if (string.IsNullOrWhiteSpace(nome) || nome.Trim().Length > TamanhoMaximoNome)
-        {
-            throw new RegraNegocioException($"O nome é obrigatório e tem no máximo {TamanhoMaximoNome} caracteres.");
-        }
+        Exigir(admin.Eh(Perfil.Admin), "Só o Admin cadastra Gestores.");
+        return Novo(Perfil.Gestor, nome, email, agoraUtc, admin.Id);
+    }
+
+    /// <summary>Cadastro de Funcionário SESI pelo Gestor, na sua equipe e no grupo de um contrato (UC14).</summary>
+    internal static Usuario CadastrarFuncionarioSesi(Ator gestor, string nome, string email, Guid contratoId, DateTime agoraUtc)
+    {
+        Exigir(gestor.Eh(Perfil.Gestor), "Só um Gestor ativo cadastra Funcionários SESI.");
+        Exigir(contratoId != Guid.Empty, "Escolha o contrato do Funcionário SESI.");
+
+        var usuario = Novo(Perfil.FuncionarioSesi, nome, email, agoraUtc, gestor.Id);
+        usuario.GestorResponsavelId = gestor.Id;
+        usuario.ContratoId = contratoId;
+        return usuario;
+    }
+
+    /// <summary>
+    /// Quem gerencia o cadastro deste usuário (seções 4.5 e 19): o Admin gerencia Gestores; o Gestor,
+    /// só os Funcionários SESI da sua equipe; Solicitantes, o Admin e qualquer Gestor. Ninguém gerencia o Admin.
+    /// </summary>
+    internal bool PodeSerGerenciadoPor(Ator ator) => Perfil switch
+    {
+        Perfil.Gestor => ator.Eh(Perfil.Admin),
+        Perfil.FuncionarioSesi => ator.Eh(Perfil.Gestor) && GestorResponsavelId == ator.Id,
+        Perfil.Solicitante => ator.Eh(Perfil.Admin) || ator.Eh(Perfil.Gestor),
+        _ => false,
+    };
+
+    internal void Desativar(Ator ator)
+    {
+        Exigir(PodeSerGerenciadoPor(ator), "Você não gerencia o cadastro deste usuário.");
+        Exigir(Ativo, "O usuário já está desativado.");
+        Ativo = false;
+    }
+
+    internal void Reativar(Ator ator)
+    {
+        Exigir(PodeSerGerenciadoPor(ator), "Você não gerencia o cadastro deste usuário.");
+        Exigir(!Ativo, "O usuário já está ativo.");
+        Ativo = true;
+    }
+
+    /// <summary>Troca o contrato do grupo do Funcionário SESI; só o Gestor responsável.</summary>
+    internal void AlterarContrato(Ator gestor, Guid contratoId)
+    {
+        Exigir(Perfil == Perfil.FuncionarioSesi, "Só Funcionários SESI têm contrato próprio.");
+        Exigir(PodeSerGerenciadoPor(gestor), "Você não gerencia o cadastro deste usuário.");
+        Exigir(contratoId != Guid.Empty, "Escolha o contrato.");
+        ContratoId = contratoId;
+    }
+
+    /// <summary>
+    /// Transferência do Funcionário SESI para outro Gestor (UC19), pelo Admin.
+    /// SUPOSIÇÃO (S2): a equipe de um Gestor desativado continua ativa e pode ser transferida.
+    /// </summary>
+    internal void TransferirPara(Ator admin, Usuario novoGestor)
+    {
+        Exigir(admin.Eh(Perfil.Admin), "Só o Admin transfere o vínculo de usuários.");
+        Exigir(Perfil == Perfil.FuncionarioSesi, "Só Funcionários SESI têm Gestor responsável.");
+        Exigir(novoGestor.Perfil == Perfil.Gestor && novoGestor.Ativo, "O destino precisa ser um Gestor ativo.");
+        Exigir(novoGestor.Id != GestorResponsavelId, "O usuário já pertence a este Gestor.");
+        GestorResponsavelId = novoGestor.Id;
+    }
+
+    internal void RegistrarAcesso(DateTime agoraUtc) => DataUltimoAcesso = agoraUtc;
+
+    internal void DefinirSenhaHash(string senhaHash)
+    {
+        Exigir(!string.IsNullOrWhiteSpace(senhaHash), "O hash da senha é obrigatório.");
+        SenhaHash = senhaHash;
+    }
+
+    private static Usuario Novo(Perfil perfil, string nome, string email, DateTime agoraUtc, Guid? criadoPorId)
+    {
+        Exigir(!string.IsNullOrWhiteSpace(nome) && nome.Trim().Length <= TamanhoMaximoNome,
+            $"O nome é obrigatório e tem no máximo {TamanhoMaximoNome} caracteres.");
 
         var emailNormalizado = EmailUcl.Normalizar(email);
         return new Usuario
         {
-            Perfil = Perfil.Admin,
+            Perfil = perfil,
             Nome = nome.Trim(),
             Email = emailNormalizado,
             // O login é o e-mail completo (Cliente, revisão de 05/10/2026).
             Login = emailNormalizado,
             Ativo = true,
             DataCadastro = agoraUtc,
+            CriadoPorUsuarioId = criadoPorId,
         };
     }
 
-    internal void DefinirSenhaHash(string senhaHash)
+    private static void Exigir(bool condicao, string mensagem)
     {
-        if (string.IsNullOrWhiteSpace(senhaHash))
+        if (!condicao)
         {
-            throw new RegraNegocioException("O hash da senha é obrigatório.");
+            throw new RegraNegocioException(mensagem);
         }
-
-        SenhaHash = senhaHash;
     }
 }

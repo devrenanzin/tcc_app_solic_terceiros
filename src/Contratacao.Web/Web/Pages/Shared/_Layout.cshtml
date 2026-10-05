@@ -1,3 +1,12 @@
+@using System.Security.Claims
+@using Contratacao.Web.Domain.Usuarios
+@{
+    var nome = User.Identity?.Name ?? string.Empty;
+    var iniciais = string.Concat(nome.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
+    var perfil = Enum.TryParse<Perfil>(User.FindFirstValue(ClaimTypes.Role), out var p) ? p : (Perfil?)null;
+    var caminho = Context.Request.Path.Value ?? "/";
+    string Ativo(string prefixo) => (prefixo == "/" ? caminho == "/" : caminho.StartsWith(prefixo, StringComparison.OrdinalIgnoreCase)) ? "ativo" : string.Empty;
+}
 <!DOCTYPE html>
 <html lang="pt-BR" data-bs-theme="light">
 <head>
@@ -9,16 +18,59 @@
     <link rel="stylesheet" href="~/css/tema.css" asp-append-version="true" />
 </head>
 <body>
-    <header class="barra-topo">
-        <div class="container-xl d-flex align-items-center gap-2">
-            <i class="bi bi-briefcase-fill" aria-hidden="true"></i>
-            <span class="fw-semibold">Sistema de Contratação</span>
-        </div>
-    </header>
+    <div class="barra-movel">
+        <button type="button" class="btn btn-sm text-white" aria-label="Abrir menu"
+                onclick="document.getElementById('menu').classList.toggle('aberto')">
+            <i class="bi bi-list fs-4"></i>
+        </button>
+        <span class="fw-semibold">Sistema de Contratação</span>
+    </div>
 
-    <main class="container-xl py-4">
-        @RenderBody()
-    </main>
+    <div class="app">
+        <nav id="menu" class="menu-lateral" aria-label="Menu principal">
+            <a class="marca" href="/"><i class="bi bi-briefcase-fill" aria-hidden="true"></i> Contratação</a>
+
+            <ul class="nav flex-column">
+                <li><a class="nav-link @Ativo("/")" href="/"><i class="bi bi-house-door"></i> Início</a></li>
+            </ul>
+
+            @if (perfil == Perfil.Admin)
+            {
+                <div class="titulo-grupo">Administração</div>
+                <ul class="nav flex-column">
+                    <li><a class="nav-link @Ativo("/Admin/Gestores")" href="/Admin/Gestores"><i class="bi bi-person-badge"></i> Gestores</a></li>
+                    <li><a class="nav-link @Ativo("/Admin/Transferencias")" href="/Admin/Transferencias"><i class="bi bi-arrow-left-right"></i> Transferir vínculo</a></li>
+                    <li><a class="nav-link @Ativo("/Solicitantes")" href="/Solicitantes"><i class="bi bi-people"></i> Solicitantes</a></li>
+                </ul>
+            }
+            @if (perfil == Perfil.Gestor)
+            {
+                <div class="titulo-grupo">Gestão</div>
+                <ul class="nav flex-column">
+                    <li><a class="nav-link @Ativo("/Equipe")" href="/Equipe"><i class="bi bi-people-fill"></i> Equipe SESI</a></li>
+                    <li><a class="nav-link @Ativo("/Solicitantes")" href="/Solicitantes"><i class="bi bi-people"></i> Solicitantes</a></li>
+                </ul>
+            }
+
+            <div class="rodape-menu">
+                <div class="usuario-logado">
+                    <div class="avatar" aria-hidden="true">@iniciais</div>
+                    <div>
+                        <div class="nome">@nome</div>
+                        <div class="perfil">@(perfil is { } valor ? Contratacao.Web.Web.Formatacao.Perfil(valor) : string.Empty)</div>
+                    </div>
+                </div>
+                <form method="post" action="/Sair">
+                    <button type="submit" class="nav-link w-100 border-0 bg-transparent"><i class="bi bi-box-arrow-right"></i> Sair</button>
+                </form>
+            </div>
+        </nav>
+
+        <main class="conteudo">
+            <partial name="_Mensagens" />
+            @RenderBody()
+        </main>
+    </div>
 
     <script src="~/lib/bootstrap/js/bootstrap.bundle.min.js" asp-append-version="true"></script>
     <script src="~/lib/htmx/htmx.min.js" asp-append-version="true"></script>

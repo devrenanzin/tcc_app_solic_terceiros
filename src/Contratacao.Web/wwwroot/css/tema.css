@@ -1,31 +1,438 @@
-/* Tema base do sistema. Cores do farol (seções 9–11) como variáveis reutilizáveis. */
+/* Tema do sistema sobre o Bootstrap 5.3. Cores do farol (seções 9–11) como variáveis reutilizáveis. */
 :root {
     --cor-marca: #0b5c8a;
+    --cor-marca-escura: #084567;
+    --cor-marca-suave: #e6f0f6;
     --cor-marca-contraste: #ffffff;
-    --cor-fundo: #f4f6f9;
+    --cor-fundo: #f3f5f8;
     --cor-superficie: #ffffff;
-    --cor-borda: #dfe3ea;
+    --cor-borda: #e1e5eb;
+    --cor-texto-suave: #5f6b7a;
     --raio: 0.75rem;
+    --largura-menu: 252px;
 
     --farol-cinza: #8a94a6;
     --farol-verde: #1f9d55;
     --farol-amarelo: #e0a800;
     --farol-laranja: #e8710a;
     --farol-vermelho: #d63939;
+
+    --bs-primary: var(--cor-marca);
+    --bs-primary-rgb: 11, 92, 138;
+    --bs-link-color: var(--cor-marca);
+    --bs-link-hover-color: var(--cor-marca-escura);
+    --bs-border-radius: 0.5rem;
 }
 
 body {
     background: var(--cor-fundo);
+    color: #1f2933;
 }
 
-.barra-topo {
-    background: var(--cor-marca);
-    color: var(--cor-marca-contraste);
-    padding: 0.875rem 0;
+.btn-primary {
+    --bs-btn-bg: var(--cor-marca);
+    --bs-btn-border-color: var(--cor-marca);
+    --bs-btn-hover-bg: var(--cor-marca-escura);
+    --bs-btn-hover-border-color: var(--cor-marca-escura);
+    --bs-btn-active-bg: var(--cor-marca-escura);
+    --bs-btn-active-border-color: var(--cor-marca-escura);
+}
+
+.btn-outline-primary {
+    --bs-btn-color: var(--cor-marca);
+    --bs-btn-border-color: var(--cor-marca);
+    --bs-btn-hover-bg: var(--cor-marca);
+    --bs-btn-hover-border-color: var(--cor-marca);
+    --bs-btn-active-bg: var(--cor-marca-escura);
+}
+
+.form-control:focus, .form-select:focus, .form-check-input:focus {
+    border-color: var(--cor-marca);
+    box-shadow: 0 0 0 0.2rem rgba(11, 92, 138, 0.18);
+}
+
+.form-check-input:checked {
+    background-color: var(--cor-marca);
+    border-color: var(--cor-marca);
+}
+
+/* Estrutura com menu lateral */
+.app {
+    display: flex;
+    min-height: 100vh;
+}
+
+.menu-lateral {
+    width: var(--largura-menu);
+    flex-shrink: 0;
+    background: var(--cor-marca-escura);
+    color: #d9e6ef;
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem 0.875rem;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+}
+
+.menu-lateral .marca {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    color: #fff;
+    font-weight: 600;
+    font-size: 1.05rem;
+    padding: 0 0.5rem 1.25rem;
+    text-decoration: none;
+}
+
+.menu-lateral .marca i {
+    font-size: 1.4rem;
+}
+
+.menu-lateral .titulo-grupo {
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8fb3cb;
+    padding: 1rem 0.625rem 0.375rem;
+}
+
+.menu-lateral .nav-link {
+    color: #d9e6ef;
+    border-radius: 0.5rem;
+    padding: 0.55rem 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.menu-lateral .nav-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.menu-lateral .nav-link.ativo {
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    font-weight: 600;
+}
+
+.menu-lateral .rodape-menu {
+    margin-top: auto;
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    padding-top: 1rem;
+}
+
+.usuario-logado {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    padding: 0 0.5rem 0.75rem;
+}
+
+.avatar {
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 50%;
+    background: var(--cor-marca-suave);
+    color: var(--cor-marca-escura);
+    display: grid;
+    place-items: center;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.usuario-logado .nome {
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.9rem;
+    line-height: 1.2;
+}
+
+.usuario-logado .perfil {
+    color: #8fb3cb;
+    font-size: 0.78rem;
+}
+
+.conteudo {
+    flex: 1;
+    min-width: 0;
+    padding: 2rem 2.25rem;
+}
+
+.barra-movel {
+    display: none;
+}
+
+@media (max-width: 991.98px) {
+    .menu-lateral {
+        position: fixed;
+        left: calc(-1 * var(--largura-menu));
+        z-index: 1040;
+        transition: left 0.2s ease;
+    }
+
+    .menu-lateral.aberto {
+        left: 0;
+        box-shadow: 0 0 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .barra-movel {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        background: var(--cor-marca-escura);
+        color: #fff;
+        padding: 0.75rem 1rem;
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+    }
+
+    .conteudo {
+        padding: 1.25rem 1rem;
+    }
+}
+
+/* Cabeçalho de página, cartões e tabelas */
+.cabecalho-pagina {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.cabecalho-pagina h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.cabecalho-pagina p {
+    color: var(--cor-texto-suave);
+    margin: 0.25rem 0 0;
 }
 
 .cartao {
     background: var(--cor-superficie);
     border: 1px solid var(--cor-borda);
     border-radius: var(--raio);
+}
+
+.cartao-atalho {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    padding: 1.25rem;
+    color: inherit;
+    text-decoration: none;
+    height: 100%;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+a.cartao-atalho:hover {
+    border-color: var(--cor-marca);
+    box-shadow: 0 4px 16px rgba(11, 92, 138, 0.1);
+}
+
+.cartao-atalho .icone {
+    width: 2.75rem;
+    height: 2.75rem;
+    border-radius: 0.625rem;
+    background: var(--cor-marca-suave);
+    color: var(--cor-marca);
+    display: grid;
+    place-items: center;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+}
+
+.cartao-atalho h2 {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.25rem;
+}
+
+.cartao-atalho p {
+    color: var(--cor-texto-suave);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.cartao-atalho.em-breve {
+    opacity: 0.65;
+}
+
+.tabela-cartao {
+    margin: 0;
+}
+
+.tabela-cartao thead th {
+    background: #f8fafc;
+    color: var(--cor-texto-suave);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 1px solid var(--cor-borda);
+    padding: 0.75rem 1rem;
+    white-space: nowrap;
+}
+
+.tabela-cartao td {
+    padding: 0.8rem 1rem;
+    vertical-align: middle;
+    border-color: var(--cor-borda);
+}
+
+.tabela-cartao tr:last-child td {
+    border-bottom: 0;
+}
+
+.vazio {
+    text-align: center;
+    color: var(--cor-texto-suave);
+    padding: 2.5rem 1rem;
+}
+
+.vazio i {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #b6c0cc;
+}
+
+.selo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    padding: 0.2rem 0.6rem;
+    border-radius: 999px;
+}
+
+.selo::before {
+    content: "";
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.selo-ativo {
+    background: #e3f4ea;
+    color: var(--farol-verde);
+}
+
+.selo-inativo {
+    background: #eef0f3;
+    color: var(--farol-cinza);
+}
+
+.etiqueta-contrato {
+    display: inline-block;
+    font-family: var(--bs-font-monospace);
+    font-size: 0.8rem;
+    background: var(--cor-marca-suave);
+    color: var(--cor-marca-escura);
+    border-radius: 0.375rem;
+    padding: 0.1rem 0.45rem;
+    margin: 0.1rem 0.15rem 0.1rem 0;
+}
+
+.formulario {
+    max-width: 640px;
+    padding: 1.75rem;
+}
+
+.formulario .form-label {
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.ajuda {
+    color: var(--cor-texto-suave);
+    font-size: 0.85rem;
+}
+
+.opcao-contrato {
+    border: 1px solid var(--cor-borda);
+    border-radius: 0.5rem;
+    padding: 0.65rem 0.85rem 0.65rem 2.4rem;
+    margin-bottom: 0.5rem;
+}
+
+/* Páginas públicas: entrar e cadastrar-se */
+.publico {
+    min-height: 100vh;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+}
+
+.publico .lado-marca {
+    background: linear-gradient(150deg, var(--cor-marca) 0%, var(--cor-marca-escura) 100%);
+    color: #fff;
+    padding: 3rem;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.publico .lado-marca h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    max-width: 22rem;
+}
+
+.publico .lado-marca p {
+    color: #cfe0ec;
+    max-width: 24rem;
+}
+
+.publico .lado-marca ul {
+    list-style: none;
+    padding: 0;
+    color: #e3eef5;
+}
+
+.publico .lado-marca li {
+    display: flex;
+    gap: 0.6rem;
+    margin-bottom: 0.6rem;
+}
+
+.publico .lado-form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+}
+
+.publico .caixa {
+    width: 100%;
+    max-width: 400px;
+}
+
+.publico .caixa h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+@media (max-width: 991.98px) {
+    .publico {
+        grid-template-columns: 1fr;
+    }
+
+    .publico .lado-marca {
+        padding: 1.5rem;
+    }
+
+    .publico .lado-marca ul,
+    .publico .lado-marca .rodape-marca {
+        display: none;
+    }
 }

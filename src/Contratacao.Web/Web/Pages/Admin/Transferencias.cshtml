@@ -1,0 +1,76 @@
+@page
+@model Contratacao.Web.Web.Pages.Admin.TransferenciasModel
+@{
+    ViewData["Title"] = "Transferir vínculo";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Transferir vínculo</h1>
+        <p>Mova Funcionários SESI para outro Gestor, por exemplo quando o Gestor responsável for desativado.</p>
+    </div>
+</div>
+
+<form method="get" class="cartao p-3 mb-3 d-flex flex-wrap gap-2 align-items-end">
+    <div class="flex-grow-1" style="max-width: 420px">
+        <label for="origem" class="form-label fw-semibold small mb-1">Gestor de origem</label>
+        <select id="origem" name="origem" class="form-select" onchange="this.form.submit()">
+            <option value="">Escolha o Gestor…</option>
+            @foreach (var gestor in Model.Gestores)
+            {
+                <option value="@gestor.Id" selected="@(gestor.Id == Model.Origem)">@gestor.Nome@(gestor.Ativo ? string.Empty : " (desativado)")</option>
+            }
+        </select>
+    </div>
+    <noscript><button type="submit" class="btn btn-outline-primary">Ver equipe</button></noscript>
+</form>
+
+@if (Model.Origem is not null)
+{
+    <form method="post" class="cartao formulario" style="max-width: 760px" novalidate>
+        <div asp-validation-summary="All" class="alert alert-danger py-2" role="alert"></div>
+        <input type="hidden" asp-for="Origem" />
+
+        <fieldset class="mb-4">
+            <legend class="form-label fs-6">Funcionários SESI da equipe</legend>
+            @if (Model.Equipe.Count == 0)
+            {
+                <div class="vazio py-3"><i class="bi bi-people"></i>Este Gestor não tem Funcionários SESI.</div>
+            }
+            @foreach (var funcionario in Model.Equipe)
+            {
+                <div class="form-check opcao-contrato">
+                    <input class="form-check-input" type="checkbox" name="Funcionarios" id="f-@funcionario.Id"
+                           value="@funcionario.Id" checked="@Model.Funcionarios.Contains(funcionario.Id)" />
+                    <label class="form-check-label d-flex flex-wrap gap-2" for="f-@funcionario.Id">
+                        <span class="fw-semibold">@funcionario.Nome</span>
+                        <span class="text-body-secondary small">@funcionario.Email</span>
+                        @foreach (var numero in funcionario.Contratos)
+                        {
+                            <span class="etiqueta-contrato">@numero</span>
+                        }
+                    </label>
+                </div>
+            }
+        </fieldset>
+
+        <div class="mb-3">
+            <label asp-for="Destino" class="form-label">Gestor de destino</label>
+            <select asp-for="Destino" class="form-select">
+                <option value="">Escolha o Gestor…</option>
+                @foreach (var gestor in Model.Gestores.Where(g => g.Ativo && g.Id != Model.Origem))
+                {
+                    <option value="@gestor.Id">@gestor.Nome</option>
+                }
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label asp-for="Justificativa" class="form-label">Justificativa</label>
+            <textarea asp-for="Justificativa" class="form-control" rows="3"></textarea>
+            <div class="ajuda mt-1">Fica registrada na auditoria, com o Gestor anterior e o novo.</div>
+        </div>
+
+        <button type="submit" class="btn btn-primary" disabled="@(Model.Equipe.Count == 0)">Transferir</button>
+    </form>
+}

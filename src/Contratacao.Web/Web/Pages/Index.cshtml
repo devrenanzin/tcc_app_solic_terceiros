@@ -1,10 +1,68 @@
 @page
+@using Contratacao.Web.Domain.Usuarios
 @model IndexModel
 @{
     ViewData["Title"] = "Início";
+    var primeiroNome = Model.Nome.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? string.Empty;
 }
 
-<section class="cartao p-4">
-    <h1 class="h4 mb-2">Sistema de Solicitação e Acompanhamento de Contratação</h1>
-    <p class="text-body-secondary mb-0" data-prova="pagemodel-internal">@Model.Mensagem</p>
-</section>
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Olá, @primeiroNome</h1>
+        <p>@(Model.Perfil is { } perfil ? Formatacao.Perfil(perfil) : string.Empty) · O que você quer fazer hoje?</p>
+    </div>
+</div>
+
+<div class="row g-3">
+    @if (Model.Perfil == Perfil.Admin)
+    {
+        <div class="col-md-6 col-xl-4">
+            <a class="cartao cartao-atalho" href="/Admin/Gestores">
+                <span class="icone"><i class="bi bi-person-badge"></i></span>
+                <span><h2>Gestores</h2><p>Cadastre Gestores e defina os contratos de cada um.</p></span>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="cartao cartao-atalho" href="/Admin/Transferencias">
+                <span class="icone"><i class="bi bi-arrow-left-right"></i></span>
+                <span><h2>Transferir vínculo</h2><p>Mova Funcionários SESI de um Gestor para outro.</p></span>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="cartao cartao-atalho" href="/Solicitantes">
+                <span class="icone"><i class="bi bi-people"></i></span>
+                <span><h2>Solicitantes</h2><p>Consulte, desative e reative Solicitantes.</p></span>
+            </a>
+        </div>
+    }
+    @if (Model.Perfil == Perfil.Gestor)
+    {
+        <div class="col-md-6 col-xl-4">
+            <a class="cartao cartao-atalho" href="/Equipe">
+                <span class="icone"><i class="bi bi-people-fill"></i></span>
+                <span><h2>Equipe SESI</h2><p>Cadastre Funcionários SESI e defina o contrato de cada um.</p></span>
+            </a>
+        </div>
+        <div class="col-md-6 col-xl-4">
+            <a class="cartao cartao-atalho" href="/Solicitantes">
+                <span class="icone"><i class="bi bi-people"></i></span>
+                <span><h2>Solicitantes</h2><p>Consulte, desative e reative Solicitantes.</p></span>
+            </a>
+        </div>
+    }
+    @if (Model.Perfil == Perfil.Solicitante)
+    {
+        <div class="col-md-6 col-xl-4">
+            <div class="cartao cartao-atalho em-breve">
+                <span class="icone"><i class="bi bi-file-earmark-plus"></i></span>
+                <span><h2>Nova demanda</h2><p>Disponível na próxima etapa do sistema.</p></span>
+            </div>
+        </div>
+    }
+    <div class="col-md-6 col-xl-4">
+        <div class="cartao cartao-atalho em-breve">
+            <span class="icone"><i class="bi bi-kanban"></i></span>
+            <span><h2>Demandas</h2><p>Painel com prazos, farol e linha do tempo, em uma próxima etapa.</p></span>
+        </div>
+    </div>
+</div>

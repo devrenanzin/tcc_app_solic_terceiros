@@ -1,0 +1,54 @@
+@page
+@using Contratacao.Web.Web.Pages.Shared
+@model Contratacao.Web.Web.Pages.Equipe.IndexModel
+@{
+    ViewData["Title"] = "Equipe SESI";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Equipe SESI</h1>
+        <p>Funcionários SESI que você cadastrou. Cada um vê e trata só as demandas do seu contrato.</p>
+    </div>
+    <a href="/Equipe/Novo" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Novo Funcionário SESI</a>
+</div>
+
+<div class="cartao">
+    @if (Model.Funcionarios.Count == 0)
+    {
+        <div class="vazio"><i class="bi bi-people-fill"></i>Sua equipe ainda não tem Funcionários SESI.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table tabela-cartao">
+                <thead>
+                    <tr><th>Nome</th><th>Contrato</th><th>Situação</th><th>Último acesso</th><th class="text-end">Ações</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var funcionario in Model.Funcionarios)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@funcionario.Nome</div>
+                                <div class="small text-body-secondary">@funcionario.Email</div>
+                            </td>
+                            <td>
+                                @foreach (var numero in funcionario.Contratos)
+                                {
+                                    <span class="etiqueta-contrato">@numero</span>
+                                }
+                            </td>
+                            <td><partial name="_SituacaoUsuario" model="funcionario.Ativo" /></td>
+                            <td class="small">@Formatacao.DataHora(funcionario.DataUltimoAcesso)</td>
+                            <td class="text-end text-nowrap">
+                                <a href="/Equipe/Contrato?id=@funcionario.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-diagram-3"></i> Contrato</a>
+                                <partial name="_AcaoSituacao" model="new AcaoSituacao(funcionario.Id, funcionario.Ativo, funcionario.Nome)" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

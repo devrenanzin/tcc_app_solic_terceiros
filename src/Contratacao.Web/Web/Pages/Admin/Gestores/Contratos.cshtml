@@ -1,0 +1,29 @@
+@page
+@using Contratacao.Web.Web.Pages.Shared
+@model Contratacao.Web.Web.Pages.Admin.Gestores.ContratosModel
+@{
+    ViewData["Title"] = "Contratos do Gestor";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a href="/Admin/Gestores" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Gestores</a>
+        <h1 class="mt-1">Contratos de @Model.NomeGestor</h1>
+        <p>O Gestor valida, devolve e cancela só as demandas destes contratos. Ele continua vendo todas.</p>
+    </div>
+</div>
+
+<form method="post" class="cartao formulario" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+    <input type="hidden" asp-for="Id" />
+
+    <fieldset class="mb-4">
+        <legend class="form-label fs-6">Contratos</legend>
+        <partial name="_EscolhaContratos" model="new EscolhaContratos(Model.ContratosDisponiveis, Model.Contratos, nameof(Model.Contratos), true)" />
+    </fieldset>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Salvar contratos</button>
+        <a href="/Admin/Gestores" class="btn btn-light">Cancelar</a>
+    </div>
+</form>

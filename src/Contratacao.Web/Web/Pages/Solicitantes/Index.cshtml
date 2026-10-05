@@ -1,0 +1,45 @@
+@page
+@using Contratacao.Web.Web.Pages.Shared
+@model Contratacao.Web.Web.Pages.Solicitantes.IndexModel
+@{
+    ViewData["Title"] = "Solicitantes";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Solicitantes</h1>
+        <p>Pessoas que se cadastraram com e-mail @@ucl.br. Desativar impede o acesso; nada é excluído.</p>
+    </div>
+</div>
+
+<div class="cartao">
+    @if (Model.Solicitantes.Count == 0)
+    {
+        <div class="vazio"><i class="bi bi-people"></i>Nenhum Solicitante cadastrado ainda.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table tabela-cartao">
+                <thead>
+                    <tr><th>Nome</th><th>Cadastro</th><th>Último acesso</th><th>Situação</th><th class="text-end">Ações</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var solicitante in Model.Solicitantes)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@solicitante.Nome</div>
+                                <div class="small text-body-secondary">@solicitante.Email</div>
+                            </td>
+                            <td class="small">@Formatacao.Data(solicitante.DataCadastro)</td>
+                            <td class="small">@Formatacao.DataHora(solicitante.DataUltimoAcesso)</td>
+                            <td><partial name="_SituacaoUsuario" model="solicitante.Ativo" /></td>
+                            <td class="text-end"><partial name="_AcaoSituacao" model="new AcaoSituacao(solicitante.Id, solicitante.Ativo, solicitante.Nome)" /></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

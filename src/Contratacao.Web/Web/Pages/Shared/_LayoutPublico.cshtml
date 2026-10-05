@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-bs-theme="light">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>@ViewData["Title"] · Contratação</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/lib/bootstrap-icons/bootstrap-icons.min.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/tema.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="publico">
+        <section class="lado-marca">
+            <div>
+                <div class="d-flex align-items-center gap-2 fw-semibold mb-5">
+                    <i class="bi bi-briefcase-fill fs-4" aria-hidden="true"></i> Sistema de Contratação
+                </div>
+                <h1>Solicite e acompanhe contratações em um só lugar.</h1>
+                <p>Do pedido do Solicitante até a contratação finalizada pelo SESI, com prazo, farol e histórico completo.</p>
+            </div>
+            <ul>
+                <li><i class="bi bi-check2-circle"></i> SLA de 45 dias acompanhado pelo farol</li>
+                <li><i class="bi bi-check2-circle"></i> Linha do tempo de cada demanda</li>
+                <li><i class="bi bi-check2-circle"></i> Histórico e auditoria de todas as ações</li>
+            </ul>
+            <small class="rodape-marca text-white-50">Acesso com e-mail @@ucl.br</small>
+        </section>
+        <section class="lado-form">
+            <div class="caixa">
+                <partial name="_Mensagens" />
+                @RenderBody()
+            </div>
+        </section>
+    </div>
+</body>
+</html>

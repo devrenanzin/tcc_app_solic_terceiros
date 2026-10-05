@@ -1,0 +1,13 @@
+@using Contratacao.Web.Web.Pages.Shared
+@model EscolhaContratos
+@foreach (var contrato in Model.Contratos)
+{
+    var id = $"{Model.Campo}-{contrato.Id:N}";
+    <div class="form-check opcao-contrato">
+        <input class="form-check-input" type="@(Model.Multipla ? "checkbox" : "radio")" name="@Model.Campo"
+               id="@id" value="@contrato.Id" checked="@Model.Marcados.Contains(contrato.Id)" />
+        <label class="form-check-label" for="@id">
+            Contrato <span class="etiqueta-contrato">@contrato.Numero</span>
+        </label>
+    </div>
+}

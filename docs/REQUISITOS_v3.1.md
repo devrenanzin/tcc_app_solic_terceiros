@@ -1450,7 +1450,7 @@ O README do repositório deve repetir esses passos, ajustados ao que for de fato
 
 ## Suposições e pendências
 
-Dez suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; duas decisões continuam abertas e serão necessárias em etapas específicas da implementação.
+Treze suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; duas decisões continuam abertas e serão necessárias em etapas específicas da implementação.
 
 ### Suposições a confirmar
 
@@ -1466,6 +1466,9 @@ Dez suposições foram adotadas para não travar o desenvolvimento e precisam de
 | S12 | Campo obrigatório = campo preenchido em todos os registros do aplicativo atual | 8.1 |
 | S13 | Período temporário em dias | 8.1 |
 | S14 | Veículo e rastreador cobrados uma vez por demanda, não por vaga | 8.1 |
+| S21 | Senha com no mínimo 8 e no máximo 128 caracteres (o documento não define regra de senha) | RN11 |
+| S22 | Quem cadastra um Gestor ou Funcionário SESI define a senha inicial e a repassa ao novo usuário; a troca de senha pelo próprio usuário não está nos casos de uso | UC12, UC14 |
+| S23 | O Gestor pode vincular o Funcionário SESI a qualquer contrato ativo, e não só aos seus | UC14 |
 
 S1, S5, S6, S15, S16, S17, S18, S19 e S20 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32, 34, 36 e 41).
 

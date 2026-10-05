@@ -1,0 +1,15 @@
+@using Contratacao.Web.Web.Pages.Shared
+@model AcaoSituacao
+<form method="post" asp-page-handler="Situacao" class="d-inline"
+      onsubmit="return confirm('@(Model.Ativo ? "Desativar" : "Reativar") @Model.Nome?')">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <input type="hidden" name="ativo" value="@((!Model.Ativo).ToString().ToLowerInvariant())" />
+    @if (Model.Ativo)
+    {
+        <button type="submit" class="btn btn-sm btn-outline-danger"><i class="bi bi-person-dash"></i> Desativar</button>
+    }
+    else
+    {
+        <button type="submit" class="btn btn-sm btn-outline-success"><i class="bi bi-person-check"></i> Reativar</button>
+    }
+</form>

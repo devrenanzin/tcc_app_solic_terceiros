@@ -1,0 +1,12 @@
+@if (TempData[PaginaBase.ChaveSucesso] is string sucesso)
+{
+    <div class="alert alert-success d-flex gap-2 align-items-center" role="status">
+        <i class="bi bi-check-circle-fill"></i> <span>@sucesso</span>
+    </div>
+}
+@if (TempData[PaginaBase.ChaveErro] is string erro)
+{
+    <div class="alert alert-danger d-flex gap-2 align-items-center" role="alert">
+        <i class="bi bi-exclamation-triangle-fill"></i> <span>@erro</span>
+    </div>
+}

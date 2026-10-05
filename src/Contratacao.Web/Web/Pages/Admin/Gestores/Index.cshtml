@@ -1,0 +1,54 @@
+@page
+@using Contratacao.Web.Web.Pages.Shared
+@model Contratacao.Web.Web.Pages.Admin.Gestores.IndexModel
+@{
+    ViewData["Title"] = "Gestores";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Gestores</h1>
+        <p>Gestores do Contrato e os contratos pelos quais cada um responde.</p>
+    </div>
+    <a href="/Admin/Gestores/Novo" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Novo Gestor</a>
+</div>
+
+<div class="cartao">
+    @if (Model.Gestores.Count == 0)
+    {
+        <div class="vazio"><i class="bi bi-person-badge"></i>Nenhum Gestor cadastrado ainda.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table tabela-cartao">
+                <thead>
+                    <tr><th>Nome</th><th>Contratos</th><th>Situação</th><th>Último acesso</th><th class="text-end">Ações</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var gestor in Model.Gestores)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@gestor.Nome</div>
+                                <div class="small text-body-secondary">@gestor.Email</div>
+                            </td>
+                            <td>
+                                @foreach (var numero in gestor.Contratos)
+                                {
+                                    <span class="etiqueta-contrato">@numero</span>
+                                }
+                            </td>
+                            <td><partial name="_SituacaoUsuario" model="gestor.Ativo" /></td>
+                            <td class="small">@Formatacao.DataHora(gestor.DataUltimoAcesso)</td>
+                            <td class="text-end text-nowrap">
+                                <a href="/Admin/Gestores/Contratos?id=@gestor.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-diagram-3"></i> Contratos</a>
+                                <partial name="_AcaoSituacao" model="new AcaoSituacao(gestor.Id, gestor.Ativo, gestor.Nome)" />
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
