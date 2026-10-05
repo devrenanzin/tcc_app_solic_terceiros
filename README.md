@@ -56,7 +56,7 @@ Os testes ficam em `tests/Contratacao.Tests/Unitarios` e rodam sem banco. A matr
 - Perfil, etapa e status são enums no domínio e viram `uniqueidentifier` fixos (`IdsFixos`) nas tabelas `Perfil`, `Etapa` e `Status`.
 - Datas gravadas e lidas como UTC; `DataLimiteSLA` é `date`.
 - Nenhuma chave estrangeira exclui em cascata. A demanda tem `RowVersion` para concorrência otimista (RNF10).
-- **Carga inicial.** Os catálogos fixos (perfis, etapas, status, prazo de 45 dias, modelos de trabalho, tipo de demanda, veículos, equipamentos, Contratada SESI, contratos, regiões e corredores) vão na migration `Inicial`. O comando `preparar-banco` aplica as migrations e carrega o que depende de arquivo ou configuração: o catálogo QQP e as RACs, lidos dos CSV de `dados/`, e o Admin inicial, lido dos user-secrets. Ele pode rodar várias vezes sem duplicar nada.
+- **Carga inicial.** Os catálogos fixos (perfis, etapas, status, prazo de 45 dias, modelos de trabalho, tipo de demanda, equipamentos, Contratada SESI, contratos, regiões e corredores) vão na migration `Inicial`. O comando `preparar-banco` aplica as migrations e carrega o que depende de arquivo ou configuração: o catálogo QQP e as RACs, lidos dos CSV de `dados/`, e o Admin inicial, lido dos user-secrets. Ele pode rodar várias vezes sem duplicar nada.
 
 Os testes de integração (`tests/Contratacao.Tests/Integracao`) criam um banco temporário, aplicam a migration, fazem a carga e conferem os dados, o fluxo completo de uma demanda gravada e relida, a concorrência, a ausência de cascata e os checks.
 
@@ -135,5 +135,4 @@ Cada suposição usada no código (as abertas na seção "Suposições e pendên
 
 ## Pendências
 
-- **Cobrança de veículo e rastreador (S14):** se são cobrados uma vez por demanda, e não por vaga. Bloqueia o cálculo de custo da Etapa 4. Valores e custo mensal já confirmados.
 - **QQP 466 e 467:** repetem a mesma combinação; são importados assim mesmo, com o código como chave.
