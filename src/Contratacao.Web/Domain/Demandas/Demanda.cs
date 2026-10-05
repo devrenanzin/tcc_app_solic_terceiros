@@ -89,8 +89,7 @@ internal sealed class Demanda
 
         var agora = relogio.AgoraUtc;
 
-        // PENDENTE: confirmar se, após nova aprovação, o Gestor da demanda é o da primeira ou o da última.
-        // Hoje fica o da última aprovação.
+        // Após nova aprovação (correção contratual), o Gestor da demanda passa a ser o da aprovação mais recente.
         GestorId = gestor.Id;
         _etapas[^1].DefinirResponsavel(gestor.Id);
 

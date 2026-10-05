@@ -97,4 +97,5 @@ Cada suposição usada no código (as abertas na seção "Suposições e pendên
 
 ## Pendências
 
-- **Gestor da demanda após nova aprovação:** quando a demanda volta ao Gestor por correção contratual e é aprovada de novo, ainda falta definir se `GestorId` fica com o Gestor da primeira ou da última aprovação. Hoje fica o da última (`Demanda.Aprovar`, marcado com `PENDENTE`).
+- **Valores de custo (S14, S15):** notebook, segunda tela, celular e rastreador, se o custo é mensal e se veículo e rastreador são cobrados uma vez por demanda. Bloqueiam a seed de ItemEquipamento e o cálculo de custo.
+- **QQP 466 e 467:** repetem a mesma combinação; são importados assim mesmo, com o código como chave.

@@ -51,6 +51,8 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 32 | Quem corrige | Solicitante, ou Gestor para informações contratuais (UC16) | Só o Solicitante corrige; o Gestor apenas aprova ou devolve, sem editar campos. UC16 removido | Cliente |
 | 33 | Devolução do SESI por erro contratual | Ia ao Gestor, que corrigia | Vai ao Solicitante; corrigida, a demanda passa de novo pela Validação do Gestor antes de voltar ao SESI | Cliente |
 | 34 | O que o SESI trata | Suposição S17 | Aceitar, registrar vaga, entrevistas e exames e finalizar; devolver é opcional | Cliente |
+| 35 | Gestor da demanda após nova aprovação | Não definido | Passa a ser o Gestor da aprovação mais recente | Cliente |
+| 36 | Contratos e corredores (D5, S16) | A confirmar | Números confirmados: 5900125082 (Norte) e 5900118506 (Sudeste). C. Integrado e Pelotização seguem a região: Norte no contrato do Norte, Sudeste no do Sudeste | Cliente |
 
 ## 1–3. Objetivo e escopo
 
@@ -284,7 +286,9 @@ O contrato da demanda é escolhido pelo sistema a partir do corredor, independen
 | Sudeste | Sudeste | 5900118506 |
 | Sul | Sudeste | 5900118506 |
 | Pelotização | Sudeste | 5900118506 |
-| C. Integrado | Sudeste | 5900118506 (**S16 — confirmar**) |
+| C. Integrado | Sudeste | 5900118506 |
+
+Números e divisão confirmados pelo cliente na revisão de 05/10/2026: C. Integrado e Pelotização seguem a região do corredor.
 
 Os números de contrato foram deduzidos do aplicativo atual: 150 das 154 demandas já seguem essa divisão, e as 4 restantes (3 com contrato trocado e 1 sem corredor) são justamente os erros que a regra evita. O cliente citou Sudeste, Sul e Pelotização no segundo contrato; C. Integrado Sudeste entra nele porque as 9 demandas desse corredor estão nesse contrato.
 
@@ -1155,8 +1159,8 @@ O CNPJ da Contratada é opcional (Cliente); quando informado, não pode se repet
 | Rac | 13 itens, do arquivo tb\_racs.csv, que vai para o repositório; espaços no início dos nomes são removidos | Completo |
 | Veiculo | Veículo 4x4, Veículo de passeio, Veículo van, Transporte, com os valores da RN12 | Completo (cliente) |
 | Contratada | SESI, a única Contratada hoje, sem CNPJ (Cliente) | Completo |
-| Contrato | 5900125082 (Norte) e 5900118506 (Sudeste), ambos da Contratada SESI | Confirmar os números |
-| Corredor | As 7 combinações da RN13, cada uma com região e contrato | Completo (cliente), salvo S16 |
+| Contrato | 5900125082 (Norte) e 5900118506 (Sudeste), ambos da Contratada SESI | Completo (cliente) |
+| Corredor | As 7 combinações da RN13, cada uma com região e contrato | Completo (cliente) |
 | ItemEquipamento | Notebook, Segunda tela, Celular, Rastreador, com os valores da RN12 | A confirmar (S15) |
 | GerenteExecutivo | Vazio na seed; o Admin cadastra pela tela (são nomes de pessoas) | Completo |
 
@@ -1394,7 +1398,7 @@ Este documento é a fonte única de verdade para implementar o sistema: implemen
 
 1. Quando uma regra não estiver neste documento, pare e pergunte. Não preencha lacunas por conta própria.
 2. Toda suposição da seção "Suposições e pendências" usada no código leva um comentário `// SUPOSIÇÃO (S1)` com o número correspondente, e entra na lista do README.
-3. Decisões em aberto bloqueiam a etapa que dependem delas: Os valores de custo (S15) e a confirmação dos contratos (RN13) bloqueiam a seed completa e a Etapa 4. Pergunte antes de começar essas partes.
+3. Decisões em aberto bloqueiam a etapa que dependem delas: Os valores de custo (S14, S15) bloqueiam a seed de ItemEquipamento e o cálculo de custo da Etapa 4. Pergunte antes de começar essas partes.
 4. Todo tipo C# é `internal`. Exceções públicas só onde o framework exige, cada uma com um comentário explicando por quê (seção 27).
 5. Regras de negócio ficam no Domain e são testadas sem banco. Controllers e páginas não contêm regra.
 6. Use um relógio injetável (`IRelogio`) e um calendário do SLA injetável; nada de `DateTime.Now` no domínio.
@@ -1408,7 +1412,7 @@ Este documento é a fonte única de verdade para implementar o sistema: implemen
 | 1 — Domínio | Demanda com a máquina de estados da seção 6–7 e as transições da seção 24; Sla e farol (seções 9–11); cancelamento | Unitários de cada transição permitida e proibida, do SLA e de cada faixa do farol | — |
 | 2 — Persistência | DbContext, mapeamentos do modelo físico, seed | Integração com SQL Server real | Inicial, com seed |
 | 3 — Usuários e acesso | Autenticação, autocadastro do Solicitante, perfis, hierarquia Admin → Gestor → Funcionário SESI, vínculo do SESI a contrato, UC01, UC12–14, UC19 | Autorização por perfil, por vínculo e por contrato | Se houver colunas de credencial |
-| 4 — Solicitação e validação | UC02–07, UC17, numeração AAAA-NNNNNN | Fluxos completos e numeração sob concorrência | Campos da solicitação (D5) |
+| 4 — Solicitação e validação | UC02–07, UC17, numeração AAAA-NNNNNN | Fluxos completos e numeração sob concorrência | Campos da solicitação |
 | 5 — Processo SESI | UC08–11, congelamento de datas | Sequência obrigatória e imutabilidade das datas | Se necessário |
 | 6 — Cancelamento e anexos | UC18, UC20, anexos | Justificativa obrigatória; ninguém exclui demanda enviada | Se necessário |
 | 7 — Telas | Dashboards por perfil, tela do SESI, linha do tempo, histórico | Integração das consultas e filtros | — |
@@ -1437,7 +1441,7 @@ O README do repositório deve repetir esses passos, ajustados ao que for de fato
 
 ## Suposições e pendências
 
-Doze suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; três decisões continuam abertas e serão necessárias em etapas específicas da implementação.
+Onze suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; duas decisões continuam abertas e serão necessárias em etapas específicas da implementação.
 
 ### Suposições a confirmar
 
@@ -1454,8 +1458,7 @@ Doze suposições foram adotadas para não travar o desenvolvimento e precisam d
 | S13 | Período temporário em dias | 8.1 |
 | S14 | Veículo e rastreador cobrados uma vez por demanda, não por vaga | 8.1 |
 | S15 | Valores de notebook, segunda tela, celular e rastreador deduzidos dos dados, por mês | 8.1 |
-| S16 | C. Integrado da região Sudeste cai no contrato do Sudeste | 8.1 |
-S1, S5, S6, S17, S18, S19 e S20 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32 e 34).
+S1, S5, S6, S16, S17, S18, S19 e S20 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32 e 34).
 
 A antiga S10 (escolha do item QQP na demanda) foi confirmada pelo cliente.
 
@@ -1463,7 +1466,6 @@ A antiga S10 (escolha do item QQP na demanda) foi confirmada pelo cliente.
 
 | # | Decisão | Necessária na etapa |
 | --- | --- | --- |
-| D5 | Confirmar os números dos dois contratos e a S16 (RN13) | 2 — Persistência (seed) |
 | QQP | Corrigir os códigos 466 e 467 da planilha, que repetem a mesma combinação | 2 — Persistência (seed) |
 | — | LGPD: classificação dos dados pessoais, retenção e perfis autorizados | Antes da produção |
 

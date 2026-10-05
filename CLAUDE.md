@@ -28,7 +28,7 @@ Os diagramas existem como código PlantUML e Mermaid dentro do documento; use-os
 ## Regras inegociáveis
 
 1. **Não invente regra de negócio.** Se algo não está no documento, pare e pergunte antes de implementar.
-2. **Suposições marcadas.** Todo código que depende de uma suposição da lista de suposições do documento (S2–S16, as que ainda estão abertas) leva o comentário `// SUPOSIÇÃO (S<n>)` e entra na lista de suposições do README.
+2. **Suposições marcadas.** Todo código que depende de uma suposição da lista de suposições do documento (as que ainda estão abertas) leva o comentário `// SUPOSIÇÃO (S<n>)` e entra na lista de suposições do README.
 3. **Tipos `internal`.** Todo tipo C# é `internal`. Exceção pública só onde o framework exige, com comentário dizendo por quê. O projeto de testes acessa os tipos por `InternalsVisibleTo`.
 4. **Regras no domínio.** Máquina de estados, SLA, farol, custo e permissões ficam em `Domain` e são testadas sem banco. Controllers e páginas não contêm regra.
 5. **Tempo controlado.** Nada de `DateTime.Now` no domínio: use um relógio injetável. Datas gravadas em UTC; contagem de prazo no fuso `America/Sao_Paulo`.
@@ -81,7 +81,6 @@ A regra de dependência (Domain não depende de nada; Application só de Domain)
 
 | Pendência | Bloqueia |
 | --- | --- |
-| Confirmar os números dos dois contratos e se C. Integrado Sudeste vai para o contrato do Sudeste (S16) | Seed completa |
 | Confirmar os valores de notebook, segunda tela, celular e rastreador, se o custo é mensal e se veículo é cobrado uma vez por demanda (S14, S15) | Cálculo de custo na Etapa 4 |
 | Códigos 466 e 467 do QQP repetem a mesma combinação | Seed do QQP (importe mesmo assim; o código é a chave) |
 | Período temporário em dias ou meses (S13) | Etapa 4 |
