@@ -53,6 +53,8 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 34 | O que o SESI trata | Suposição S17 | Aceitar, registrar vaga, entrevistas e exames e finalizar; devolver é opcional | Cliente |
 | 35 | Gestor da demanda após nova aprovação | Não definido | Passa a ser o Gestor da aprovação mais recente | Cliente |
 | 36 | Contratos e corredores (D5, S16) | A confirmar | Números confirmados: 5900125082 (Norte) e 5900118506 (Sudeste). C. Integrado e Pelotização seguem a região: Norte no contrato do Norte, Sudeste no do Sudeste | Cliente |
+| 37 | Valores dos equipamentos | Deduzidos dos dados (S15) | Confirmados: Notebook R$ 444,35, Segunda tela R$ 53,93, Celular R$ 118,64, Rastreador R$ 345,13 | Cliente |
+| 38 | Data de envio e carga inicial | DataEnvio nula; seed na primeira migration | DataEnvio sempre preenchida, porque a demanda nasce no envio; no histórico, etapa e status novos também são sempre preenchidos. Catálogos fixos vão na migration; QQP, RACs e Admin inicial são carregados pelo comando de preparação do banco, que lê os CSV e a configuração | Consequência das decisões 23 e da regra de não copiar os CSV para o código |
 
 ## 1–3. Objetivo e escopo
 
@@ -316,7 +318,7 @@ Os valores abaixo foram deduzidos dos 154 registros: a fórmula reproduz o custo
 | Veículo 4x4 | `R$ 9.113,47` | Uma vez por demanda (**S14**) |
 | Rastreador | `R$ 345,13` | Uma vez por demanda (**S14**) |
 
-**Confirmar (S15):** esses valores, se o custo é mensal e se veículo e rastreador são mesmo cobrados uma vez por demanda. Numa demanda de 3 vagas que pedia 2 veículos, o custo registrado inclui um único veículo. Valores de veículo informados pelo cliente (lista Tb\_veiculos): Veículo 4x4 \`R$ 9.113,47\`, Veículo de passeio \`R$ 5.292,29\`, Veículo van \`R$ 18.874,06\` e Transporte \`R$ 539,26\`.
+**Valores confirmados pelo cliente** na revisão de 05/10/2026. **Confirmar (S14, S15):** se o custo é mensal e se veículo e rastreador são mesmo cobrados uma vez por demanda. Numa demanda de 3 vagas que pedia 2 veículos, o custo registrado inclui um único veículo. Valores de veículo informados pelo cliente (lista Tb\_veiculos): Veículo 4x4 \`R$ 9.113,47\`, Veículo de passeio \`R$ 5.292,29\`, Veículo van \`R$ 18.874,06\` e Transporte \`R$ 539,26\`.
 
 ### Correspondência com o aplicativo atual
 
@@ -859,7 +861,7 @@ CREATE TABLE Demanda (
   EtapaAtualId uniqueidentifier NOT NULL CONSTRAINT FK_Demanda_Etapa REFERENCES Etapa(Id),
   StatusAtualId uniqueidentifier NOT NULL CONSTRAINT FK_Demanda_Status REFERENCES Status(Id),
   DataCriacao datetime2 NOT NULL,
-  DataEnvio datetime2 NULL,
+  DataEnvio datetime2 NOT NULL,
   DataInicioSLA datetime2 NULL,
   PrazoDiasSla smallint NULL,
   DataLimiteSLA date NULL,
@@ -969,9 +971,9 @@ CREATE TABLE HistoricoDemanda (
   DataHora datetime2 NOT NULL,
   Acao nvarchar(100) NOT NULL,
   EtapaAnteriorId uniqueidentifier NULL CONSTRAINT FK_HistDemanda_EtapaAnt REFERENCES Etapa(Id),
-  EtapaNovaId uniqueidentifier NULL CONSTRAINT FK_HistDemanda_EtapaNova REFERENCES Etapa(Id),
+  EtapaNovaId uniqueidentifier NOT NULL CONSTRAINT FK_HistDemanda_EtapaNova REFERENCES Etapa(Id),
   StatusAnteriorId uniqueidentifier NULL CONSTRAINT FK_HistDemanda_StatusAnt REFERENCES Status(Id),
-  StatusNovoId uniqueidentifier NULL CONSTRAINT FK_HistDemanda_StatusNovo REFERENCES Status(Id),
+  StatusNovoId uniqueidentifier NOT NULL CONSTRAINT FK_HistDemanda_StatusNovo REFERENCES Status(Id),
   Observacao nvarchar(1000) NULL
 );
 CREATE INDEX IX_HistDemanda_Demanda ON HistoricoDemanda(DemandaId, DataHora);
@@ -1016,7 +1018,7 @@ CREATE TABLE SequenciaNumeroDemanda (
 );
 ```
 
-**Dados iniciais (seed da primeira migration):**
+**Dados iniciais.** Os registros fixos abaixo vão na primeira migration. O Admin inicial, o catálogo QQP e as RACs são carregados pelo comando de preparação do banco, porque dependem da configuração e dos arquivos CSV (revisão de 05/10/2026, item 38).
 
 | Tabela | Registros |
 | --- | --- |
@@ -1161,7 +1163,7 @@ O CNPJ da Contratada é opcional (Cliente); quando informado, não pode se repet
 | Contratada | SESI, a única Contratada hoje, sem CNPJ (Cliente) | Completo |
 | Contrato | 5900125082 (Norte) e 5900118506 (Sudeste), ambos da Contratada SESI | Completo (cliente) |
 | Corredor | As 7 combinações da RN13, cada uma com região e contrato | Completo (cliente) |
-| ItemEquipamento | Notebook, Segunda tela, Celular, Rastreador, com os valores da RN12 | A confirmar (S15) |
+| ItemEquipamento | Notebook, Segunda tela, Celular, Rastreador, com os valores da RN12 | Completo (cliente) |
 | GerenteExecutivo | Vazio na seed; o Admin cadastra pela tela (são nomes de pessoas) | Completo |
 
 ## 24. Transições permitidas
@@ -1398,7 +1400,7 @@ Este documento é a fonte única de verdade para implementar o sistema: implemen
 
 1. Quando uma regra não estiver neste documento, pare e pergunte. Não preencha lacunas por conta própria.
 2. Toda suposição da seção "Suposições e pendências" usada no código leva um comentário `// SUPOSIÇÃO (S1)` com o número correspondente, e entra na lista do README.
-3. Decisões em aberto bloqueiam a etapa que dependem delas: Os valores de custo (S14, S15) bloqueiam a seed de ItemEquipamento e o cálculo de custo da Etapa 4. Pergunte antes de começar essas partes.
+3. Decisões em aberto bloqueiam a etapa que dependem delas: A forma de cobrança (S14, S15) bloqueia o cálculo de custo da Etapa 4. Pergunte antes de começar essas partes.
 4. Todo tipo C# é `internal`. Exceções públicas só onde o framework exige, cada uma com um comentário explicando por quê (seção 27).
 5. Regras de negócio ficam no Domain e são testadas sem banco. Controllers e páginas não contêm regra.
 6. Use um relógio injetável (`IRelogio`) e um calendário do SLA injetável; nada de `DateTime.Now` no domínio.
@@ -1457,7 +1459,7 @@ Onze suposições foram adotadas para não travar o desenvolvimento e precisam d
 | S12 | Campo obrigatório = campo preenchido em todos os registros do aplicativo atual | 8.1 |
 | S13 | Período temporário em dias | 8.1 |
 | S14 | Veículo e rastreador cobrados uma vez por demanda, não por vaga | 8.1 |
-| S15 | Valores de notebook, segunda tela, celular e rastreador deduzidos dos dados, por mês | 8.1 |
+| S15 | O custo total é mensal (os valores dos equipamentos foram confirmados pelo cliente) | 8.1 |
 S1, S5, S6, S16, S17, S18, S19 e S20 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32 e 34).
 
 A antiga S10 (escolha do item QQP na demanda) foi confirmada pelo cliente.

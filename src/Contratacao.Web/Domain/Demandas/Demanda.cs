@@ -1,4 +1,5 @@
 using Contratacao.Web.Domain.Comum;
+using Contratacao.Web.Domain.Contratos;
 using Contratacao.Web.Domain.Prazos;
 using Contratacao.Web.Domain.Usuarios;
 
@@ -23,7 +24,12 @@ internal sealed class Demanda
     internal Guid Id { get; private set; }
     internal string Numero { get; private set; } = string.Empty;
     internal Guid UsuarioSolicitanteId { get; private set; }
+
+    /// <summary>Contrato definido pelo corredor (RN13).</summary>
     internal Guid ContratoId { get; private set; }
+
+    /// <summary>Contratada do contrato da demanda (revisão de 05/10/2026).</summary>
+    internal Guid ContratadaId { get; private set; }
 
     /// <summary>O Gestor que valida a demanda; nulo até a primeira aprovação.</summary>
     internal Guid? GestorId { get; private set; }
@@ -47,22 +53,25 @@ internal sealed class Demanda
     internal bool Cancelada => Status == StatusDemanda.Cancelado;
     internal bool Concluida => Status == StatusDemanda.Concluido;
 
+    /// <summary>A passagem ainda aberta; a ordem da lista não é garantida ao carregar do banco.</summary>
+    private EtapaDemanda PassagemAtual => _etapas.Single(e => e.Aberta);
+
     /// <summary>
     /// Envio (UC02): a demanda passa a existir no sistema já em Validação do Gestor / Em análise.
     /// A etapa Solicitação é registrada concluída. Campos obrigatórios e anexo VP-2 são verificados na Etapa 4.
     /// </summary>
-    internal static Demanda Enviar(string numero, Ator solicitante, Guid contratoId, IRelogio relogio)
+    internal static Demanda Enviar(string numero, Ator solicitante, Contrato contrato, IRelogio relogio)
     {
         Exigir(solicitante.Eh(Perfil.Solicitante), "Só um Solicitante ativo envia demanda.");
         Exigir(NumeroDemanda.EhValido(numero), "Número da demanda fora do formato AAAA-NNNNNN.");
-        Exigir(contratoId != Guid.Empty, "A demanda precisa de um contrato.");
 
         var agora = relogio.AgoraUtc;
         var demanda = new Demanda
         {
             Numero = numero,
             UsuarioSolicitanteId = solicitante.Id,
-            ContratoId = contratoId,
+            ContratoId = contrato.Id,
+            ContratadaId = contrato.ContratadaId,
             DataCriacao = agora,
             DataEnvio = agora,
             Etapa = Etapa.ValidacaoGestor,
@@ -91,7 +100,7 @@ internal sealed class Demanda
 
         // Após nova aprovação (correção contratual), o Gestor da demanda passa a ser o da aprovação mais recente.
         GestorId = gestor.Id;
-        _etapas[^1].DefinirResponsavel(gestor.Id);
+        PassagemAtual.DefinirResponsavel(gestor.Id);
 
         // RN05: aprovações seguintes (após correção contratual) não reiniciam nem alteram o SLA.
         Sla ??= Sla.Iniciar(agora, prazoPadraoDias, calendario);
@@ -130,20 +139,20 @@ internal sealed class Demanda
     /// Devolvida pelo Gestor: volta à Validação do Gestor. Devolvida pelo SESI: volta ao SESI, salvo
     /// inconsistência contratual ou mudança de contrato, que voltam ao Gestor (RN02a).
     /// </summary>
-    internal void Corrigir(Ator solicitante, Guid contratoId, IRelogio relogio)
+    internal void Corrigir(Ator solicitante, Contrato contrato, IRelogio relogio)
     {
         Exigir(solicitante.Eh(Perfil.Solicitante) && solicitante.Id == UsuarioSolicitanteId,
             "Só o Solicitante que criou a demanda pode corrigi-la.");
         Exigir(Status == StatusDemanda.AguardandoCorrecao && Etapa is Etapa.ValidacaoGestor or Etapa.ValidacaoSesi,
             "A demanda não está aguardando correção.");
-        Exigir(contratoId != Guid.Empty, "A demanda precisa de um contrato.");
 
         var agora = relogio.AgoraUtc;
-        var correcao = _correcoes.Last(c => c.Pendente);
+        var correcao = _correcoes.Single(c => c.Pendente);
         correcao.Resolver(agora);
 
-        var contratoMudou = contratoId != ContratoId;
-        ContratoId = contratoId;
+        var contratoMudou = contrato.Id != ContratoId;
+        ContratoId = contrato.Id;
+        ContratadaId = contrato.ContratadaId;
 
         if (Etapa == Etapa.ValidacaoGestor)
         {
@@ -168,7 +177,7 @@ internal sealed class Demanda
         ExigirSituacao(Etapa.ValidacaoSesi, StatusDemanda.AguardandoResponsavel);
 
         ResponsavelSesiId = sesi.Id;
-        _etapas[^1].DefinirResponsavel(sesi.Id);
+        PassagemAtual.DefinirResponsavel(sesi.Id);
         MudarPara(Etapa.Recrutamento, StatusDemanda.EmAndamento, StatusDemanda.Concluido,
             EventoDemanda.AceitaPeloSesi, sesi, relogio.AgoraUtc, null);
     }
@@ -182,8 +191,9 @@ internal sealed class Demanda
         Exigir(LinkValido(linkExterno), "Informe um link http ou https válido para a vaga.");
 
         var agora = relogio.AgoraUtc;
+        // O link fica na Vaga; a observação do histórico tem no máximo 1000 caracteres e o link, 2048.
         Vaga = new Vaga(linkExterno.Trim(), agora, sesi.Id);
-        _historico.Add(new HistoricoDemanda(EventoDemanda.VagaAberta, sesi, agora, Etapa, Status, Etapa, Status, linkExterno.Trim()));
+        _historico.Add(new HistoricoDemanda(EventoDemanda.VagaAberta, sesi, agora, Etapa, Status, Etapa, Status, null));
     }
 
     /// <summary>Início das entrevistas (UC09): exige vaga com link registrada.</summary>
@@ -217,7 +227,7 @@ internal sealed class Demanda
         DataFinalizacao = agora;
         MudarPara(Etapa.Contratacao, StatusDemanda.Concluido, StatusDemanda.Concluido,
             EventoDemanda.ContratacaoFinalizada, sesi, agora, null);
-        _etapas[^1].Encerrar(StatusDemanda.Concluido, agora);
+        PassagemAtual.Encerrar(StatusDemanda.Concluido, agora);
     }
 
     /// <summary>
@@ -237,7 +247,7 @@ internal sealed class Demanda
 
         MotivoCancelamento = justificativa.Trim();
         Status = StatusDemanda.Cancelado;
-        _etapas[^1].Encerrar(StatusDemanda.Cancelado, agora);
+        PassagemAtual.Encerrar(StatusDemanda.Cancelado, agora);
         _historico.Add(new HistoricoDemanda(
             EventoDemanda.Cancelada, ator, agora, etapaAnterior, statusAnterior, Etapa, Status, MotivoCancelamento));
     }
@@ -260,7 +270,7 @@ internal sealed class Demanda
     {
         var (etapaAnterior, statusAnterior) = (Etapa, Status);
 
-        _etapas[^1].Encerrar(statusFinalDaEtapaAtual, agora);
+        PassagemAtual.Encerrar(statusFinalDaEtapaAtual, agora);
         _etapas.Add(EtapaDemanda.Iniciar(novaEtapa, novoStatus, agora));
         Etapa = novaEtapa;
         Status = novoStatus;
@@ -272,7 +282,7 @@ internal sealed class Demanda
     {
         var statusAnterior = Status;
 
-        _etapas[^1].AtualizarStatus(novoStatus);
+        PassagemAtual.AtualizarStatus(novoStatus);
         Status = novoStatus;
 
         _historico.Add(new HistoricoDemanda(evento, ator, agora, Etapa, statusAnterior, Etapa, Status, observacao));

@@ -1,4 +1,5 @@
 using Contratacao.Web.Domain.Comum;
+using Contratacao.Web.Domain.Contratos;
 using Contratacao.Web.Domain.Demandas;
 using Contratacao.Web.Domain.Usuarios;
 
@@ -10,8 +11,9 @@ internal sealed class Cenario
     internal const int PrazoPadrao = 45;
     internal const string Numero = "2026-000123";
 
-    internal static readonly Guid ContratoNorte = Guid.Parse("00000000-0000-0000-0000-00000000c001");
-    internal static readonly Guid ContratoSudeste = Guid.Parse("00000000-0000-0000-0000-00000000c002");
+    internal static readonly Guid ContratadaSesi = Guid.Parse("00000000-0000-0000-0000-00000000a001");
+    internal static readonly Contrato ContratoNorte = Contrato.Criar(Guid.Parse("00000000-0000-0000-0000-00000000c001"), ContratadaSesi, "5900125082");
+    internal static readonly Contrato ContratoSudeste = Contrato.Criar(Guid.Parse("00000000-0000-0000-0000-00000000c002"), ContratadaSesi, "5900118506");
 
     // 01/09/2026 08:45 em Brasília (UTC-3).
     internal RelogioFixo Relogio { get; } = new(new DateTime(2026, 9, 1, 11, 45, 0, DateTimeKind.Utc));
@@ -28,8 +30,8 @@ internal sealed class Cenario
     internal Ator SesiSudeste { get; } = Novo(Perfil.FuncionarioSesi, ContratoSudeste);
     internal Ator Admin { get; } = Novo(Perfil.Admin);
 
-    internal static Ator Novo(Perfil perfil, params Guid[] contratos)
-        => new(Guid.NewGuid(), perfil, true, contratos.ToHashSet(), "10.0.0.1");
+    internal static Ator Novo(Perfil perfil, params Contrato[] contratos)
+        => new(Guid.NewGuid(), perfil, true, contratos.Select(c => c.Id).ToHashSet(), "10.0.0.1");
 
     internal Demanda Enviada() => Demanda.Enviar(Numero, Solicitante, ContratoNorte, Relogio);
 

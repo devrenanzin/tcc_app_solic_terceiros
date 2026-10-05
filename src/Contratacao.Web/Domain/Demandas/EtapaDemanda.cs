@@ -20,6 +20,7 @@ internal sealed class EtapaDemanda
     internal Guid? UsuarioResponsavelId { get; private set; }
     internal DateTime DataInicio { get; private set; }
     internal DateTime? DataConclusao { get; private set; }
+    internal string? Observacao { get; private set; }
     internal bool Aberta => DataConclusao is null;
 
     internal static EtapaDemanda Iniciar(Etapa etapa, StatusDemanda status, DateTime inicioUtc)

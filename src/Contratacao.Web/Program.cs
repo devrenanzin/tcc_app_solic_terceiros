@@ -1,12 +1,20 @@
 using Contratacao.Web.Infrastructure;
+using Contratacao.Web.Infrastructure.Carga;
 using Contratacao.Web.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AdicionarInfraestrutura();
+builder.Services.AdicionarInfraestrutura(builder.Configuration);
 builder.Services.AdicionarInterfaceWeb();
 
 var app = builder.Build();
+
+// dotnet run --project src/Contratacao.Web -- preparar-banco
+if (args.Contains(PreparacaoBanco.Comando))
+{
+    await PreparacaoBanco.ExecutarAsync(app.Services);
+    return;
+}
 
 app.UsarInterfaceWeb();
 

@@ -12,7 +12,8 @@ Os requisitos estão em [docs/REQUISITOS_v3.1.md](docs/REQUISITOS_v3.1.md), a ú
 | --- | --- | --- |
 | 0 — Estrutura | Solution, camadas, testes de arquitetura, provas de tipos internal | Concluída |
 | 1 — Domínio | Máquina de estados da demanda, devoluções e correções, cancelamento, SLA, farol, número AAAA-NNNNNN | Concluída |
-| 2 a 8 | Ver o Guia de implementação no documento de requisitos | Pendentes |
+| 2 — Persistência | DbContext, mapeamento do modelo físico, migration inicial, carga inicial (catálogos, QQP, RACs, Admin) | Concluída |
+| 3 a 8 | Ver o Guia de implementação no documento de requisitos | Pendentes |
 
 ## Domínio (Etapa 1)
 
@@ -21,11 +22,23 @@ Os requisitos estão em [docs/REQUISITOS_v3.1.md](docs/REQUISITOS_v3.1.md), a ú
 | `Domain/Demandas` | `Demanda` com a máquina de estados (seções 6–7 e 24): envio, aprovação, devoluções do Gestor e do SESI, correção, aceite, vaga, entrevistas, exames, finalização e cancelamento. Cada ação valida etapa, status e permissão do ator (perfil, atividade e contrato) e grava o histórico. Também `EtapaDemanda` (data de conclusão imutável), `SolicitacaoCorrecao`, `Vaga`, `HistoricoDemanda` e `NumeroDemanda`. |
 | `Domain/Prazos` | `Sla` (45 dias corridos sobre a data de Brasília, sem pausa nem reinício) e `RegraFarol`. |
 | `Domain/Comum` | `IRelogio`, `ICalendarioSla` com `CalendarioBrasilia` (fuso America/Sao_Paulo) e `RegraNegocioException`. |
-| `Domain/Usuarios` | `Perfil` e `Ator` (quem executa: perfil, contratos e IP). |
+| `Domain/Usuarios` | `Perfil` e `Ator` (quem executa: perfil, contratos e IP), `Usuario`, `GestorContrato` e `EmailUcl` (RN11). |
+| `Domain/Contratos`, `Catalogos`, `Qqp` | Contratada, contrato, corredor e os catálogos do formulário e do QQP. |
+| `Domain/Auditoria`, `Anexos`, `Parametros` | `LogAuditoria`, `HistoricoAlteracao`, `Anexo`, `ParametroSistema` e `SequenciaNumeroDemanda`. |
 
 O relógio real (`Infrastructure/Tempo/RelogioSistema`) é registrado em `ConfiguracaoInfraestrutura`. Os campos do formulário, o custo e a verificação do anexo VP-2 no envio entram na Etapa 4.
 
 Os testes ficam em `tests/Contratacao.Tests/Unitarios` e rodam sem banco. A matriz de transições testa as 10 ações em 10 situações da demanda (100 casos).
+
+## Persistência (Etapa 2)
+
+- `Infrastructure/Persistencia/ContratacaoDbContext` com um mapeamento por tabela em `Configuracoes/`, seguindo o script da seção 23: nomes de chaves, tamanhos, tipos e checks. A tabela `DemandaRac` e as colunas do formulário entram na Etapa 4.
+- Perfil, etapa e status são enums no domínio e viram `uniqueidentifier` fixos (`IdsFixos`) nas tabelas `Perfil`, `Etapa` e `Status`.
+- Datas gravadas e lidas como UTC; `DataLimiteSLA` é `date`.
+- Nenhuma chave estrangeira exclui em cascata. A demanda tem `RowVersion` para concorrência otimista (RNF10).
+- **Carga inicial.** Os catálogos fixos (perfis, etapas, status, prazo de 45 dias, modelos de trabalho, tipo de demanda, veículos, equipamentos, Contratada SESI, contratos, regiões e corredores) vão na migration `Inicial`. O comando `preparar-banco` aplica as migrations e carrega o que depende de arquivo ou configuração: o catálogo QQP e as RACs, lidos dos CSV de `dados/`, e o Admin inicial, lido dos user-secrets. Ele pode rodar várias vezes sem duplicar nada.
+
+Os testes de integração (`tests/Contratacao.Tests/Integracao`) criam um banco temporário, aplicam a migration, fazem a carga e conferem os dados, o fluxo completo de uma demanda gravada e relida, a concorrência, a ausência de cascata e os checks.
 
 ## Tecnologias
 
@@ -43,8 +56,8 @@ src/Contratacao.Web/
   wwwroot/         arquivos estáticos (exigência do framework, fora das camadas)
 tests/Contratacao.Tests/
   Arquitetura/     regra de dependência e regra de tipos internal
-  Integracao/      páginas, endpoints e migrations com tipos internal
-  Unitarios/       regras do domínio, sem banco
+  Integracao/      páginas, endpoints, migrations, carga inicial e persistência (SQL Server)
+  Unitarios/       regras do domínio e leitura dos CSV, sem banco
 ```
 
 Regra de dependência (verificada por testes): Domain não depende de nenhuma camada nem de ASP.NET Core ou EF Core; Application depende só de Domain; Infrastructure não depende de Web.
@@ -63,28 +76,32 @@ Todo tipo do projeto web é `internal`; os testes acessam os tipos por `Internal
 
 **Exceções públicas:** só as classes de teste, porque o xUnit as exige públicas (regra xUnit1000). O teste `TiposInternalTests` falha se aparecer qualquer tipo público no projeto web.
 
-A prova de migrations usa um modelo descartável no projeto de testes (`tests/Contratacao.Tests/Integracao/Prova`). A migration real do sistema será criada na Etapa 2.
+A prova de migrations usa um modelo descartável no projeto de testes (`tests/Contratacao.Tests/Integracao/Prova`). As migrations do sistema ficam em `Infrastructure/Persistencia/Migrations`.
 
 ## Executar localmente
 
 Pré-requisitos: SDK do .NET 10, SQL Server (LocalDB, Developer Edition ou container Docker) e a ferramenta do EF Core.
 
+A connection string e o Admin inicial ficam fora do código, nos user-secrets (use um e-mail fictício @ucl.br):
+
 ```bash
 dotnet tool install --global dotnet-ef
 
-dotnet build
+dotnet user-secrets set "ConnectionStrings:Contratacao" "Server=(localdb)\MSSQLLocalDB;Database=Contratacao;Trusted_Connection=True;TrustServerCertificate=True" --project src/Contratacao.Web
+dotnet user-secrets set "AdminInicial:Nome" "Administrador" --project src/Contratacao.Web
+dotnet user-secrets set "AdminInicial:Email" "admin@ucl.br" --project src/Contratacao.Web
+dotnet user-secrets set "AdminInicial:Senha" "<senha inicial>" --project src/Contratacao.Web
+
+# cria o banco, aplica as migrations e faz a carga inicial
+dotnet run --project src/Contratacao.Web -- preparar-banco
+
 dotnet test
 dotnet run --project src/Contratacao.Web
 ```
 
-Os testes de integração de migrations criam e apagam um banco temporário em `(localdb)\MSSQLLocalDB`. Para usar outro servidor, defina a variável `CONTRATACAO_TESTES_SQL` com a connection string sem o nome do banco, por exemplo `Server=localhost;Trusted_Connection=True;TrustServerCertificate=True`.
+`dotnet ef database update --project src/Contratacao.Web` também aplica as migrations, mas não faz a carga do QQP, das RACs e do Admin.
 
-A partir da Etapa 2, a connection string da aplicação ficará fora do código:
-
-```bash
-dotnet user-secrets set "ConnectionStrings:Contratacao" "Server=(localdb)\MSSQLLocalDB;Database=Contratacao;Trusted_Connection=True;TrustServerCertificate=True" --project src/Contratacao.Web
-dotnet ef database update --project src/Contratacao.Web
-```
+Os testes de integração criam e apagam bancos temporários em `(localdb)\MSSQLLocalDB`. Para usar outro servidor, defina a variável `CONTRATACAO_TESTES_SQL` com a connection string sem o nome do banco, por exemplo `Server=localhost;Trusted_Connection=True;TrustServerCertificate=True`.
 
 ## Suposições em uso
 
@@ -94,8 +111,11 @@ Cada suposição usada no código (as abertas na seção "Suposições e pendên
 | --- | --- | --- |
 | S4 | Depois do aceite, qualquer Funcionário SESI ativo do contrato registra vaga, entrevistas, exames e finalização; o responsável SESI é a referência | `Demanda.ExigirSesiDoContrato` |
 | S7 | 45 dias corridos; dia limite em laranja; demanda cancelada em cinza | `Sla.Iniciar`, `RegraFarol` |
+| S9 | Classificação "-" na planilha QQP significa "sem classificação" (ClassificacaoId nulo) | `CargaInicial.CarregarQqpAsync` |
 
 ## Pendências
 
-- **Valores de custo (S14, S15):** notebook, segunda tela, celular e rastreador, se o custo é mensal e se veículo e rastreador são cobrados uma vez por demanda. Bloqueiam a seed de ItemEquipamento e o cálculo de custo.
+- **Forma de cobrança (S14, S15):** se o custo é mensal e se veículo e rastreador são cobrados uma vez por demanda. Bloqueia o cálculo de custo da Etapa 4. Os valores dos equipamentos já foram confirmados.
 - **QQP 466 e 467:** repetem a mesma combinação; são importados assim mesmo, com o código como chave.
+- **Login x e-mail (L8):** o documento não diferencia os dois; `Usuario.Login` guarda a parte do e-mail antes do @ (marcado com `PENDENTE` em `Usuario`).
+- **HistoricoAlteracao sem perfil e IP (L6):** o script da seção 23 não tem essas colunas, embora a regra de auditoria peça perfil e IP em todo registro. Mantido como no script até decisão.

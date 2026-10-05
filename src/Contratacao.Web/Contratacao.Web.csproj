@@ -6,6 +6,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- CSV do QQP e das RACs, lidos pela carga inicial (seção 23). -->
+    <None Include="..\..\dados\*.csv" Link="dados\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <!-- Único InternalsVisibleTo permitido (seção 27): o projeto de testes. -->
     <InternalsVisibleTo Include="Contratacao.Tests" />
   </ItemGroup>

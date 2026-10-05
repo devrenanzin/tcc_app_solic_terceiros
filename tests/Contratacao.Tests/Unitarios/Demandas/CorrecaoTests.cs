@@ -84,7 +84,7 @@ public sealed class CorrecaoTests
 
         demanda.Corrigir(_c.Solicitante, Cenario.ContratoSudeste, _c.Relogio);
 
-        Assert.Equal(Cenario.ContratoSudeste, demanda.ContratoId);
+        Assert.Equal(Cenario.ContratoSudeste.Id, demanda.ContratoId);
         Assert.Equal(Etapa.ValidacaoGestor, demanda.Etapa);
         Assert.Equal(StatusDemanda.EmAnalise, demanda.Status);
         Assert.Throws<RegraNegocioException>(() => demanda.Aprovar(_c.GestorNorte, Cenario.PrazoPadrao, _c.Relogio, _c.Calendario));
@@ -104,7 +104,7 @@ public sealed class CorrecaoTests
 
         demanda.Corrigir(_c.Solicitante, Cenario.ContratoSudeste, _c.Relogio);
 
-        Assert.Equal(Cenario.ContratoSudeste, demanda.ContratoId);
+        Assert.Equal(Cenario.ContratoSudeste.Id, demanda.ContratoId);
         Assert.Equal(Etapa.ValidacaoGestor, demanda.Etapa);
         Assert.Equal(StatusDemanda.EmAnalise, demanda.Status);
     }

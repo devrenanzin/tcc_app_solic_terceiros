@@ -35,15 +35,12 @@ internal sealed class ProvaEntidade
 /// <summary>Usado pelo "dotnet ef migrations add" para criar o contexto em tempo de design.</summary>
 internal sealed class ProvaDbContextFactory : IDesignTimeDbContextFactory<ProvaDbContext>
 {
-    internal const string ServidorPadrao = @"Server=(localdb)\MSSQLLocalDB;Trusted_Connection=True;TrustServerCertificate=True";
-
     public ProvaDbContext CreateDbContext(string[] args) => Criar("Contratacao_Prova_Design");
 
     internal static ProvaDbContext Criar(string nomeBanco)
     {
-        var servidor = Environment.GetEnvironmentVariable("CONTRATACAO_TESTES_SQL") ?? ServidorPadrao;
         var options = new DbContextOptionsBuilder<ProvaDbContext>()
-            .UseSqlServer($"{servidor};Database={nomeBanco}")
+            .UseSqlServer(Apoio.ServidorSql.ConnectionString(nomeBanco))
             .Options;
         return new ProvaDbContext(options);
     }
