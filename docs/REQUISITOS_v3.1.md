@@ -31,13 +31,27 @@ Cada mudança tem uma origem. **Cliente** = decidido pelo responsável do proces
 | 19 | Notificações | Recomendadas | Fora do MVP; eventos já emitidos | Recomendação |
 | 20 | Estrutura do código | 6 projetos | Projeto único com tipos internal | Recomendação |
 
+### Revisão de 05/10/2026 (Cliente)
+
+Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre o restante do documento, que já foi ajustado a elas.
+
+| # | Tema | Antes | Agora | Origem |
+| --- | --- | --- | --- | --- |
+| 21 | Cadastro do Solicitante | O Gestor cadastra (UC13) | O Solicitante se cadastra sozinho, com e-mail @ucl.br (UC13 revisto) | Cliente |
+| 22 | Visibilidade do SESI | Todas as demandas | O Gestor vincula cada Funcionário SESI a um contrato; o SESI vê e trata só as demandas desse contrato | Cliente |
+| 23 | Rascunho | Gravado no banco, com descarte físico | Existe só no navegador do Solicitante e dura 3 dias; a demanda só passa a existir no sistema no envio | Cliente |
+| 24 | Gestor da demanda | Não definido (Demanda.GestorId obrigatório) | É o Gestor que valida a demanda; fica vazio até a validação | Cliente |
+| 25 | Contratada da demanda | Pendente (D6) | Definida pelo contrato; hoje a única Contratada é o SESI | Cliente |
+| 26 | Corredor trocado na correção pedida pelo SESI | Voltava direto ao SESI | Se a troca mudar o contrato, a demanda volta à Validação do Gestor | Cliente |
+| 27 | Custo após correção | Não definido | Qualquer alteração nos campos do QQP recalcula o custo | Cliente |
+
 ## 1–3. Objetivo e escopo
 
 O sistema digitaliza, centraliza e controla a solicitação e a contratação de funcionários de empresas contratadas, da solicitação inicial até a contratação finalizada, com histórico completo. Sem mudanças de objetivo em relação à v3.0.
 
 **Objetivos específicos:** centralizar e padronizar as solicitações, reduzir controles manuais, acompanhar em tempo real, controlar o SLA de 45 dias, identificar demandas próximas do vencimento, registrar responsáveis e datas de cada etapa, permitir correções, manter histórico e auditoria, registrar o link da vaga externa e impedir alterações indevidas em registros históricos.
 
-**Dentro do escopo (MVP):** autenticação; usuários, perfis e hierarquia de cadastro; demandas com rascunho, envio e numeração; validação do Gestor; devolução e correção; validação e aceite do SESI; registro da vaga e do link externo; entrevistas; exames médicos; finalização; SLA e farol; dashboards; linha do tempo; histórico e auditoria; anexos; descarte de rascunho e cancelamento controlado.
+**Dentro do escopo (MVP):** autenticação; usuários, perfis e hierarquia de cadastro; demandas com rascunho no navegador, envio e numeração; validação do Gestor; devolução e correção; validação e aceite do SESI; registro da vaga e do link externo; entrevistas; exames médicos; finalização; SLA e farol; dashboards; linha do tempo; histórico e auditoria; anexos; descarte de rascunho e cancelamento controlado.
 
 **Fora do escopo:**
 
@@ -53,30 +67,31 @@ A hierarquia de cadastro da v3.0 se mantém. A mudança é que o vínculo com o 
 | --- | --- | --- |
 | Criador/Admin | Cadastra e gerencia Gestores, contratadas e parâmetros; consulta auditoria completa; executa operações excepcionais auditadas | Todas |
 | Gestor do Contrato | Cadastra e gerencia sua equipe; valida, devolve, corrige informações contratuais e cancela demandas | Todas (Cliente) |
-| Usuário Solicitante | Cria, envia, corrige e acompanha demandas; anexa documentos; descarta rascunhos | Apenas as que criou |
-| Funcionário SESI | Valida, aceita ou devolve; registra vaga, entrevistas e exames; finaliza a contratação | Todas (Recomendação) |
+| Usuário Solicitante | Cadastra-se sozinho; cria, envia, corrige e acompanha demandas; anexa documentos; descarta rascunhos | Apenas as que criou |
+| Funcionário SESI | Valida, aceita ou devolve; registra vaga, entrevistas e exames; finaliza a contratação | As do contrato a que está vinculado (Cliente) |
 
 ### 4.5 Regras de cadastro e vínculo
 
 1. O Admin cadastra e gerencia os Gestores. É o único perfil que faz isso.
-2. Cada Gestor cadastra e gerencia os Usuários Solicitantes e Funcionários SESI da sua equipe.
-3. Esses usuários ficam vinculados ao Gestor que os cadastrou (GestorResponsavelId).
+2. O Usuário Solicitante se cadastra sozinho (UC13), com um e-mail @ucl.br. Qualquer pessoa com e-mail do domínio pode se cadastrar; o perfil Solicitante é atribuído automaticamente (Cliente). **SUPOSIÇÃO — confirmar (S18):** o Solicitante não tem Gestor responsável (GestorResponsavelId nulo), e quem o desativa e reativa é o Admin.
+3. Cada Gestor cadastra e gerencia os Funcionários SESI da sua equipe e vincula cada um a um contrato (UC14). Esses usuários ficam vinculados ao Gestor que os cadastrou (GestorResponsavelId).
 4. Um Gestor não edita, desativa nem reativa usuários de outro Gestor.
 5. Todo Gestor ativo visualiza e trata todas as demandas, de qualquer Solicitante. **SUPOSIÇÃO — confirmar:** "tratar" inclui validar, devolver, corrigir e cancelar, e não apenas visualizar.
 6. Usuários nunca são excluídos, apenas desativados.
 7. Gestor desativado: suas demandas não ficam órfãs, porque os demais Gestores já as veem e tratam. **SUPOSIÇÃO — confirmar:** sua equipe continua ativa e o Admin pode transferir o vínculo dela para outro Gestor (UC19).
+8. O Funcionário SESI vê e trata só as demandas do contrato a que está vinculado (Cliente). O contrato da demanda vem do corredor (RN13). **SUPOSIÇÃO — confirmar (S17):** cada Funcionário SESI tem exatamente um contrato, e "tratar" inclui aceitar, devolver, registrar vaga, entrevistas e exames e finalizar.
 
-**RN11 — Autenticação (Cliente).** Todo usuário, de qualquer perfil, entra com um e-mail do domínio @ucl.br e uma senha própria do sistema. O sistema recusa cadastro e login com qualquer outro domínio e guarda só o hash da senha. O domínio imita o Google Workspace da UCL, mas, por ser um sistema de teste, não há conexão real com o Workspace.
+**RN11 — Autenticação (Cliente).** Todo usuário, de qualquer perfil, entra com um e-mail do domínio @ucl.br e uma senha própria do sistema. O sistema recusa cadastro e login com qualquer outro domínio e guarda só o hash da senha. O Solicitante faz o próprio cadastro; os demais perfis são cadastrados pelo Admin (Gestor) ou pelo Gestor (Funcionário SESI). O domínio imita o Google Workspace da UCL, mas, por ser um sistema de teste, não há conexão real com o Workspace.
 
 ## 5. Etapas, status e eventos
 
-O sistema tem 7 etapas e 7 status. Marcos como aprovação, aceite e vaga aberta são **eventos**: aparecem na linha do tempo, mas não são etapas nem status. Isso substitui as listas divergentes das seções 5, 15, 24 e 32 da v3.0.
+O sistema tem 7 etapas e 6 status (o rascunho existe só no navegador e não é status gravado; ver UC02). Marcos como aprovação, aceite e vaga aberta são **eventos**: aparecem na linha do tempo, mas não são etapas nem status. Isso substitui as listas divergentes das seções 5, 15, 24 e 32 da v3.0.
 
 ### 5.1 Etapas
 
 | Ordem | Etapa | O que acontece |
 | --- | --- | --- |
-| 1 | Solicitação | Preenchimento e rascunho, até o envio |
+| 1 | Solicitação | Preenchimento, com rascunho guardado só no navegador, até o envio |
 | 2 | Validação do Gestor | Análise, aprovação ou devolução ao Solicitante |
 | 3 | Validação SESI | Análise, aceite ou devolução ao Solicitante ou ao Gestor |
 | 4 | Recrutamento | Abertura da vaga na plataforma externa e registro do link |
@@ -88,7 +103,6 @@ O sistema tem 7 etapas e 7 status. Marcos como aprovação, aceite e vaga aberta
 
 | Status | Significado | Etapas em que ocorre |
 | --- | --- | --- |
-| Rascunho | Ainda não enviada | Solicitação |
 | Em análise | Aguardando decisão do Gestor | Validação do Gestor |
 | Aguardando correção | Devolvida; aguarda quem deve corrigir | Validação do Gestor, Validação SESI |
 | Aguardando responsável | Aprovada pelo Gestor; aguarda aceite do SESI | Validação SESI |
@@ -96,11 +110,11 @@ O sistema tem 7 etapas e 7 status. Marcos como aprovação, aceite e vaga aberta
 | Concluído | Contratação finalizada | Contratação |
 | Cancelado | Processo interrompido | Qualquer etapa após o envio, exceto Contratação |
 
-Os registros de EtapaDemanda usam os mesmos status para cada passagem: a etapa anterior fica Concluído quando a demanda avança.
+Os registros de EtapaDemanda usam os mesmos status para cada passagem: a etapa anterior fica Concluído quando a demanda avança. A etapa Solicitação é registrada no envio, já concluída.
 
 ### 5.3 Eventos da linha do tempo
 
-Demanda criada · Enviada · Aprovada pelo Gestor (início do SLA) · Devolvida para correção · Correção enviada · Aceita pelo SESI · Vaga aberta · Entrevistas iniciadas · Exames iniciados · Contratação finalizada · Cancelada.
+Enviada (a demanda passa a existir no sistema) · Aprovada pelo Gestor (início do SLA) · Devolvida para correção · Correção enviada · Aceita pelo SESI · Vaga aberta · Entrevistas iniciadas · Exames iniciados · Contratação finalizada · Cancelada.
 
 Exemplos com a nova nomenclatura: uma demanda recém-aprovada fica em **Validação SESI / Aguardando responsável** (antes chamado "Aguardando SESI"). Uma demanda com vaga já aberta fica em **Recrutamento / Em andamento**, e a abertura da vaga aparece como evento (antes, o status "Vaga aberta").
 
@@ -119,7 +133,7 @@ Diagrama de máquina de estados (UML): ● é o estado inicial, ◉ os estados f
 - inconsistência nas informações do solicitante → Solicitante;
 - inconsistência nas informações contratuais → Gestor.
 
-**RN02a — Retorno após correção do SESI (Recomendação).** Corrigida pelo destinatário, a demanda volta direto à Validação SESI / Aguardando responsável, sem nova aprovação do Gestor. **Confirmar:** se a correção do Solicitante puder alterar campos já validados pelo Gestor (dependente da definição dos campos da solicitação), ela deve voltar ao Gestor.
+**RN02a — Retorno após correção do SESI (Recomendação).** Corrigida pelo destinatário, a demanda volta direto à Validação SESI / Aguardando responsável, sem nova aprovação do Gestor. **Exceção (Cliente):** se o Solicitante trocar o corredor e com isso mudar o contrato (RN13), a demanda volta à Validação do Gestor / Em análise, porque o contrato é informação contratual já validada pelo Gestor.
 
 **RN02b — Sem retrocesso após o aceite (Recomendação).** A partir de Recrutamento, não há devolução nem volta de etapa. Qualquer exceção é operação administrativa do Admin, com justificativa e auditoria. **Confirmar:** com que frequência um candidato é reprovado nos exames e o processo precisa voltar ao recrutamento. Se for comum, o retrocesso deve ser modelado.
 
@@ -132,7 +146,7 @@ São 20 casos de uso: os 15 da v3.0, com ajustes, e 5 novos (UC16 a UC20). Os fl
 | ID | Caso de uso | Ator | Mudança na v3.1 |
 | --- | --- | --- | --- |
 | UC01 | Autenticar Usuário | Todos | Nenhuma |
-| UC02 | Criar Demanda | Solicitante | Número gerado no envio, formato AAAA-NNNNNN |
+| UC02 | Criar Demanda | Solicitante | Rascunho só no navegador; a demanda é criada no sistema no envio, com número AAAA-NNNNNN |
 | UC03 | Consultar Demanda | Todos | Escopo conforme seção 4 |
 | UC04 | Validar Demanda | Gestor | Qualquer Gestor ativo; aprovação leva a Validação SESI / Aguardando responsável |
 | UC05 | Solicitar Correção | Gestor, SESI | SESI informa o destino; gera SolicitacaoCorrecao |
@@ -143,18 +157,36 @@ São 20 casos de uso: os 15 da v3.0, com ajustes, e 5 novos (UC16 a UC20). Os fl
 | UC10 | Registrar Exames Médicos | SESI | Exige etapa Entrevistas |
 | UC11 | Finalizar Contratação | SESI | Exige etapa Exames Médicos |
 | UC12 | Cadastrar Gestor | Admin | Nenhuma |
-| UC13 | Cadastrar Usuário Solicitante | Gestor | Nenhuma |
-| UC14 | Cadastrar Funcionário SESI | Gestor | Nenhuma |
+| UC13 | Cadastrar-se como Solicitante | Solicitante | Autocadastro com e-mail @ucl.br (Cliente); antes o Gestor cadastrava |
+| UC14 | Cadastrar Funcionário SESI | Gestor | Vincula o funcionário a um contrato (Cliente) |
 | UC15 | Acompanhar Demanda | Todos | Escopo conforme seção 4 |
 | UC16 | Corrigir Informações Contratuais | Gestor | Novo |
-| UC17 | Descartar Rascunho | Solicitante | Novo |
+| UC17 | Descartar Rascunho | Solicitante | Novo; o rascunho é apagado do navegador (Cliente) |
 | UC18 | Cancelar Demanda | Gestor | Novo (a v3.0 citava, sem caso de uso) |
 | UC19 | Transferir Vínculo de Usuário | Admin | Novo (SUPOSIÇÃO — confirmar) |
 | UC20 | Executar Operação Excepcional | Admin | Novo (a v3.0 citava na seção 4.1, sem caso de uso) |
 
 ### UC02 — Numeração
 
-No envio, o sistema gera o número no formato AAAA-NNNNNN: o ano do envio e um sequencial de 6 dígitos (ex.: 2026-000123). **SUPOSIÇÃO — confirmar:** o sequencial reinicia a cada ano. Rascunhos não têm número e são identificados internamente.
+No envio, o sistema gera o número no formato AAAA-NNNNNN: o ano do envio e um sequencial de 6 dígitos (ex.: 2026-000123). **SUPOSIÇÃO — confirmar:** o sequencial reinicia a cada ano. Rascunhos não chegam ao sistema e por isso não têm número.
+
+### UC02 — Rascunho no navegador (Cliente)
+
+1. Enquanto o Solicitante preenche o formulário, os dados escolhidos são guardados só no navegador dele, para que ele possa parar e continuar depois.
+2. O rascunho dura 3 dias; depois disso, o navegador o descarta. **SUPOSIÇÃO — confirmar (S20):** os 3 dias contam a partir do último salvamento.
+3. O servidor não recebe nem guarda rascunhos: a demanda passa a existir no sistema no envio, que registra a criação, o número, o contrato, o custo e a etapa Solicitação já concluída. DataCriacao é a data do envio.
+4. Rascunhos não aparecem para Gestores, SESI nem Admin, e não estão disponíveis em outro navegador ou computador.
+5. **SUPOSIÇÃO — confirmar (S19):** os arquivos anexados não ficam no rascunho do navegador; o Solicitante os seleciona no envio, inclusive o De acordo VP-2.
+
+### UC13 — Cadastrar-se como Solicitante (Cliente)
+
+1. A pessoa informa nome, e-mail @ucl.br e senha.
+2. O sistema recusa e-mail de outro domínio ou já cadastrado (RN11).
+3. O sistema cria o usuário ativo com perfil Solicitante, guarda só o hash da senha e registra o cadastro no log de auditoria.
+
+### UC14 — Cadastrar Funcionário SESI (alterado)
+
+O Gestor cadastra o Funcionário SESI na sua equipe e escolhe o contrato a que ele fica vinculado. A troca de contrato é registrada no log de auditoria com valor anterior e novo.
 
 ### UC16 — Corrigir Informações Contratuais
 
@@ -166,9 +198,9 @@ No envio, o sistema gera o número no formato AAAA-NNNNNN: o ano do envio e um s
 
 ### UC17 — Descartar Rascunho
 
-1. O Solicitante escolhe descartar um rascunho próprio, nunca enviado.
+1. O Solicitante escolhe descartar o rascunho guardado no navegador.
 2. O sistema pede confirmação.
-3. O rascunho é excluído fisicamente; o log geral de auditoria registra o descarte.
+3. O rascunho é apagado do navegador. Como o servidor nunca recebeu o rascunho, não há exclusão no banco nem registro de auditoria.
 
 ### UC18 — Cancelar Demanda
 
@@ -179,7 +211,7 @@ No envio, o sistema gera o número no formato AAAA-NNNNNN: o ano do envio e um s
 
 ### UC19 — Transferir Vínculo de Usuário
 
-1. O Admin escolhe Solicitantes ou Funcionários SESI de um Gestor.
+1. O Admin escolhe Funcionários SESI de um Gestor (Solicitantes não têm Gestor responsável; ver 4.5).
 2. Escolhe o Gestor de destino e informa a justificativa.
 3. O sistema altera GestorResponsavelId e registra valor anterior e novo no log de auditoria.
 
@@ -248,13 +280,15 @@ O contrato da demanda é escolhido pelo sistema a partir do corredor, independen
 
 Os números de contrato foram deduzidos do aplicativo atual: 150 das 154 demandas já seguem essa divisão, e as 4 restantes (3 com contrato trocado e 1 sem corredor) são justamente os erros que a regra evita. O cliente citou Sudeste, Sul e Pelotização no segundo contrato; C. Integrado Sudeste entra nele porque as 9 demandas desse corredor estão nesse contrato.
 
-A demanda guarda o contrato vigente no envio. Se o corredor for trocado numa correção, o contrato é recalculado. O Admin altera a ligação entre corredor e contrato pela tela de parâmetros.
+A demanda guarda o contrato vigente no envio. Se o corredor for trocado numa correção, o contrato é recalculado; se ele mudar numa correção pedida pelo SESI, a demanda volta ao Gestor (RN02a). O Admin altera a ligação entre corredor e contrato pela tela de parâmetros.
+
+**Contratada (Cliente).** Cada contrato pertence a uma Contratada, e a Contratada da demanda é a do seu contrato: o sistema a define junto com o contrato, sem escolha do Solicitante. Hoje a única Contratada é o SESI.
 
 **RACs.** A antiga lista tb\_demanda\_racs vira uma tabela de ligação DemandaRac (uma linha por RAC marcada). Assim a edição é direta e cada mudança fica no histórico.
 
 ### RN12 — Custo total
 
-O custo total é calculado pelo sistema e gravado na demanda com os valores vigentes no envio; mudanças posteriores de preço não alteram demandas já enviadas.
+O custo total é calculado pelo sistema e gravado na demanda com os valores vigentes no envio; mudanças posteriores de preço não alteram demandas já enviadas. Se uma correção alterar qualquer campo do QQP (região, função, classificação, nível ou carga horária), o custo é recalculado (Cliente) e a alteração fica no HistoricoAlteracao.
 
 ```latex
 \text{Custo total} = \text{Quantidade} \times (\text{Preço unitário QQP} + \text{Equipamentos por pessoa}) + \text{Veículo} + \text{Rastreador}
@@ -277,7 +311,7 @@ Os valores abaixo foram deduzidos dos 154 registros: a fórmula reproduz o custo
 | Coluna antiga | Onde fica na v3.1 |
 | --- | --- |
 | nome\_solicitante, email\_solicitante | Usuário logado (Demanda.UsuarioSolicitanteId) |
-| email\_gestor, gestor\_contrato | Demanda.GestorId |
+| email\_gestor, gestor\_contrato | Demanda.GestorId (o Gestor que valida a demanda) |
 | Criado, data\_criacao | Demanda.DataCriacao |
 | data\_validacao\_gestor | Evento "Aprovada pelo Gestor" e início do SLA |
 | data\_rejeicao\_gestor, motivo\_da\_recusa | Uma SolicitacaoCorrecao por devolução, origem Gestor |
@@ -342,7 +376,7 @@ Toda ação relevante deixa rastro com usuário, perfil, data/hora e IP; as alte
 | --- | --- | --- |
 | HistoricoDemanda | Ação, etapa e status anterior e novo, usuário, perfil, IP, observação | Fluxo de cada demanda |
 | HistoricoAlteracao | Campo, valor anterior, novo valor, usuário, justificativa | Edição de campos de uma demanda |
-| LogAuditoria (novo) | Entidade, ação, valores, usuário, perfil, IP, justificativa | Cadastros, parâmetros, transferências, descartes e operações administrativas |
+| LogAuditoria (novo) | Entidade, ação, valores, usuário, perfil, IP, justificativa | Cadastros (inclusive o autocadastro), vínculo do SESI a contrato, parâmetros, transferências e operações administrativas |
 
 Nenhum desses registros pode ser alterado ou excluído pela aplicação.
 
@@ -350,25 +384,24 @@ Nenhum desses registros pode ser alterado ou excluído pela aplicação.
 
 | Data/hora | Usuário | Ação | Etapa / status anterior | Etapa / status novo |
 | --- | --- | --- | --- | --- |
-| 01/09 08:30 | João | Criou demanda | — | Solicitação / Rascunho |
-| 01/09 08:45 | João | Enviou | Solicitação / Rascunho | Validação do Gestor / Em análise |
+| 01/09 08:45 | João | Enviou | — | Validação do Gestor / Em análise |
 | 01/09 10:15 | Maria | Aprovou | Validação do Gestor / Em análise | Validação SESI / Aguardando responsável |
 | 02/09 09:20 | Carlos | Aceitou | Validação SESI / Aguardando responsável | Recrutamento / Em andamento |
 | 03/09 14:20 | Carlos | Abriu vaga | Recrutamento / Em andamento | Recrutamento / Em andamento (evento Vaga aberta) |
 
 ## 16–17. Não exclusão e cancelamento
 
-Demanda enviada nunca é excluída; só o rascunho, que nunca saiu das mãos do Solicitante, pode ser descartado.
+Demanda enviada nunca é excluída. O rascunho, que existe só no navegador do Solicitante, pode ser descartado.
 
-**RN06 — Não exclusão.** Demandas enviadas, históricos, anexos e registros de auditoria não são excluídos fisicamente. Para interromper o processo, a demanda passa a Cancelado e o histórico continua disponível.
+**RN06 — Não exclusão.** Demandas, históricos, anexos e registros de auditoria não são excluídos fisicamente. Para interromper o processo, a demanda passa a Cancelado e o histórico continua disponível. Como o rascunho não é gravado no servidor, o sistema não tem nenhuma exclusão física.
 
-**RN09 — Descarte de rascunho (Recomendação).** O Solicitante pode descartar um rascunho próprio nunca enviado, com exclusão física. O descarte fica no log geral de auditoria (UC17).
+**RN09 — Descarte de rascunho (Cliente).** O Solicitante pode descartar o rascunho do navegador a qualquer momento; ele também expira sozinho depois de 3 dias (UC02, UC17).
 
 **RN10 — Cancelamento.** Justificativa sempre obrigatória. O SESI não cancela.
 
 | Situação da demanda | Quem cancela |
 | --- | --- |
-| Rascunho | Ninguém cancela; o Solicitante descarta |
+| Rascunho (no navegador) | Ninguém cancela; o Solicitante descarta |
 | Validação do Gestor | Qualquer Gestor ativo |
 | Validação SESI | Qualquer Gestor ativo |
 | Recrutamento, Entrevistas, Exames Médicos | Qualquer Gestor ativo |
@@ -387,14 +420,16 @@ O Solicitante anexa documentos à demanda; cada arquivo registra nome, tipo, tam
 
 ## 19–20. Permissões
 
-O acesso combina perfil e vínculo: o perfil define o que cada um faz; o vínculo define só quem gerencia o cadastro de quem. Visualização de demandas segue a seção 4.
+O acesso combina perfil e vínculo: o perfil define o que cada um faz; o vínculo com o Gestor define quem gerencia o cadastro de quem; o vínculo do Funcionário SESI com um contrato define quais demandas ele vê e trata. Visualização de demandas segue a seção 4.
 
 ### 19. Por funcionalidade
 
 | Funcionalidade | Solicitante | Gestor | SESI | Admin |
 | --- | --- | --- | --- | --- |
 | Cadastrar e gerenciar Gestor | Não | Não | Não | Sim |
-| Cadastrar e gerenciar Solicitante e Funcionário SESI | Não | Sim, da própria equipe | Não | Não |
+| Cadastrar-se como Solicitante | Sim | Não | Não | Não |
+| Desativar e reativar Solicitante | Não | Não | Não | Sim (S18) |
+| Cadastrar e gerenciar Funcionário SESI e vinculá-lo a um contrato | Não | Sim, da própria equipe | Não | Não |
 | Transferir vínculo de usuário | Não | Não | Não | Sim (suposição) |
 | Gerenciar contratadas, perfis e parâmetros | Não | Não | Não | Sim |
 | Criar, enviar e corrigir demanda | Sim | Não | Não | Não |
@@ -407,7 +442,7 @@ O acesso combina perfil e vínculo: o perfil define o que cada um faz; o víncul
 | Registrar vaga, entrevistas e exames | Não | Não | Sim | Não |
 | Finalizar contratação | Não | Não | Sim | Não |
 | Cancelar demanda | Não | Sim | Não | Excepcional |
-| Consultar SLA, linha do tempo e histórico | Das próprias | Todas | Todas | Todas |
+| Consultar SLA, linha do tempo e histórico | Das próprias | Todas | Do próprio contrato | Todas |
 | Consultar auditoria completa | Não | Não | Não | Sim |
 
 ### 20. Por campo
@@ -429,18 +464,18 @@ O Admin só altera qualquer desses campos por operação excepcional, com justif
 
 ## 21–22. Dashboards e acompanhamento do SESI
 
-Cada perfil tem seu dashboard; como Gestores e SESI veem todas as demandas, os deles ganham filtro por Gestor e por Solicitante.
+Cada perfil tem seu dashboard; como Gestores e SESI veem demandas de vários Solicitantes, os deles ganham filtro por Gestor e por Solicitante. O dashboard do SESI mostra só as demandas do contrato do funcionário.
 
 | Dashboard | Quadros |
 | --- | --- |
-| Solicitante | Minhas demandas · Rascunhos · Em andamento · Aguardando correção · Finalizadas · Canceladas |
+| Solicitante | Minhas demandas · Rascunho (deste navegador) · Em andamento · Aguardando correção · Finalizadas · Canceladas |
 | Gestor | Aguardando validação · Correções pendentes (devolvidas ao Solicitante e ao Gestor) · Aprovadas · Em processo SESI · Próximas do vencimento · Atrasadas |
 | SESI | Aguardando aceite · Recrutamento · Entrevistas · Exames médicos · Finalizadas · Próximas do vencimento · Atrasadas |
 | Admin | Visão geral de todas as demandas e acesso à auditoria |
 
 "Próximas do vencimento" = farol amarelo ou laranja; "Atrasadas" = vermelho, não finalizadas.
 
-**Tela de acompanhamento do SESI.** Mantém os campos da v3.0: número, contratada, solicitante, Gestor, data de aprovação, data limite, dias decorridos e restantes, farol, etapa, status e responsável SESI. Filtros: status, etapa, contratada, Gestor, período, farol e responsável SESI.
+**Tela de acompanhamento do SESI.** Mantém os campos da v3.0: número, contratada, solicitante, Gestor, data de aprovação, data limite, dias decorridos e restantes, farol, etapa, status e responsável SESI. Filtros: status, etapa, contratada, Gestor, período, farol e responsável SESI. A tela lista só as demandas do contrato do funcionário.
 
 ## 23. Modelos de dados e diagrama de classes
 
@@ -448,8 +483,9 @@ As entidades da v3.0 se mantêm. A v3.1 acrescenta campos que as próprias regra
 
 | Entidade | Mudança na v3.1 |
 | --- | --- |
-| Usuario | GestorResponsavelId passa a definir só a gestão do cadastro |
-| Demanda | + PrazoDiasSla (prazo gravado no início do SLA); Numero no formato AAAA-NNNNNN; + token de concorrência |
+| Usuario | GestorResponsavelId passa a definir só a gestão do cadastro (nulo para Solicitante); + ContratoId, obrigatório para Funcionário SESI (Cliente) |
+| Demanda | + PrazoDiasSla (prazo gravado no início do SLA); Numero no formato AAAA-NNNNNN, sempre preenchido (a demanda nasce no envio); GestorId = Gestor que valida, nulo até a validação; ContratadaId vem do contrato; + token de concorrência |
+| Contrato | + ContratadaId: cada contrato pertence a uma Contratada (Cliente) |
 | EtapaDemanda | Sem mudança; data de conclusão imutável |
 | HistoricoDemanda | + Perfil do usuário; + Endereço IP |
 | HistoricoAlteracao | + Justificativa |
@@ -461,7 +497,7 @@ As entidades da v3.0 se mantêm. A v3.1 acrescenta campos que as próprias regra
 | TransicaoEtapa | Não adotada: transições ficam em código, auditadas pelo histórico |
 | Notificacao | Adiada para a fase de notificações |
 
-Datas gravadas em UTC. Ids em Guid, como no documento de projeto. A origem de Demanda.ContratadaId continua pendente.
+Datas gravadas em UTC. Ids em Guid, como no documento de projeto. Demanda.ContratadaId é a Contratada do contrato da demanda (Cliente).
 
 ### Diagrama de classes
 
@@ -478,7 +514,7 @@ erDiagram
   PERFIL ||--o{ USUARIO : "define"
   USUARIO |o--o{ USUARIO : "gerencia"
   USUARIO ||--o{ DEMANDA : "solicitante"
-  USUARIO ||--o{ DEMANDA : "gestor"
+  USUARIO |o--o{ DEMANDA : "gestor que valida"
   USUARIO |o--o{ DEMANDA : "responsavel SESI"
   CONTRATADA ||--o{ DEMANDA : "agrupa"
   ETAPA ||--o{ DEMANDA : "etapa atual"
@@ -504,6 +540,8 @@ erDiagram
   RAC ||--o{ DEMANDA_RAC : "aplicada em"
   CONTRATO ||--o{ DEMANDA : "vincula"
   CONTRATO ||--o{ CORREDOR : "atende"
+  CONTRATADA ||--o{ CONTRATO : "detem"
+  CONTRATO |o--o{ USUARIO : "vincula SESI"
 
   PERFIL {
     guid Id PK
@@ -513,8 +551,9 @@ erDiagram
   USUARIO {
     guid Id PK
     guid PerfilId FK
-    guid GestorResponsavelId FK "nulo para Admin e Gestor"
-    guid CriadoPorUsuarioId FK "nulo para o Admin inicial"
+    guid GestorResponsavelId FK "nulo para Admin, Gestor e Solicitante"
+    guid CriadoPorUsuarioId FK "nulo para o Admin inicial e no autocadastro"
+    guid ContratoId FK "so para Funcionario SESI"
     string Nome
     string Email UK
     string Login UK
@@ -543,9 +582,9 @@ erDiagram
   }
   DEMANDA {
     guid Id PK
-    string Numero UK "nulo enquanto rascunho"
+    string Numero UK
     guid UsuarioSolicitanteId FK
-    guid GestorId FK
+    guid GestorId FK "nulo ate a validacao"
     guid ResponsavelSesiId FK "nulo ate o aceite"
     guid ContratadaId FK
     guid EtapaAtualId FK
@@ -728,6 +767,7 @@ erDiagram
   }
   CONTRATO {
     guid Id PK
+    guid ContratadaId FK
     string Numero UK "comeca com 59, ate 10 digitos"
     bool Ativo
   }
@@ -742,7 +782,7 @@ O script abaixo é o alvo que as migrations do EF Core devem produzir; em caso d
 - Ids em `uniqueidentifier`, gerados sequencialmente pela aplicação para não fragmentar índices.
 - Datas e horas em `datetime2`, sempre em UTC. A única exceção é DataLimiteSLA, uma data de calendário (`date`) no fuso de Brasília.
 - Todas as chaves estrangeiras com `ON DELETE NO ACTION`. Nenhuma exclusão em cascata.
-- Descarte de rascunho (UC17) é a única exclusão física: a aplicação remove a demanda e suas linhas filhas explicitamente e grava o descarte em LogAuditoria.
+- Não há exclusão física: o rascunho fica só no navegador (UC02, UC17) e a demanda é gravada no envio.
 - SenhaHash guarda só o hash da senha, gerado pelo mecanismo padrão do ASP.NET Core; a senha em si nunca é gravada.
 
 ```sql
@@ -757,6 +797,7 @@ CREATE TABLE Usuario (
   PerfilId uniqueidentifier NOT NULL CONSTRAINT FK_Usuario_Perfil REFERENCES Perfil(Id),
   GestorResponsavelId uniqueidentifier NULL CONSTRAINT FK_Usuario_Gestor REFERENCES Usuario(Id),
   CriadoPorUsuarioId uniqueidentifier NULL CONSTRAINT FK_Usuario_CriadoPor REFERENCES Usuario(Id),
+  ContratoId uniqueidentifier NULL CONSTRAINT FK_Usuario_Contrato REFERENCES Contrato(Id),
   Nome nvarchar(150) NOT NULL,
   Email nvarchar(254) NOT NULL CONSTRAINT UQ_Usuario_Email UNIQUE CONSTRAINT CK_Usuario_Email_Dominio CHECK (Email LIKE '%@ucl.br'),
   Login nvarchar(100) NOT NULL CONSTRAINT UQ_Usuario_Login UNIQUE,
@@ -789,9 +830,9 @@ CREATE TABLE Status (
 
 CREATE TABLE Demanda (
   Id uniqueidentifier NOT NULL CONSTRAINT PK_Demanda PRIMARY KEY,
-  Numero nvarchar(30) NULL,
+  Numero nvarchar(30) NOT NULL,
   UsuarioSolicitanteId uniqueidentifier NOT NULL CONSTRAINT FK_Demanda_Solicitante REFERENCES Usuario(Id),
-  GestorId uniqueidentifier NOT NULL CONSTRAINT FK_Demanda_Gestor REFERENCES Usuario(Id),
+  GestorId uniqueidentifier NULL CONSTRAINT FK_Demanda_Gestor REFERENCES Usuario(Id),
   ResponsavelSesiId uniqueidentifier NULL CONSTRAINT FK_Demanda_ResponsavelSesi REFERENCES Usuario(Id),
   ContratadaId uniqueidentifier NOT NULL CONSTRAINT FK_Demanda_Contratada REFERENCES Contratada(Id),
   EtapaAtualId uniqueidentifier NOT NULL CONSTRAINT FK_Demanda_Etapa REFERENCES Etapa(Id),
@@ -843,7 +884,7 @@ CREATE TABLE Demanda (
   CONSTRAINT CK_Demanda_Finalizacao CHECK (DataFinalizacao IS NULL OR DataFinalizacao >= DataCriacao),
   CONSTRAINT CK_Demanda_Sla CHECK (DataLimiteSLA IS NULL OR DataLimiteSLA >= CAST(DataInicioSLA AS date))
 );
-CREATE UNIQUE INDEX UQ_Demanda_Numero ON Demanda(Numero) WHERE Numero IS NOT NULL;
+CREATE UNIQUE INDEX UQ_Demanda_Numero ON Demanda(Numero);
 CREATE INDEX IX_Demanda_Gestor ON Demanda(GestorId);
 CREATE INDEX IX_Demanda_ResponsavelSesi ON Demanda(ResponsavelSesiId);
 CREATE INDEX IX_Demanda_Solicitante ON Demanda(UsuarioSolicitanteId);
@@ -959,7 +1000,7 @@ CREATE TABLE SequenciaNumeroDemanda (
 | --- | --- |
 | Perfil | Admin, Gestor, Solicitante, FuncionarioSesi |
 | Etapa | 1 Solicitação · 2 Validação do Gestor · 3 Validação SESI · 4 Recrutamento · 5 Entrevistas · 6 Exames Médicos · 7 Contratação |
-| Status | Rascunho · Em análise · Aguardando correção · Aguardando responsável · Em andamento · Concluído · Cancelado |
+| Status | Em análise · Aguardando correção · Aguardando responsável · Em andamento · Concluído · Cancelado |
 | ParametroSistema | PrazoSlaDias = 45 |
 | Usuario | Um Admin inicial, com e-mail @ucl.br e senha inicial lidos da configuração (user-secrets), nunca fixos no código |
 
@@ -1070,6 +1111,7 @@ CREATE TABLE Rac (
 );
 CREATE TABLE Contrato (
   Id uniqueidentifier NOT NULL CONSTRAINT PK_Contrato PRIMARY KEY,
+  ContratadaId uniqueidentifier NOT NULL CONSTRAINT FK_Contrato_Contratada REFERENCES Contratada(Id),
   Numero varchar(10) NOT NULL CONSTRAINT UQ_Contrato_Numero UNIQUE,
   Ativo bit NOT NULL,
   CONSTRAINT CK_Contrato_Numero CHECK (Numero LIKE '59%' AND Numero NOT LIKE '%[^0-9]%')
@@ -1087,7 +1129,8 @@ CREATE TABLE DemandaRac (
 | TipoDemanda | Nova contratação | Completo (cliente) |
 | Rac | 13 itens, do arquivo tb\_racs.csv, que vai para o repositório; espaços no início dos nomes são removidos | Completo |
 | Veiculo | Veículo 4x4, Veículo de passeio, Veículo van, Transporte, com os valores da RN12 | Completo (cliente) |
-| Contrato | 5900125082 (Norte) e 5900118506 (Sudeste) | Confirmar os números |
+| Contratada | SESI, a única Contratada hoje (Cliente) | Falta o CNPJ (D7) |
+| Contrato | 5900125082 (Norte) e 5900118506 (Sudeste), ambos da Contratada SESI | Confirmar os números |
 | Corredor | As 7 combinações da RN13, cada uma com região e contrato | Completo (cliente), salvo S16 |
 | ItemEquipamento | Notebook, Segunda tela, Celular, Rastreador, com os valores da RN12 | A confirmar (S15) |
 | GerenteExecutivo | Vazio na seed; o Admin cadastra pela tela (são nomes de pessoas) | Completo |
@@ -1098,20 +1141,20 @@ Só as transições abaixo são aceitas pelo backend; qualquer outra, como pular
 
 | De (etapa / status) | Para (etapa / status) | Quem | Condição |
 | --- | --- | --- | --- |
-| — | Solicitação / Rascunho | Solicitante | Salvar rascunho |
-| Solicitação / Rascunho | Validação do Gestor / Em análise | Solicitante | Campos obrigatórios preenchidos; gera o número |
-| Validação do Gestor / Em análise | Validação SESI / Aguardando responsável | Gestor | Aprovação; inicia o SLA |
+| — (rascunho no navegador) | Validação do Gestor / Em análise | Solicitante | Envio: campos obrigatórios e De acordo VP-2; cria a demanda, gera o número e registra a etapa Solicitação concluída |
+| Validação do Gestor / Em análise | Validação SESI / Aguardando responsável | Gestor | Aprovação; define o Gestor da demanda e inicia o SLA |
 | Validação do Gestor / Em análise | Validação do Gestor / Aguardando correção | Gestor | Motivo obrigatório |
 | Validação do Gestor / Aguardando correção | Validação do Gestor / Em análise | Solicitante | Correção enviada |
 | Validação SESI / Aguardando responsável | Recrutamento / Em andamento | SESI | Aceite; define o responsável SESI |
 | Validação SESI / Aguardando responsável | Validação SESI / Aguardando correção | SESI | Motivo e destino obrigatórios |
-| Validação SESI / Aguardando correção | Validação SESI / Aguardando responsável | Destinatário da devolução | Correção enviada |
+| Validação SESI / Aguardando correção | Validação SESI / Aguardando responsável | Destinatário da devolução | Correção enviada, sem mudança de contrato |
+| Validação SESI / Aguardando correção | Validação do Gestor / Em análise | Solicitante | Correção que troca o corredor e muda o contrato (RN02a) |
 | Recrutamento / Em andamento | Entrevistas / Em andamento | SESI | Vaga com link registrada |
 | Entrevistas / Em andamento | Exames Médicos / Em andamento | SESI | — |
 | Exames Médicos / Em andamento | Contratação / Concluído | SESI | Finalização; encerra o SLA |
 | Qualquer etapa enviada, não concluída | Mesma etapa / Cancelado | Gestor ou Admin | Justificativa obrigatória |
 
-**SUPOSIÇÃO — confirmar:** depois do aceite, qualquer Funcionário SESI ativo pode registrar vaga, entrevistas, exames e finalização; o responsável SESI é a referência, não o único autorizado.
+**SUPOSIÇÃO — confirmar:** depois do aceite, qualquer Funcionário SESI ativo vinculado ao contrato da demanda pode registrar vaga, entrevistas, exames e finalização; o responsável SESI é a referência, não o único autorizado.
 
 ## 25–26. Requisitos funcionais e não funcionais
 
@@ -1123,7 +1166,7 @@ RF01 a RF33 seguem como na v3.0. RF34 foi revisado e RF35 a RF42 são novos.
 
 **Novos**
 
-- **RF35** — Permitir ao Solicitante descartar rascunho próprio nunca enviado.
+- **RF35** — Guardar o rascunho só no navegador do Solicitante, por 3 dias, e permitir descartá-lo.
 - **RF36** — Permitir ao Gestor corrigir informações contratuais quando a devolução do SESI for destinada a ele.
 - **RF37** — Registrar origem, destino, motivo e resolução de cada devolução.
 - **RF38** — Definir como responsável SESI o funcionário que aceitar a demanda.
@@ -1131,6 +1174,8 @@ RF01 a RF33 seguem como na v3.0. RF34 foi revisado e RF35 a RF42 são novos.
 - **RF40** — Gerar o número da demanda no envio, no formato AAAA-NNNNNN.
 - **RF41** — Manter log geral de auditoria com usuário, perfil, IP e justificativa.
 - **RF42** — Permitir ao Admin transferir o vínculo de usuários entre Gestores (suposição).
+- **RF43** — Permitir o autocadastro do Solicitante com e-mail @ucl.br (Cliente).
+- **RF44** — Vincular cada Funcionário SESI a um contrato e restringir o que ele vê e trata às demandas desse contrato (Cliente).
 
 **Não funcionais.** RNF01 a RNF08 seguem como na v3.0, mais:
 
@@ -1176,7 +1221,7 @@ Notação UML: nós como caixas tridimensionais, com ambientes de execução e a
 
 ## 28 e 33. Diagrama de casos de uso
 
-O diagrama da v3.0 ganha quatro casos de uso: Corrigir Informações Contratuais (Gestor), Descartar Rascunho (Solicitante), Transferir Vínculo (Admin) e Executar Operação Excepcional (Admin), que cobre o cancelamento excepcional. As extensões de Validar Demanda e Validar Informações seguem iguais.
+O diagrama da v3.0 ganha quatro casos de uso: Corrigir Informações Contratuais (Gestor), Descartar Rascunho (Solicitante), Transferir Vínculo (Admin) e Executar Operação Excepcional (Admin), que cobre o cancelamento excepcional. Na revisão de 05/10/2026, o cadastro do Solicitante passa do Gestor para o próprio Solicitante (Cadastrar-se). As extensões de Validar Demanda e Validar Informações seguem iguais.
 
 > Diagrama de casos de uso: código PlantUML logo abaixo.
 
@@ -1215,8 +1260,7 @@ rectangle "Sistema de Contratação" {
     usecase "Executar Operação Excepcional" as Excepcional
   }
   package "Gestão e Validação" {
-    usecase "Cadastrar Usuário Solicitante" as CadSolicitante
-    usecase "Cadastrar Funcionário SESI" as CadSESI
+    usecase "Cadastrar Funcionário SESI\ne vincular a contrato" as CadSESI
     usecase "Validar Demanda" as ValidarGestor
     usecase "Aprovar Demanda" as Aprovar
     usecase "Solicitar Correção" as CorrigirGestor
@@ -1224,8 +1268,9 @@ rectangle "Sistema de Contratação" {
     usecase "Cancelar Demanda" as Cancelar
   }
   package "Solicitação" {
+    usecase "Cadastrar-se como Solicitante" as CadSolicitante
     usecase "Criar Demanda" as Criar
-    usecase "Salvar Rascunho" as Rascunho
+    usecase "Salvar Rascunho\n(no navegador)" as Rascunho
     usecase "Descartar Rascunho" as Descartar
     usecase "Enviar Demanda" as Enviar
     usecase "Corrigir Demanda" as Corrigir
@@ -1254,7 +1299,6 @@ Admin -- Parametros
 Admin -- Auditoria
 Admin -- Excepcional
 
-Gestor -- CadSolicitante
 Gestor -- CadSESI
 Gestor -- ValidarGestor
 Gestor -- Aprovar
@@ -1262,6 +1306,7 @@ Gestor -- CorrigirGestor
 Gestor -- CorrigirContratual
 Gestor -- Cancelar
 
+Solicitante -- CadSolicitante
 Solicitante -- Criar
 Solicitante -- Rascunho
 Solicitante -- Descartar
@@ -1310,6 +1355,14 @@ O sistema está funcionalmente adequado quando os 20 critérios da v3.0 passam, 
 7. Gerar números sequenciais no formato AAAA-NNNNNN, sem repetição sob envios simultâneos.
 8. Manter o prazo original de uma demanda em curso depois que o Admin alterar o prazo padrão.
 
+**Novos na revisão de 05/10/2026:**
+
+9. Cadastrar-se como Solicitante com e-mail @ucl.br e ter o cadastro recusado com outro domínio.
+10. Um Funcionário SESI não ver nem tratar demanda de contrato diferente do seu.
+11. Retomar um rascunho no mesmo navegador dentro de 3 dias e não encontrá-lo depois disso.
+12. Devolver pelo SESI ao Solicitante, trocar o corredor com mudança de contrato e ver a demanda voltar ao Gestor.
+13. Recalcular o custo quando uma correção alterar campo do QQP.
+
 ## Guia de implementação (para o Claude Code)
 
 Este documento é a fonte única de verdade para implementar o sistema: implemente em etapas, parando ao fim de cada uma para revisão, e nunca invente regra de negócio. O documento de classes e modelos anterior à v3.1 é só referência histórica.
@@ -1318,7 +1371,7 @@ Este documento é a fonte única de verdade para implementar o sistema: implemen
 
 1. Quando uma regra não estiver neste documento, pare e pergunte. Não preencha lacunas por conta própria.
 2. Toda suposição da seção "Suposições e pendências" usada no código leva um comentário `// SUPOSIÇÃO (S1)` com o número correspondente, e entra na lista do README.
-3. Decisões em aberto bloqueiam a etapa que dependem delas: Os valores de custo (S15) e a confirmação dos contratos (RN13) bloqueiam a seed completa e a Etapa 4; D6 bloqueia a parte de Contratada da Etapa 2. Pergunte antes de começar essas partes.
+3. Decisões em aberto bloqueiam a etapa que dependem delas: Os valores de custo (S15) e a confirmação dos contratos (RN13) bloqueiam a seed completa e a Etapa 4; o CNPJ do SESI (D7) bloqueia a seed da Contratada na Etapa 2. Pergunte antes de começar essas partes.
 4. Todo tipo C# é `internal`. Exceções públicas só onde o framework exige, cada uma com um comentário explicando por quê (seção 27).
 5. Regras de negócio ficam no Domain e são testadas sem banco. Controllers e páginas não contêm regra.
 6. Use um relógio injetável (`IRelogio`) e um calendário do SLA injetável; nada de `DateTime.Now` no domínio.
@@ -1331,7 +1384,7 @@ Este documento é a fonte única de verdade para implementar o sistema: implemen
 | 0 — Estrutura | Solution com Contratacao.Web e Contratacao.Tests; pastas Domain, Application, Infrastructure e Web; prova de que controllers ou páginas e migrations funcionam com tipos internal | Testes de arquitetura da regra de dependência (diagrama de pacotes) | — |
 | 1 — Domínio | Demanda com a máquina de estados da seção 6–7 e as transições da seção 24; Sla e farol (seções 9–11); cancelamento | Unitários de cada transição permitida e proibida, do SLA e de cada faixa do farol | — |
 | 2 — Persistência | DbContext, mapeamentos do modelo físico, seed | Integração com SQL Server real | Inicial, com seed |
-| 3 — Usuários e acesso | Autenticação, perfis, hierarquia Admin → Gestor → equipe, UC01, UC12–14, UC19 | Autorização por perfil e por vínculo | Se houver colunas de credencial |
+| 3 — Usuários e acesso | Autenticação, autocadastro do Solicitante, perfis, hierarquia Admin → Gestor → Funcionário SESI, vínculo do SESI a contrato, UC01, UC12–14, UC19 | Autorização por perfil, por vínculo e por contrato | Se houver colunas de credencial |
 | 4 — Solicitação e validação | UC02–07, UC16, UC17, numeração AAAA-NNNNNN | Fluxos completos e numeração sob concorrência | Campos da solicitação (D5) |
 | 5 — Processo SESI | UC08–11, congelamento de datas | Sequência obrigatória e imutabilidade das datas | Se necessário |
 | 6 — Cancelamento e anexos | UC18, UC20, anexos | Justificativa obrigatória; ninguém exclui demanda enviada | Se necessário |
@@ -1361,7 +1414,7 @@ O README do repositório deve repetir esses passos, ajustados ao que for de fato
 
 ## Suposições e pendências
 
-Quinze suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; cinco decisões continuam abertas e serão necessárias em etapas específicas da implementação.
+Dezenove suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; quatro decisões continuam abertas e serão necessárias em etapas específicas da implementação.
 
 ### Suposições a confirmar
 
@@ -1382,8 +1435,10 @@ Quinze suposições foram adotadas para não travar o desenvolvimento e precisam
 | S14 | Veículo e rastreador cobrados uma vez por demanda, não por vaga | 8.1 |
 | S15 | Valores de notebook, segunda tela, celular e rastreador deduzidos dos dados, por mês | 8.1 |
 | S16 | C. Integrado da região Sudeste cai no contrato do Sudeste | 8.1 |
-
-A antiga S10 (escolha do item QQP na demanda) foi confirmada pelo cliente.
+| S17 | Cada Funcionário SESI tem exatamente um contrato, e "tratar" inclui aceitar, devolver, registrar as etapas e finalizar | 4.5 |
+| S18 | O Solicitante autocadastrado não tem Gestor responsável; o Admin o desativa e reativa | 4.5, 19 |
+| S19 | Os anexos não ficam no rascunho do navegador; o Solicitante os seleciona no envio | UC02 |
+| S20 | Os 3 dias do rascunho contam a partir do último salvamento | UC02 |
 
 A antiga S10 (escolha do item QQP na demanda) foi confirmada pelo cliente.
 
@@ -1392,12 +1447,13 @@ A antiga S10 (escolha do item QQP na demanda) foi confirmada pelo cliente.
 | # | Decisão | Necessária na etapa |
 | --- | --- | --- |
 | D5 | Confirmar os números dos dois contratos e a S16 (RN13) | 2 — Persistência (seed) |
-| D6 | Como a Contratada se relaciona com os contratos | 2 — Persistência |
-| Analista | Na lista de corredores do aplicativo atual, cada corredor tem um analista, e os nomes coincidem com os gestores das demandas. Decidir se o corredor define o Gestor que valida ou se qualquer Gestor valida (S1) | 4 — Solicitação e validação |
+| D7 | CNPJ do SESI, para a seed da Contratada (o campo é obrigatório) | 2 — Persistência (seed) |
 | QQP | Corrigir os códigos 466 e 467 da planilha, que repetem a mesma combinação | 2 — Persistência (seed) |
 | — | LGPD: classificação dos dados pessoais, retenção e perfis autorizados | Antes da produção |
 
 Já decidido pelo cliente: tecnologia de interface livre, com front-end bonito e bem estruturado (seção 27); login com e-mail @ucl.br e senha própria, sem conexão real com o Google Workspace (RN11); anexos de imagem, PDF e e-mail, até 10 MB, numa pasta do servidor e nunca apagados (seção 18); contratos com número iniciado em 59 e até 10 dígitos, hoje dois; anexo De acordo VP-2 obrigatório para enviar a demanda; marcação de vaga temporária com período exigido quando marcada (seção 8.1).
+
+Decididas na revisão de 05/10/2026: D6 (a Contratada vem do contrato; hoje só o SESI) e Analista (qualquer Gestor ativo valida, e quem valida passa a ser o Gestor da demanda).
 
 Retrocesso após o aceite (RN02b) é recomendação adotada, mas vale validar com a operação a frequência de reprovação em exames.
 
@@ -1411,7 +1467,7 @@ Os diagramas desenhados neste documento são imagens; o código abaixo é a vers
 @startuml
 title Máquina de estados da demanda
 
-state "Solicitação / Rascunho" as Rascunho
+state "Rascunho no navegador\n(não gravado no sistema, expira em 3 dias)" as Rascunho
 state "Contratação / Concluído" as Concluido
 state "Cancelado\n(mantém a etapa em que estava)" as Cancelado
 
@@ -1428,15 +1484,16 @@ state "Enviada (não concluída)" as Enviada {
   VGC --> VG : corrigir (Solicitante)
   VG --> VS : aprovar / iniciar SLA
   VS --> VSC : devolver [motivo, destino]
-  VSC --> VS : corrigir (Solicitante ou Gestor)
+  VSC --> VS : corrigir (Solicitante ou Gestor) [contrato inalterado]
+  VSC --> VG : corrigir (Solicitante) [corredor muda o contrato]
   VS --> Rec : aceitar / definir responsável SESI
   Rec --> Ent : registrar entrevistas [vaga com link]
   Ent --> Exa : registrar exames
 }
 
 [*] --> Rascunho
-Rascunho --> [*] : descartar / excluir rascunho
-Rascunho --> VG : enviar [campos obrigatórios] / gerar número
+Rascunho --> [*] : descartar ou expirar / apagar do navegador
+Rascunho --> VG : enviar [campos obrigatórios e VP-2] / criar demanda e gerar número
 Exa --> Concluido : finalizar / encerrar SLA
 Enviada --> Cancelado : cancelar [justificativa]
 Concluido --> [*]

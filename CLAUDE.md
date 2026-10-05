@@ -28,11 +28,11 @@ Os diagramas existem como código PlantUML e Mermaid dentro do documento; use-os
 ## Regras inegociáveis
 
 1. **Não invente regra de negócio.** Se algo não está no documento, pare e pergunte antes de implementar.
-2. **Suposições marcadas.** Todo código que depende de uma suposição da lista S1–S16 leva o comentário `// SUPOSIÇÃO (S<n>)` e entra na lista de suposições do README.
+2. **Suposições marcadas.** Todo código que depende de uma suposição da lista S1–S20 leva o comentário `// SUPOSIÇÃO (S<n>)` e entra na lista de suposições do README.
 3. **Tipos `internal`.** Todo tipo C# é `internal`. Exceção pública só onde o framework exige, com comentário dizendo por quê. O projeto de testes acessa os tipos por `InternalsVisibleTo`.
 4. **Regras no domínio.** Máquina de estados, SLA, farol, custo e permissões ficam em `Domain` e são testadas sem banco. Controllers e páginas não contêm regra.
 5. **Tempo controlado.** Nada de `DateTime.Now` no domínio: use um relógio injetável. Datas gravadas em UTC; contagem de prazo no fuso `America/Sao_Paulo`.
-6. **Nada se apaga.** Demanda enviada, histórico, anexo e auditoria nunca são excluídos. Sem exclusão em cascata. A única exclusão física é o descarte de rascunho nunca enviado (UC17).
+6. **Nada se apaga.** Demanda enviada, histórico, anexo e auditoria nunca são excluídos. Sem exclusão em cascata e sem nenhuma exclusão física: o rascunho existe só no navegador (UC02, UC17).
 7. **Tudo auditado.** Toda ação relevante gera registro em HistoricoDemanda, HistoricoAlteracao ou LogAuditoria, com usuário, perfil, IP e data/hora.
 8. **Dados pessoais.** Nunca coloque nomes ou e-mails reais em código, seed ou testes. Use dados fictícios com e-mails `@ucl.br`.
 
@@ -42,7 +42,11 @@ Os diagramas existem como código PlantUML e Mermaid dentro do documento; use-os
 - **Interface:** tecnologia livre, a mais adequada ao ASP.NET Core e à regra de tipos internal. O front-end deve ser bonito, bem estruturado, responsivo e consistente entre os perfis.
 - **Login:** e-mail do domínio `@ucl.br` e senha própria do sistema, guardada só como hash. O domínio imita o Google Workspace da UCL, mas não há integração real com ele.
 - **Anexos:** imagem, PDF e e-mail, até 10 MB, numa pasta do servidor, nunca apagados. O anexo "De acordo VP-2" é obrigatório para enviar a demanda.
-- **Contrato:** definido pelo corredor (RN13), nunca escolhido pelo Solicitante.
+- **Contrato:** definido pelo corredor (RN13), nunca escolhido pelo Solicitante. A Contratada vem do contrato; hoje só o SESI.
+- **Cadastro:** o Solicitante se cadastra sozinho com e-mail `@ucl.br`. O Gestor cadastra os Funcionários SESI e vincula cada um a um contrato; o SESI só vê e trata demandas desse contrato.
+- **Rascunho:** só no navegador do Solicitante, por 3 dias. A demanda passa a existir no sistema no envio.
+- **Gestor da demanda:** o Gestor que valida (qualquer Gestor ativo pode validar).
+- **Revisão de 05/10/2026:** a lista completa está na seção "Revisão de 05/10/2026" do documento de requisitos.
 - **Estrutura:** um projeto web único com camadas em pastas, mais um projeto de testes.
 
 ## Estrutura esperada do repositório
@@ -76,10 +80,10 @@ A regra de dependência (Domain não depende de nada; Application só de Domain)
 | --- | --- |
 | Confirmar os números dos dois contratos e se C. Integrado Sudeste vai para o contrato do Sudeste (S16) | Seed completa |
 | Confirmar os valores de notebook, segunda tela, celular e rastreador, se o custo é mensal e se veículo é cobrado uma vez por demanda (S14, S15) | Cálculo de custo na Etapa 4 |
-| Se o corredor define o Gestor que valida ou se qualquer Gestor valida (S1) | Etapa 4 |
 | Códigos 466 e 467 do QQP repetem a mesma combinação | Seed do QQP (importe mesmo assim; o código é a chave) |
 | Período temporário em dias ou meses (S13) | Etapa 4 |
-| Relação entre Contratada e contratos (D6) | Parte de Contratada da Etapa 2 |
+| CNPJ do SESI para a seed da Contratada (D7) | Seed da Contratada na Etapa 2 |
+| Confirmar S17–S20 (SESI com um contrato, gestão do Solicitante pelo Admin, anexos no envio, 3 dias desde o último salvamento) | Etapas 3 e 4 |
 
 As etapas 0, 1 e 3 podem começar já. Pergunte sobre o restante quando chegar nele.
 
