@@ -13,4 +13,8 @@ internal sealed class Corredor
 
     internal Guid ContratoId { get; private set; }
     internal bool Ativo { get; private set; }
+
+    /// <summary>Os corredores vêm da carga inicial; a fábrica serve aos testes do domínio.</summary>
+    internal static Corredor Criar(Guid id, string nome, Guid regiaoId, Guid contratoId, bool ativo = true)
+        => new() { Id = id, Nome = nome, RegiaoId = regiaoId, ContratoId = contratoId, Ativo = ativo };
 }

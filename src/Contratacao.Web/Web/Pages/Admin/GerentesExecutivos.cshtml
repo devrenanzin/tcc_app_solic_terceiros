@@ -1,0 +1,50 @@
+@page
+@using Contratacao.Web.Web.Pages.Shared
+@model Contratacao.Web.Web.Pages.Admin.GerentesExecutivosModel
+@{
+    ViewData["Title"] = "Gerentes executivos";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Gerentes executivos</h1>
+        <p>Lista do campo "Gerente executivo" do formulário da demanda. Nada é excluído: o desativado sai da lista.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <form method="post" class="cartao formulario" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+            <label class="form-label" for="nome">Novo gerente executivo</label>
+            <input id="nome" name="Nome" value="@Model.Nome" maxlength="150" class="form-control" required />
+            <button type="submit" class="btn btn-primary mt-3"><i class="bi bi-plus-lg"></i> Cadastrar</button>
+        </form>
+    </div>
+    <div class="col-lg-8">
+        <div class="cartao">
+            @if (Model.Gerentes.Count == 0)
+            {
+                <div class="vazio"><i class="bi bi-person-lines-fill"></i>Nenhum gerente cadastrado. Sem eles, o Solicitante não consegue enviar demandas.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table tabela-cartao">
+                        <thead><tr><th>Nome</th><th>Situação</th><th class="text-end">Ações</th></tr></thead>
+                        <tbody>
+                            @foreach (var gerente in Model.Gerentes)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@gerente.Nome</td>
+                                    <td><partial name="_SituacaoUsuario" model="gerente.Ativo" /></td>
+                                    <td class="text-end"><partial name="_AcaoSituacao" model="new AcaoSituacao(gerente.Id, gerente.Ativo, gerente.Nome)" /></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

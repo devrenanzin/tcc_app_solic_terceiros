@@ -26,7 +26,7 @@ public sealed class CorrecaoTests
         Assert.True(correcao.Pendente);
 
         _c.Relogio.Avancar(TimeSpan.FromHours(2));
-        demanda.Corrigir(_c.Solicitante, Cenario.ContratoNorte, _c.Relogio);
+        _c.Corrigir(demanda);
 
         Assert.Equal(Etapa.ValidacaoGestor, demanda.Etapa);
         Assert.Equal(StatusDemanda.EmAnalise, demanda.Status);
@@ -41,7 +41,7 @@ public sealed class CorrecaoTests
 
         demanda.DevolverPeloSesi(_c.SesiNorte, TipoInconsistencia.Solicitante, "Descrição incompleta.", _c.Relogio);
         _c.Relogio.Avancar(TimeSpan.FromDays(3));
-        demanda.Corrigir(_c.Solicitante, Cenario.ContratoNorte, _c.Relogio);
+        _c.Corrigir(demanda);
 
         Assert.Equal(Etapa.ValidacaoSesi, demanda.Etapa);
         Assert.Equal(StatusDemanda.AguardandoResponsavel, demanda.Status);
@@ -58,7 +58,7 @@ public sealed class CorrecaoTests
 
         demanda.DevolverPeloSesi(_c.SesiNorte, TipoInconsistencia.Contratual, "Coletor de custo errado.", _c.Relogio);
         _c.Relogio.Avancar(TimeSpan.FromDays(5));
-        demanda.Corrigir(_c.Solicitante, Cenario.ContratoNorte, _c.Relogio);
+        _c.Corrigir(demanda);
 
         Assert.Equal(Etapa.ValidacaoGestor, demanda.Etapa);
         Assert.Equal(StatusDemanda.EmAnalise, demanda.Status);
@@ -82,7 +82,7 @@ public sealed class CorrecaoTests
         var demanda = _c.Aprovada();
         demanda.DevolverPeloSesi(_c.SesiNorte, TipoInconsistencia.Solicitante, "Corredor errado.", _c.Relogio);
 
-        demanda.Corrigir(_c.Solicitante, Cenario.ContratoSudeste, _c.Relogio);
+        _c.Corrigir(demanda, paraSudeste: true);
 
         Assert.Equal(Cenario.ContratoSudeste.Id, demanda.ContratoId);
         Assert.Equal(Etapa.ValidacaoGestor, demanda.Etapa);
@@ -102,7 +102,7 @@ public sealed class CorrecaoTests
         var demanda = _c.Enviada();
         demanda.DevolverPeloGestor(_c.GestorNorte, "Corredor errado.", _c.Relogio);
 
-        demanda.Corrigir(_c.Solicitante, Cenario.ContratoSudeste, _c.Relogio);
+        _c.Corrigir(demanda, paraSudeste: true);
 
         Assert.Equal(Cenario.ContratoSudeste.Id, demanda.ContratoId);
         Assert.Equal(Etapa.ValidacaoGestor, demanda.Etapa);
@@ -114,7 +114,7 @@ public sealed class CorrecaoTests
     {
         var demanda = _c.Enviada();
         demanda.DevolverPeloGestor(_c.GestorNorte, "Primeiro motivo.", _c.Relogio);
-        demanda.Corrigir(_c.Solicitante, Cenario.ContratoNorte, _c.Relogio);
+        _c.Corrigir(demanda);
         demanda.DevolverPeloGestor(_c.GestorNorte, "Segundo motivo.", _c.Relogio);
 
         Assert.Equal(2, demanda.Correcoes.Count);

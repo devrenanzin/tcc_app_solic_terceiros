@@ -1,0 +1,83 @@
+@page
+@using Contratacao.Web.Domain.Usuarios
+@model Contratacao.Web.Web.Pages.Demandas.IndexModel
+@{
+    var solicitante = Model.Perfil == Perfil.Solicitante;
+    ViewData["Title"] = solicitante ? "Minhas demandas" : "Demandas";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>@ViewData["Title"]</h1>
+        <p>
+            @(Model.Perfil switch
+            {
+                Perfil.Solicitante => "As demandas que você enviou.",
+                Perfil.FuncionarioSesi => "As demandas do contrato do seu grupo.",
+                _ => "Todas as demandas enviadas. Você valida as dos seus contratos.",
+            })
+        </p>
+    </div>
+    @if (solicitante)
+    {
+        <a href="/Demandas/Nova" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nova demanda</a>
+    }
+</div>
+
+<div class="cartao">
+    @if (Model.Demandas.Count == 0)
+    {
+        <div class="vazio">
+            <i class="bi bi-inbox"></i>
+            @(solicitante ? "Você ainda não enviou demandas." : "Nenhuma demanda por aqui ainda.")
+        </div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table tabela-cartao tabela-demandas">
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Vaga</th>
+                        @if (!solicitante) { <th>Solicitante</th> }
+                        <th>Contrato</th>
+                        <th>Etapa / status</th>
+                        <th>Farol</th>
+                        <th>Enviada em</th>
+                        <th class="text-end">Custo mensal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var demanda in Model.Demandas)
+                    {
+                        <tr>
+                            <td><a class="numero-demanda fw-semibold" href="/Demandas/Detalhe/@demanda.Id">@demanda.Numero</a></td>
+                            <td>
+                                <div class="fw-semibold">@demanda.Funcao</div>
+                                <div class="small text-body-secondary">@demanda.Quantidade × · @demanda.LocalidadeVaga</div>
+                            </td>
+                            @if (!solicitante) { <td class="small">@demanda.Solicitante</td> }
+                            <td><span class="etiqueta-contrato">@demanda.Contrato</span></td>
+                            <td>
+                                <span class="selo-status @Formatacao.ClasseStatus(demanda.Status)">@Formatacao.Status(demanda.Status)</span>
+                                <div class="small text-body-secondary mt-1">@Formatacao.Etapa(demanda.Etapa)</div>
+                            </td>
+                            <td>
+                                <span class="selo-farol @Formatacao.ClasseFarol(demanda.Farol)">
+                                    @(demanda.Status == Contratacao.Web.Domain.Demandas.StatusDemanda.Cancelado ? "Cancelado" : Formatacao.Farol(demanda.Farol))
+                                </span>
+                                @if (demanda.Sla is { } sla)
+                                {
+                                    <div class="small text-body-secondary mt-1">até @Formatacao.Data(sla.DataLimite)</div>
+                                }
+                            </td>
+                            <td class="small text-nowrap">@Formatacao.DataHora(demanda.DataEnvio)</td>
+                            <td class="text-end text-nowrap">@Formatacao.Reais(demanda.CustoTotal)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

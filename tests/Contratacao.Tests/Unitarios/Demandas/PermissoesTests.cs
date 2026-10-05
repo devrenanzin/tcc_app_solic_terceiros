@@ -74,8 +74,8 @@ public sealed class PermissoesTests
         var demanda = _c.Enviada();
         demanda.DevolverPeloGestor(_c.GestorNorte, "Motivo.", _c.Relogio);
 
-        Assert.Throws<RegraNegocioException>(() => demanda.Corrigir(_c.OutroSolicitante, Cenario.ContratoNorte, _c.Relogio));
-        Assert.Throws<RegraNegocioException>(() => demanda.Corrigir(_c.GestorNorte, Cenario.ContratoNorte, _c.Relogio));
+        Assert.Throws<RegraNegocioException>(() => _c.Corrigir(demanda, _c.OutroSolicitante));
+        Assert.Throws<RegraNegocioException>(() => _c.Corrigir(demanda, _c.GestorNorte));
     }
 
     [Fact]

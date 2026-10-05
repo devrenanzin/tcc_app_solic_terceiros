@@ -1,0 +1,68 @@
+@page "{id:guid}"
+@using Contratacao.Web.Domain.Demandas
+@model Contratacao.Web.Web.Pages.Demandas.CorrigirModel
+@{
+    var d = Model.Detalhe.Demanda;
+    var pendente = d.CorrecaoPendente!;
+    ViewData["Title"] = $"Corrigir {d.Numero}";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a href="/Demandas/Detalhe/@d.Id" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Demanda @d.Numero</a>
+        <h1 class="mt-1">Corrigir demanda <span class="numero-demanda">@d.Numero</span></h1>
+        <p>Ajuste o que foi apontado e envie a correção. Cada campo alterado fica registrado no histórico.</p>
+    </div>
+</div>
+
+<div class="cartao aviso-devolucao">
+    <i class="bi bi-arrow-return-left"></i>
+    <div>
+        <h2>Motivo da devolução</h2>
+        <p class="mb-1">
+            @(pendente.Origem == OrigemCorrecao.Gestor ? "Gestor" : "SESI") em @Formatacao.DataHora(pendente.DataSolicitacao)@(pendente.Tipo is { } tipo ? $" · {Formatacao.Tipo(tipo)}" : string.Empty)
+        </p>
+        <blockquote class="mb-0">@pendente.Motivo</blockquote>
+        @if (pendente.Origem == OrigemCorrecao.Sesi)
+        {
+            <p class="ajuda mt-2 mb-0">
+                Erro de informação contratual, ou troca de corredor que mude o contrato, faz a demanda passar de novo pela Validação do Gestor.
+                O prazo de SLA não reinicia.
+            </p>
+        }
+    </div>
+</div>
+
+<form method="post" novalidate data-formulario-demanda>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="layout-formulario">
+        <div class="campos">
+            <partial name="_Formulario" model="Model.Formulario" />
+        </div>
+
+        <aside class="lateral-formulario">
+            <div class="cartao painel-custo">
+                <h2><i class="bi bi-calculator"></i> Custo mensal</h2>
+                <div id="previa-custo"
+                     hx-get="/Demandas/Custo"
+                     hx-trigger="load, custo-mudou from:body delay:250ms"
+                     hx-include="[name='Entrada.ItemQqpId'],[name='Entrada.QuantidadeSolicitada'],[name='Entrada.Notebook'],[name='Entrada.SegundaTela'],[name='Entrada.Celular']">
+                    <div class="ajuda">Calculando…</div>
+                </div>
+                <p class="ajuda mt-3 mb-0">
+                    Gravado no envio: @Formatacao.Reais(d.CustoTotal). Se você mudar o cargo, a quantidade ou os equipamentos,
+                    o custo é recalculado com os valores atuais.
+                </p>
+            </div>
+            <div class="cartao painel-envio">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-send-check"></i> Enviar correção</button>
+                <a href="/Demandas/Detalhe/@d.Id" class="btn btn-light w-100 mt-2">Cancelar</a>
+            </div>
+        </aside>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/js/formulario-demanda.js" asp-append-version="true"></script>
+}

@@ -1,0 +1,295 @@
+@page "{id:guid}"
+@using Contratacao.Web.Application.Demandas
+@using Contratacao.Web.Domain.Anexos
+@using Contratacao.Web.Domain.Demandas
+@model Contratacao.Web.Web.Pages.Demandas.DetalheModel
+@{
+    var d = Model.Demanda;
+    var nomes = Model.Detalhe.Descricoes;
+    var acoes = Model.Detalhe.Acoes;
+    var pendente = d.CorrecaoPendente;
+    string Nome(IReadOnlyDictionary<Guid, string> dic, Guid? id) => DescricoesDemanda.Nome(dic, id);
+    ViewData["Title"] = $"Demanda {d.Numero}";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a href="/Demandas" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Demandas</a>
+        <h1 class="mt-1">Demanda <span class="numero-demanda">@d.Numero</span></h1>
+        <p>@Nome(nomes.ItensQqp, d.ItemQqpId) · @d.LocalidadeVaga</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2 align-items-center">
+        <span class="selo-status @Formatacao.ClasseStatus(d.Status)">@Formatacao.Etapa(d.Etapa) · @Formatacao.Status(d.Status)</span>
+        <span class="selo-farol @Formatacao.ClasseFarol(Model.Detalhe.Farol)">@(d.Cancelada ? "Cancelado" : Formatacao.Farol(Model.Detalhe.Farol))</span>
+    </div>
+</div>
+
+<ol class="trilha-etapas" aria-label="Etapas da demanda">
+    @foreach (var etapa in Enum.GetValues<Etapa>())
+    {
+        var classe = etapa < d.Etapa || d.Concluida ? "feita" : etapa == d.Etapa ? "atual" : string.Empty;
+        <li class="@classe"><span class="marcador">@((int)etapa)</span><span class="nome">@Formatacao.Etapa(etapa)</span></li>
+    }
+</ol>
+
+@if (pendente is not null)
+{
+    <div class="cartao aviso-devolucao">
+        <i class="bi bi-arrow-return-left"></i>
+        <div class="flex-grow-1">
+            <h2>Devolvida para correção</h2>
+            <p class="mb-1">
+                Por @Nome(nomes.Usuarios, pendente.SolicitadoPorId) (@(pendente.Origem == OrigemCorrecao.Gestor ? "Gestor" : "SESI"))
+                em @Formatacao.DataHora(pendente.DataSolicitacao)@(pendente.Tipo is { } tipo ? $" · {Formatacao.Tipo(tipo)}" : string.Empty)
+            </p>
+            <blockquote class="mb-0">@pendente.Motivo</blockquote>
+        </div>
+        @if (acoes.Contains(AcaoDemanda.Corrigir))
+        {
+            <a class="btn btn-warning align-self-start" href="/Demandas/Corrigir/@d.Id"><i class="bi bi-pencil-square"></i> Corrigir demanda</a>
+        }
+    </div>
+}
+
+<div class="row g-4">
+    <div class="col-xl-8">
+        <section class="cartao bloco">
+            <h2>Dados da solicitação</h2>
+            <div class="grupo-dados">
+                <h3>Identificação</h3>
+                <dl>
+                    <div><dt>Solicitante</dt><dd>@Nome(nomes.Usuarios, d.UsuarioSolicitanteId)</dd></div>
+                    <div><dt>Área do solicitante</dt><dd>@(d.AreaSolicitante ?? "—")</dd></div>
+                    <div><dt>Tipo de demanda</dt><dd>@Nome(nomes.TiposDemanda, d.TipoDemandaId)</dd></div>
+                    <div><dt>Gerente executivo</dt><dd>@Nome(nomes.GerentesExecutivos, d.GerenteExecutivoId)</dd></div>
+                </dl>
+            </div>
+            <div class="grupo-dados">
+                <h3>Vaga</h3>
+                <dl>
+                    <div><dt>Localidade</dt><dd>@d.LocalidadeVaga</dd></div>
+                    <div><dt>Corredor</dt><dd>@Nome(nomes.Corredores, d.CorredorId)</dd></div>
+                    <div><dt>Modelo de trabalho</dt><dd>@Nome(nomes.ModelosTrabalho, d.ModeloTrabalhoId)</dd></div>
+                    <div><dt>Quantidade</dt><dd>@d.QuantidadeSolicitada</dd></div>
+                    <div><dt>Formação exigida</dt><dd>@(d.Formacao ?? "—")</dd></div>
+                    <div><dt>Temporária</dt><dd>@(d.Temporaria ? $"Sim, {d.PeriodoTemporarioMeses} meses" : "Não")</dd></div>
+                    <div class="largo"><dt>Descrição das atividades</dt><dd class="texto-longo">@d.DescricaoAtividades</dd></div>
+                </dl>
+            </div>
+            <div class="grupo-dados">
+                <h3>Cargo e recursos</h3>
+                <dl>
+                    <div class="largo"><dt>Cargo QQP</dt><dd>@Nome(nomes.ItensQqp, d.ItemQqpId)</dd></div>
+                    <div><dt>Piso salarial</dt><dd>@Formatacao.Reais(d.PisoSalarialQqp)</dd></div>
+                    <div><dt>Notebook · Segunda tela · Celular</dt><dd>@Formatacao.SimNao(d.Notebook) · @Formatacao.SimNao(d.SegundaTela) · @Formatacao.SimNao(d.Celular)</dd></div>
+                    <div><dt>CNH</dt><dd>@(d.ExigeCnh ? $"Exige, categoria {d.CategoriaCnh}" : "Não exige")</dd></div>
+                    <div class="largo">
+                        <dt>RACs</dt>
+                        <dd>
+                            @if (d.Racs.Count == 0)
+                            {
+                                <span>Nenhuma</span>
+                            }
+                            @foreach (var rac in d.Racs.Select(r => Nome(nomes.Racs, r.RacId)).Order())
+                            {
+                                <span class="etiqueta-rac">@rac</span>
+                            }
+                        </dd>
+                    </div>
+                </dl>
+            </div>
+            <div class="grupo-dados">
+                <h3>Contrato</h3>
+                <dl>
+                    <div><dt>Número do contrato</dt><dd><span class="etiqueta-contrato">@Nome(nomes.Contratos, d.ContratoId)</span></dd></div>
+                    <div><dt>Contratada</dt><dd>@Nome(nomes.Contratadas, d.ContratadaId)</dd></div>
+                    <div><dt>OS do contrato</dt><dd>@d.ContratoOs</dd></div>
+                    <div><dt>Coletor de custo</dt><dd>@d.ColetorCusto</dd></div>
+                    <div><dt>Responsável efetivo</dt><dd>@d.ResponsavelEfetivoNome<br /><span class="small text-body-secondary">@d.ResponsavelEfetivoEmail</span></dd></div>
+                    <div><dt>Fiscal efetivo</dt><dd>@d.FiscalEfetivoNome<br /><span class="small text-body-secondary">@d.FiscalEfetivoEmail</span></dd></div>
+                </dl>
+            </div>
+            @if (d.Observacoes is not null)
+            {
+                <div class="grupo-dados">
+                    <h3>Observações</h3>
+                    <p class="texto-longo mb-0">@d.Observacoes</p>
+                </div>
+            }
+        </section>
+
+        <section class="cartao bloco">
+            <h2>Anexos</h2>
+            @if (Model.Detalhe.Anexos.Count == 0)
+            {
+                <p class="ajuda mb-0">Nenhum anexo.</p>
+            }
+            else
+            {
+                <ul class="lista-anexos">
+                    @foreach (var anexo in Model.Detalhe.Anexos)
+                    {
+                        <li>
+                            <i class="bi @(anexo.TipoArquivo.StartsWith("image/", StringComparison.Ordinal) ? "bi-file-earmark-image" : anexo.TipoArquivo == "application/pdf" ? "bi-file-earmark-pdf" : "bi-envelope")"></i>
+                            <div class="flex-grow-1">
+                                <a href="/Demandas/Detalhe/@d.Id?handler=Anexo&anexoId=@anexo.Id">@anexo.NomeArquivo</a>
+                                <div class="small text-body-secondary">
+                                    @Formatacao.Tamanho(anexo.Tamanho) · @Formatacao.DataHora(anexo.DataUpload) · @Nome(nomes.Usuarios, anexo.UsuarioUploadId)
+                                </div>
+                            </div>
+                            @if (anexo.Categoria == CategoriaAnexo.DeAcordoVP2)
+                            {
+                                <span class="etiqueta-vp2">De acordo VP-2</span>
+                            }
+                        </li>
+                    }
+                </ul>
+            }
+        </section>
+
+        <section class="cartao bloco">
+            <h2>Linha do tempo</h2>
+            <ol class="linha-tempo">
+                @foreach (var registro in d.Historico.OrderBy(h => h.DataHora).ThenBy(h => h.Evento))
+                {
+                    <li>
+                        <span class="icone-evento"><i class="bi @Formatacao.IconeEvento(registro.Evento)"></i></span>
+                        <div>
+                            <div class="fw-semibold">@Formatacao.Evento(registro.Evento)</div>
+                            <div class="small text-body-secondary">
+                                @Formatacao.DataHora(registro.DataHora) · @Nome(nomes.Usuarios, registro.UsuarioId) (@Formatacao.Perfil(registro.PerfilUsuario))
+                                · @Formatacao.Etapa(registro.EtapaNova) / @Formatacao.Status(registro.StatusNovo)
+                            </div>
+                            @if (registro.Observacao is not null)
+                            {
+                                <div class="observacao">@registro.Observacao</div>
+                            }
+                        </div>
+                    </li>
+                }
+                @foreach (var futura in Enum.GetValues<Etapa>().Where(e => e > d.Etapa && !d.Cancelada))
+                {
+                    <li class="pendente">
+                        <span class="icone-evento"><i class="bi bi-hourglass"></i></span>
+                        <div><div>@Formatacao.Etapa(futura)</div><div class="small">Pendente</div></div>
+                    </li>
+                }
+            </ol>
+        </section>
+
+        @if (d.Alteracoes.Count > 0)
+        {
+            <section class="cartao bloco">
+                <h2>Alterações nas correções</h2>
+                <div class="table-responsive">
+                    <table class="table tabela-cartao">
+                        <thead><tr><th>Quando</th><th>Campo</th><th>Antes</th><th>Depois</th><th>Quem</th></tr></thead>
+                        <tbody>
+                            @foreach (var alteracao in d.Alteracoes.OrderByDescending(a => a.DataHora).ThenBy(a => a.Campo))
+                            {
+                                <tr>
+                                    <td class="small text-nowrap">@Formatacao.DataHora(alteracao.DataHora)</td>
+                                    <td class="fw-semibold">@RotulosDemanda.Rotulo(alteracao.Campo)</td>
+                                    <td class="valor-antigo">@RotulosDemanda.Valor(alteracao.Campo, alteracao.ValorAnterior, nomes)</td>
+                                    <td>@RotulosDemanda.Valor(alteracao.Campo, alteracao.NovoValor, nomes)</td>
+                                    <td class="small">@Nome(nomes.Usuarios, alteracao.UsuarioId)</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        }
+    </div>
+
+    <div class="col-xl-4">
+        @if (acoes.Overlaps([AcaoDemanda.Aprovar, AcaoDemanda.DevolverPeloGestor, AcaoDemanda.Aceitar, AcaoDemanda.DevolverPeloSesi]))
+        {
+            <section class="cartao bloco painel-acoes">
+                <h2>@(acoes.Contains(AcaoDemanda.Aprovar) ? "Validação do Gestor" : "Validação SESI")</h2>
+                @if (acoes.Contains(AcaoDemanda.Aprovar))
+                {
+                    <form method="post" asp-page-handler="Aprovar" asp-route-id="@d.Id" onsubmit="return confirm('Aprovar a demanda @d.Numero? O prazo de SLA começa agora.')">
+                        <button type="submit" class="btn btn-success w-100"><i class="bi bi-check2-circle"></i> Aprovar</button>
+                    </form>
+                }
+                @if (acoes.Contains(AcaoDemanda.Aceitar))
+                {
+                    <form method="post" asp-page-handler="Aceitar" asp-route-id="@d.Id" onsubmit="return confirm('Aceitar a demanda @d.Numero? Você será o responsável SESI.')">
+                        <button type="submit" class="btn btn-success w-100"><i class="bi bi-person-check"></i> Aceitar e assumir</button>
+                    </form>
+                }
+
+                <details class="mt-3" open="@(Model.Motivo is not null)">
+                    <summary>Devolver ao Solicitante</summary>
+                    <form method="post" asp-page-handler="@(acoes.Contains(AcaoDemanda.DevolverPeloGestor) ? "DevolverGestor" : "DevolverSesi")" asp-route-id="@d.Id" class="mt-2">
+                        @if (acoes.Contains(AcaoDemanda.DevolverPeloSesi))
+                        {
+                            <fieldset class="mb-2">
+                                <legend class="form-label fs-6">Tipo da inconsistência</legend>
+                                @foreach (var tipo in Enum.GetValues<TipoInconsistencia>())
+                                {
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="radio" name="Tipo" id="tipo-@tipo" value="@tipo" required />
+                                        <label class="form-check-label" for="tipo-@tipo">@Formatacao.Tipo(tipo)</label>
+                                    </div>
+                                }
+                                @* SUPOSIÇÃO (S11): informações contratuais = OS e coletor de custo. *@
+                                <div class="ajuda">Erro contratual (OS ou coletor de custo) faz a demanda passar de novo pelo Gestor.</div>
+                            </fieldset>
+                        }
+                        <label class="form-label" for="motivo">Motivo</label>
+                        <textarea id="motivo" name="Motivo" rows="3" maxlength="1000" class="form-control" required>@Model.Motivo</textarea>
+                        <button type="submit" class="btn btn-outline-warning w-100 mt-2"><i class="bi bi-arrow-return-left"></i> Devolver para correção</button>
+                    </form>
+                </details>
+            </section>
+        }
+
+        <section class="cartao bloco">
+            <h2>Prazo (SLA)</h2>
+            @if (d.Sla is { } sla)
+            {
+                var restantes = sla.DiasRestantes(Model.Hoje);
+                <dl class="lista-simples">
+                    <div><dt>Início</dt><dd>@Formatacao.DataHora(sla.InicioUtc)</dd></div>
+                    <div><dt>Prazo</dt><dd>@sla.PrazoDias dias</dd></div>
+                    <div><dt>Data limite</dt><dd>@Formatacao.Data(sla.DataLimite)</dd></div>
+                    @if (!d.Concluida && !d.Cancelada)
+                    {
+                        <div><dt>Dias restantes</dt><dd class="fw-semibold">@restantes</dd></div>
+                    }
+                </dl>
+            }
+            else
+            {
+                <p class="ajuda mb-0">O prazo começa quando o Gestor do contrato aprova a demanda.</p>
+            }
+        </section>
+
+        <section class="cartao bloco">
+            <h2>Custo mensal</h2>
+            <dl class="lista-simples">
+                <div><dt>Preço unitário QQP</dt><dd>@Formatacao.Reais(d.PrecoUnitarioQqp)</dd></div>
+                <div><dt>Equipamentos por pessoa</dt><dd>@Formatacao.Reais(d.ValorEquipamentosPorPessoa)</dd></div>
+                <div><dt>Quantidade</dt><dd>@d.QuantidadeSolicitada</dd></div>
+            </dl>
+            <div class="total-custo"><span>Total mensal</span><strong>@Formatacao.Reais(d.CustoTotal)</strong></div>
+        </section>
+
+        <section class="cartao bloco">
+            <h2>Responsáveis</h2>
+            <dl class="lista-simples">
+                <div><dt>Enviada em</dt><dd>@Formatacao.DataHora(d.DataEnvio)</dd></div>
+                <div><dt>Gestor da demanda</dt><dd>@(d.GestorId is null ? "Aguardando validação" : Nome(nomes.Usuarios, d.GestorId))</dd></div>
+                <div><dt>Responsável SESI</dt><dd>@(d.ResponsavelSesiId is null ? "Aguardando aceite" : Nome(nomes.Usuarios, d.ResponsavelSesiId))</dd></div>
+            </dl>
+        </section>
+    </div>
+</div>
+
+@if (Model.RascunhoParaLimpar is { } chave)
+{
+    @* A demanda foi enviada: o rascunho do navegador não é mais necessário (UC02). *@
+    <script>try { localStorage.removeItem(@Json.Serialize(chave)); } catch { }</script>
+}

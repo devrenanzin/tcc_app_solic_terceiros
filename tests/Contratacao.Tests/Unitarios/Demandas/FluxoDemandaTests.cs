@@ -37,13 +37,13 @@ public sealed class FluxoDemandaTests
     [InlineData("2026-000000")]
     [InlineData("")]
     public void Envio_recusa_numero_fora_do_formato(string numero)
-        => Assert.Throws<RegraNegocioException>(() => Demanda.Enviar(numero, _c.Solicitante, Cenario.ContratoNorte, _c.Relogio));
+        => Assert.Throws<RegraNegocioException>(() => _c.Enviar(numero));
 
     [Fact]
     public void Envio_so_por_solicitante_ativo()
     {
-        Assert.Throws<RegraNegocioException>(() => Demanda.Enviar(Cenario.Numero, _c.GestorNorte, Cenario.ContratoNorte, _c.Relogio));
-        Assert.Throws<RegraNegocioException>(() => Demanda.Enviar(Cenario.Numero, _c.Solicitante with { Ativo = false }, Cenario.ContratoNorte, _c.Relogio));
+        Assert.Throws<RegraNegocioException>(() => _c.Enviar(Cenario.Numero, _c.GestorNorte));
+        Assert.Throws<RegraNegocioException>(() => _c.Enviar(Cenario.Numero, _c.Solicitante with { Ativo = false }));
     }
 
     [Fact]

@@ -1,0 +1,90 @@
+@page
+@using System.Security.Claims
+@model Contratacao.Web.Web.Pages.Demandas.NovaModel
+@{
+    ViewData["Title"] = "Nova demanda";
+    var chaveRascunho = $"contratacao.rascunho.{User.FindFirstValue(ClaimTypes.NameIdentifier)}";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a href="/Demandas" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Demandas</a>
+        <h1 class="mt-1">Nova demanda</h1>
+        <p>Preencha com calma: o rascunho fica salvo só neste navegador por 3 dias. A demanda passa a existir quando você envia.</p>
+    </div>
+</div>
+
+<div class="aviso-rascunho" data-aviso-rascunho hidden>
+    <i class="bi bi-cloud-check"></i>
+    <span data-texto-rascunho></span>
+    <button type="button" class="btn btn-sm btn-outline-danger ms-auto" data-bs-toggle="modal" data-bs-target="#descartar-rascunho">
+        <i class="bi bi-trash"></i> Descartar rascunho
+    </button>
+</div>
+
+<form method="post" enctype="multipart/form-data" novalidate
+      data-formulario-demanda
+      data-rascunho="@chaveRascunho"
+      data-restaurar="@(Model.RestaurarRascunho ? "sim" : "nao")">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+    <div class="layout-formulario">
+        <div class="campos">
+            <partial name="_Formulario" model="Model.Formulario" />
+
+            <section class="cartao secao-formulario">
+                <header><span class="numero-secao">8</span><div><h2>Anexos</h2><p>Imagem (.jpg, .png), PDF ou e-mail (.eml, .msg), até 10 MB cada. Os arquivos não ficam no rascunho: escolha-os na hora de enviar.</p></div></header>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="vp2">De acordo VP-2</label>
+                        <input id="vp2" name="DeAcordoVp2" type="file" class="form-control" accept="@NovaModel.ExtensoesAceitas" required />
+                        <div class="ajuda mt-1">Obrigatório: sem ele a demanda não pode ser enviada.</div>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="outros">Outros anexos <span class="opcional">opcional</span></label>
+                        <input id="outros" name="OutrosAnexos" type="file" class="form-control" accept="@NovaModel.ExtensoesAceitas" multiple />
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <aside class="lateral-formulario">
+            <div class="cartao painel-custo">
+                <h2><i class="bi bi-calculator"></i> Custo mensal</h2>
+                <div id="previa-custo"
+                     hx-get="/Demandas/Custo"
+                     hx-trigger="load, custo-mudou from:body delay:250ms"
+                     hx-include="[name='Entrada.ItemQqpId'],[name='Entrada.QuantidadeSolicitada'],[name='Entrada.Notebook'],[name='Entrada.SegundaTela'],[name='Entrada.Celular']">
+                    <div class="ajuda">Calculando…</div>
+                </div>
+                <p class="ajuda mt-3 mb-0">Quantidade × (preço QQP + equipamentos por pessoa). O valor gravado é recalculado no envio.</p>
+            </div>
+            <div class="cartao painel-envio">
+                <button type="submit" class="btn btn-primary w-100"><i class="bi bi-send"></i> Enviar demanda</button>
+                <p class="ajuda mt-2 mb-0" data-salvo-em>O rascunho é salvo automaticamente enquanto você preenche.</p>
+            </div>
+        </aside>
+    </div>
+</form>
+
+<div class="modal fade" id="descartar-rascunho" tabindex="-1" aria-labelledby="titulo-descartar" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title fs-5" id="titulo-descartar">Descartar o rascunho?</h2>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body">
+                Os dados preenchidos serão apagados deste navegador. Isso não pode ser desfeito.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-light" data-bs-dismiss="modal">Manter</button>
+                <button type="button" class="btn btn-danger" data-descartar-rascunho><i class="bi bi-trash"></i> Descartar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/formulario-demanda.js" asp-append-version="true"></script>
+}

@@ -63,6 +63,7 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 44 | Senha inicial (S22) | Definida por quem cadastra, sem troca prevista | Gestor e Funcionário SESI trocam a senha inicial no primeiro acesso, antes de usar o sistema | Cliente |
 | 45 | Contrato do Funcionário SESI (S23) | Qualquer contrato ativo | O Gestor só usa os seus contratos; para outro contrato, o Admin faz a troca | Cliente |
 | 46 | Senha, equipe do Gestor desativado e campos obrigatórios (S21, S2, S12) | Suposições | Confirmadas: senha de 8 a 128 caracteres; a equipe de Gestor desativado continua ativa; obrigatórios conforme a seção 8.1 | Cliente |
+| 47 | Custo na correção que muda quantidade ou equipamentos | Só a mudança no QQP recalculava (item 27) | Qualquer correção que mude o item QQP, a quantidade de vagas ou os equipamentos recalcula o custo inteiro com os valores atuais dos catálogos; sem essas mudanças, ficam os valores do envio | Cliente |
 
 ## 1–3. Objetivo e escopo
 
@@ -308,7 +309,7 @@ A demanda guarda o contrato vigente no envio. Se o corredor for trocado numa cor
 
 ### RN12 — Custo total
 
-O custo total é calculado pelo sistema e gravado na demanda com os valores vigentes no envio; mudanças posteriores de preço não alteram demandas já enviadas. Se uma correção alterar qualquer campo do QQP (região, função, classificação, nível ou carga horária), o custo é recalculado (Cliente) e a alteração fica no HistoricoAlteracao.
+O custo total é calculado pelo sistema e gravado na demanda com os valores vigentes no envio; mudanças posteriores de preço não alteram demandas já enviadas. Se uma correção alterar qualquer campo do QQP (região, função, classificação, nível ou carga horária), a quantidade de vagas ou os equipamentos, o custo inteiro é recalculado com os valores atuais dos catálogos (Cliente, itens 27 e 47) e a alteração fica no HistoricoAlteracao. Uma correção que não mexe nesses campos mantém os valores do envio.
 
 ```latex
 \text{Custo total mensal} = \text{Quantidade} \times (\text{Preço unitário QQP} + \text{Equipamentos por pessoa})

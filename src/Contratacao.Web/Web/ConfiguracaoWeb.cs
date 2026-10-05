@@ -37,7 +37,8 @@ internal static class ConfiguracaoWeb
         services.AddAuthorizationBuilder()
             .AddPolicy(Politicas.Admin, p => p.RequireRole(nameof(Perfil.Admin)))
             .AddPolicy(Politicas.Gestor, p => p.RequireRole(nameof(Perfil.Gestor)))
-            .AddPolicy(Politicas.AdminOuGestor, p => p.RequireRole(nameof(Perfil.Admin), nameof(Perfil.Gestor)));
+            .AddPolicy(Politicas.AdminOuGestor, p => p.RequireRole(nameof(Perfil.Admin), nameof(Perfil.Gestor)))
+            .AddPolicy(Politicas.Solicitante, p => p.RequireRole(nameof(Perfil.Solicitante)));
 
         services.AddRazorPages(opcoes =>
         {
@@ -52,6 +53,11 @@ internal static class ConfiguracaoWeb
             opcoes.Conventions.AuthorizeFolder("/Admin", Politicas.Admin);
             opcoes.Conventions.AuthorizeFolder("/Equipe", Politicas.Gestor);
             opcoes.Conventions.AuthorizeFolder("/Solicitantes", Politicas.AdminOuGestor);
+
+            // Criar, enviar e corrigir demanda: só o Solicitante (seção 19). Ver a demanda segue a seção 4.
+            opcoes.Conventions.AuthorizePage("/Demandas/Nova", Politicas.Solicitante);
+            opcoes.Conventions.AuthorizePage("/Demandas/Corrigir", Politicas.Solicitante);
+            opcoes.Conventions.AuthorizePage("/Demandas/Custo", Politicas.Solicitante);
         }).AddMvcOptions(opcoes => opcoes.Filters.Add<FiltroTrocaSenha>());
 
         return services;

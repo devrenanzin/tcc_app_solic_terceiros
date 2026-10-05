@@ -23,12 +23,14 @@ public sealed class PersistenciaDemandaTests(BancoFixture banco) : IClassFixture
     {
         var (solicitante, gestor, sesi) = await CriarAtoresAsync();
         var id = await EnviarAsync(solicitante);
+        var dados = await banco.DadosAsync();
+        var referencias = await banco.ReferenciasAsync(dados);
 
         await ExecutarAsync(id, d => d.DevolverPeloGestor(gestor, "Corrigir a localidade.", banco.Relogio));
-        await ExecutarAsync(id, d => d.Corrigir(solicitante, ContratoNorte(), banco.Relogio));
+        await ExecutarAsync(id, d => d.Corrigir(solicitante, dados with { LocalidadeVaga = "Serra" }, referencias, banco.Relogio));
         await ExecutarAsync(id, d => d.Aprovar(gestor, 45, banco.Relogio, Calendario));
         await ExecutarAsync(id, d => d.DevolverPeloSesi(sesi, TipoInconsistencia.Contratual, "Coletor de custo errado.", banco.Relogio));
-        await ExecutarAsync(id, d => d.Corrigir(solicitante, ContratoNorte(), banco.Relogio));
+        await ExecutarAsync(id, d => d.Corrigir(solicitante, dados with { LocalidadeVaga = "Serra", Racs = new HashSet<Guid>() }, referencias, banco.Relogio));
         await ExecutarAsync(id, d => d.Aprovar(gestor, 30, banco.Relogio, Calendario));
         await ExecutarAsync(id, d => d.Aceitar(sesi, banco.Relogio));
         await ExecutarAsync(id, d => d.RegistrarVaga(sesi, "https://vagas.exemplo.ucl.br/42", banco.Relogio));
@@ -60,6 +62,9 @@ public sealed class PersistenciaDemandaTests(BancoFixture banco) : IClassFixture
         Assert.Equal(2, demanda.Etapas.Count(e => e.Etapa == Etapa.ValidacaoGestor));
         Assert.Equal("https://vagas.exemplo.ucl.br/42", demanda.Vaga!.LinkExterno);
         Assert.Equal(12, demanda.Historico.Count);
+        Assert.Equal("Serra", demanda.LocalidadeVaga);
+        Assert.Empty(demanda.Racs);
+        Assert.Equal(["LocalidadeVaga", "Racs"], demanda.Alteracoes.Select(a => a.Campo).Order());
         Assert.Equal(EventoDemanda.ContratacaoFinalizada, demanda.Historico.OrderBy(h => h.DataHora).Last().Evento);
         Assert.Equal(Farol.Verde, demanda.ObterFarol(banco.Relogio, Calendario));
 
@@ -164,6 +169,14 @@ public sealed class PersistenciaDemandaTests(BancoFixture banco) : IClassFixture
     [InlineData("SolicitacaoCorrecao", "Tipo", "varchar", "YES")]
     [InlineData("Usuario", "ContratoId", "uniqueidentifier", "YES")]
     [InlineData("GestorContrato", "ContratoId", "uniqueidentifier", "NO")]
+    [InlineData("Demanda", "CustoTotal", "decimal", "NO")]
+    [InlineData("Demanda", "QuantidadeSolicitada", "smallint", "NO")]
+    [InlineData("Demanda", "PeriodoTemporarioMeses", "smallint", "YES")]
+    [InlineData("Demanda", "CategoriaCnh", "varchar", "YES")]
+    [InlineData("Demanda", "ContratoOs", "nvarchar", "NO")]
+    [InlineData("Demanda", "ItemQqpId", "uniqueidentifier", "NO")]
+    [InlineData("Demanda", "Observacoes", "nvarchar", "YES")]
+    [InlineData("DemandaRac", "RacId", "uniqueidentifier", "NO")]
     public async Task Colunas_seguem_o_modelo_fisico(string tabela, string coluna, string tipo, string anulavel)
     {
         await using var contexto = banco.NovoContexto();
@@ -183,11 +196,12 @@ public sealed class PersistenciaDemandaTests(BancoFixture banco) : IClassFixture
 
     private async Task<Guid> EnviarAsync(Ator solicitante)
     {
-        await using var contexto = banco.NovoContexto();
-        var contrato = await contexto.Contratos.SingleAsync(c => c.Id == IdsFixos.ContratoNorte, Cancelamento);
+        var dados = await banco.DadosAsync();
+        var referencias = await banco.ReferenciasAsync(dados);
         var numero = NumeroDemanda.Formatar(2026, Interlocked.Increment(ref _sequencial));
 
-        var demanda = Demanda.Enviar(numero, solicitante, contrato, banco.Relogio);
+        await using var contexto = banco.NovoContexto();
+        var demanda = Demanda.Enviar(numero, solicitante, dados, referencias, possuiDeAcordoVp2: true, banco.Relogio);
         contexto.Demandas.Add(demanda);
         await contexto.SaveChangesAsync(Cancelamento);
         return demanda.Id;
@@ -201,11 +215,5 @@ public sealed class PersistenciaDemandaTests(BancoFixture banco) : IClassFixture
         var demanda = await BancoFixture.CarregarDemandaAsync(contexto, id);
         acao(demanda);
         await contexto.SaveChangesAsync(Cancelamento);
-    }
-
-    private Contratacao.Web.Domain.Contratos.Contrato ContratoNorte()
-    {
-        using var contexto = banco.NovoContexto();
-        return contexto.Contratos.Single(c => c.Id == IdsFixos.ContratoNorte);
     }
 }

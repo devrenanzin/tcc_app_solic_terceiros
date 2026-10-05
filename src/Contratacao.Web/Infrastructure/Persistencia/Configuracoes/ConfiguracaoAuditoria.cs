@@ -47,8 +47,8 @@ internal sealed class ConfiguracaoHistoricoAlteracao : IEntityTypeConfiguration<
         b.Property(h => h.Justificativa).HasMaxLength(1000);
         b.Property(h => h.DataHora);
 
+        // A ligação com a Demanda (FK_HistAlt_Demanda) é a navegação Demanda.Alteracoes, em ConfiguracaoDemanda.
         b.HasIndex(h => new { h.DemandaId, h.DataHora }).HasDatabaseName("IX_HistAlt_Demanda");
-        b.HasOne<Demanda>().WithMany().HasForeignKey(h => h.DemandaId).HasConstraintName("FK_HistAlt_Demanda");
         b.HasOne<Usuario>().WithMany().HasForeignKey(h => h.UsuarioId).HasConstraintName("FK_HistAlt_Usuario");
     }
 }

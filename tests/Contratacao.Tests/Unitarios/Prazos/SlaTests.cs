@@ -83,7 +83,7 @@ public sealed class SlaTests
         var c = new Cenario();
         var antiga = c.Aprovada();
 
-        var nova = Contratacao.Web.Domain.Demandas.Demanda.Enviar("2026-000124", c.Solicitante, Cenario.ContratoNorte, c.Relogio);
+        var nova = c.Enviar("2026-000124");
         nova.Aprovar(c.GestorNorte, 30, c.Relogio, c.Calendario);
 
         Assert.Equal(45, antiga.Sla!.PrazoDias);

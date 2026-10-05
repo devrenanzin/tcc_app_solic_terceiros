@@ -52,7 +52,8 @@ public sealed class CargaInicialTests(BancoFixture banco) : IClassFixture<BancoF
         Assert.Equal(["Híbrido", "Presencial", "Remoto"],
             await contexto.ModelosTrabalho.Select(m => m.Nome).OrderBy(n => n).ToListAsync(Cancelamento));
         Assert.Equal("Nova contratação", (await contexto.TiposDemanda.SingleAsync(Cancelamento)).Nome);
-        Assert.Empty(await contexto.GerentesExecutivos.ToListAsync(Cancelamento));
+        // A carga não cria gerentes (são nomes de pessoas); o único é o fictício inserido pelo BancoFixture.
+        Assert.Equal([BancoFixture.GerenteExecutivoId], await contexto.GerentesExecutivos.Select(g => g.Id).ToListAsync(Cancelamento));
 
         var equipamentos = await contexto.ItensEquipamento.ToDictionaryAsync(i => i.Nome, i => i.Valor, Cancelamento);
         Assert.Equal(3, equipamentos.Count);

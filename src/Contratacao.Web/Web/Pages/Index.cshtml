@@ -50,19 +50,37 @@
             </a>
         </div>
     }
+    @if (Model.Perfil == Perfil.Admin)
+    {
+        <div class="col-md-6 col-xl-4">
+            <a class="cartao cartao-atalho" href="/Admin/GerentesExecutivos">
+                <span class="icone"><i class="bi bi-person-lines-fill"></i></span>
+                <span><h2>Gerentes executivos</h2><p>Mantenha a lista de gerentes do formulário da demanda.</p></span>
+            </a>
+        </div>
+    }
     @if (Model.Perfil == Perfil.Solicitante)
     {
         <div class="col-md-6 col-xl-4">
-            <div class="cartao cartao-atalho em-breve">
+            <a class="cartao cartao-atalho" href="/Demandas/Nova">
                 <span class="icone"><i class="bi bi-file-earmark-plus"></i></span>
-                <span><h2>Nova demanda</h2><p>Disponível na próxima etapa do sistema.</p></span>
-            </div>
+                <span><h2>Nova demanda</h2><p>Peça uma contratação. O rascunho fica salvo neste navegador por 3 dias.</p></span>
+            </a>
         </div>
     }
     <div class="col-md-6 col-xl-4">
-        <div class="cartao cartao-atalho em-breve">
+        <a class="cartao cartao-atalho" href="/Demandas">
             <span class="icone"><i class="bi bi-kanban"></i></span>
-            <span><h2>Demandas</h2><p>Painel com prazos, farol e linha do tempo, em uma próxima etapa.</p></span>
-        </div>
+            <span>
+                <h2>@(Model.Perfil == Perfil.Solicitante ? "Minhas demandas" : "Demandas")</h2>
+                <p>@(Model.Perfil switch
+                {
+                    Perfil.Gestor => "Valide ou devolva as demandas dos seus contratos.",
+                    Perfil.FuncionarioSesi => "Aceite ou devolva as demandas do seu contrato.",
+                    Perfil.Solicitante => "Acompanhe o andamento e corrija as devolvidas.",
+                    _ => "Todas as demandas enviadas, com etapa, status e farol.",
+                })</p>
+            </span>
+        </a>
     </div>
 </div>

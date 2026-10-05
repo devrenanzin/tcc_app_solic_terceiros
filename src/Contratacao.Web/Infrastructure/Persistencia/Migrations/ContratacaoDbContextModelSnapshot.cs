@@ -535,11 +535,40 @@ namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("AreaSolicitante")
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("CategoriaCnh")
+                        .HasMaxLength(2)
+                        .IsUnicode(false)
+                        .HasColumnType("varchar(2)");
+
+                    b.Property<bool>("Celular")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("ColetorCusto")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
                     b.Property<Guid>("ContratadaId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<Guid>("ContratoId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("ContratoOs")
+                        .IsRequired()
+                        .HasMaxLength(5)
+                        .HasColumnType("nvarchar(5)");
+
+                    b.Property<Guid>("CorredorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("CustoTotal")
+                        .HasPrecision(14, 2)
+                        .HasColumnType("decimal(14,2)");
 
                     b.Property<DateTime>("DataCriacao")
                         .HasColumnType("datetime2");
@@ -550,21 +579,86 @@ namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
                     b.Property<DateTime?>("DataFinalizacao")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("DescricaoAtividades")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<Guid>("Etapa")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("EtapaAtualId");
 
+                    b.Property<bool>("ExigeCnh")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("FiscalEfetivoEmail")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<string>("FiscalEfetivoNome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
+
+                    b.Property<string>("Formacao")
+                        .HasMaxLength(300)
+                        .HasColumnType("nvarchar(300)");
+
+                    b.Property<Guid>("GerenteExecutivoId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid?>("GestorId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("ItemQqpId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("LocalidadeVaga")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<Guid>("ModeloTrabalhoId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("MotivoCancelamento")
                         .HasMaxLength(1000)
                         .HasColumnType("nvarchar(1000)");
 
+                    b.Property<bool>("Notebook")
+                        .HasColumnType("bit");
+
                     b.Property<string>("Numero")
                         .IsRequired()
                         .HasMaxLength(30)
                         .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("Observacoes")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<short?>("PeriodoTemporarioMeses")
+                        .HasColumnType("smallint");
+
+                    b.Property<decimal>("PisoSalarialQqp")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<decimal>("PrecoUnitarioQqp")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
+
+                    b.Property<short>("QuantidadeSolicitada")
+                        .HasColumnType("smallint");
+
+                    b.Property<string>("ResponsavelEfetivoEmail")
+                        .IsRequired()
+                        .HasMaxLength(254)
+                        .HasColumnType("nvarchar(254)");
+
+                    b.Property<string>("ResponsavelEfetivoNome")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("nvarchar(150)");
 
                     b.Property<Guid?>("ResponsavelSesiId")
                         .HasColumnType("uniqueidentifier");
@@ -575,12 +669,25 @@ namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("rowversion");
 
+                    b.Property<bool>("SegundaTela")
+                        .HasColumnType("bit");
+
                     b.Property<Guid>("Status")
                         .HasColumnType("uniqueidentifier")
                         .HasColumnName("StatusAtualId");
 
+                    b.Property<bool>("Temporaria")
+                        .HasColumnType("bit");
+
+                    b.Property<Guid>("TipoDemandaId")
+                        .HasColumnType("uniqueidentifier");
+
                     b.Property<Guid>("UsuarioSolicitanteId")
                         .HasColumnType("uniqueidentifier");
+
+                    b.Property<decimal>("ValorEquipamentosPorPessoa")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("decimal(12,2)");
 
                     b.HasKey("Id");
 
@@ -588,8 +695,16 @@ namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
 
                     b.HasIndex("ContratoId");
 
+                    b.HasIndex("CorredorId");
+
+                    b.HasIndex("GerenteExecutivoId");
+
                     b.HasIndex("GestorId")
                         .HasDatabaseName("IX_Demanda_Gestor");
+
+                    b.HasIndex("ItemQqpId");
+
+                    b.HasIndex("ModeloTrabalhoId");
 
                     b.HasIndex("Numero")
                         .IsUnique()
@@ -600,6 +715,8 @@ namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
 
                     b.HasIndex("Status");
 
+                    b.HasIndex("TipoDemandaId");
+
                     b.HasIndex("UsuarioSolicitanteId")
                         .HasDatabaseName("IX_Demanda_Solicitante");
 
@@ -608,10 +725,34 @@ namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
 
                     b.ToTable("Demanda", null, t =>
                         {
+                            t.HasCheckConstraint("CK_Demanda_CategoriaCnh", "CategoriaCnh IN ('A','B','C','D','E','AB','AC','AD','AE')");
+
+                            t.HasCheckConstraint("CK_Demanda_Cnh", "ExigeCnh = 0 OR CategoriaCnh IS NOT NULL");
+
                             t.HasCheckConstraint("CK_Demanda_Finalizacao", "DataFinalizacao IS NULL OR DataFinalizacao >= DataCriacao");
 
+                            t.HasCheckConstraint("CK_Demanda_Quantidade", "QuantidadeSolicitada > 0");
+
                             t.HasCheckConstraint("CK_Demanda_Sla", "DataLimiteSLA IS NULL OR DataLimiteSLA >= CAST(DataInicioSLA AS date)");
+
+                            t.HasCheckConstraint("CK_Demanda_Temporaria", "Temporaria = 0 OR PeriodoTemporarioMeses > 0");
                         });
+                });
+
+            modelBuilder.Entity("Contratacao.Web.Domain.Demandas.DemandaRac", b =>
+                {
+                    b.Property<Guid>("DemandaId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<Guid>("RacId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.HasKey("DemandaId", "RacId")
+                        .HasName("PK_DemandaRac");
+
+                    b.HasIndex("RacId");
+
+                    b.ToTable("DemandaRac", (string)null);
                 });
 
             modelBuilder.Entity("Contratacao.Web.Domain.Demandas.EtapaDemanda", b =>
@@ -1334,7 +1475,7 @@ namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
             modelBuilder.Entity("Contratacao.Web.Domain.Auditoria.HistoricoAlteracao", b =>
                 {
                     b.HasOne("Contratacao.Web.Domain.Demandas.Demanda", null)
-                        .WithMany()
+                        .WithMany("Alteracoes")
                         .HasForeignKey("DemandaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
@@ -1400,6 +1541,13 @@ namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_Demanda_Contrato");
 
+                    b.HasOne("Contratacao.Web.Domain.Contratos.Corredor", null)
+                        .WithMany()
+                        .HasForeignKey("CorredorId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_Demanda_Corredor");
+
                     b.HasOne("Contratacao.Web.Infrastructure.Persistencia.Catalogos.LinhaEtapa", null)
                         .WithMany()
                         .HasForeignKey("Etapa")
@@ -1407,11 +1555,32 @@ namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
                         .IsRequired()
                         .HasConstraintName("FK_Demanda_Etapa");
 
+                    b.HasOne("Contratacao.Web.Domain.Catalogos.GerenteExecutivo", null)
+                        .WithMany()
+                        .HasForeignKey("GerenteExecutivoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_Demanda_GerenteExecutivo");
+
                     b.HasOne("Contratacao.Web.Domain.Usuarios.Usuario", null)
                         .WithMany()
                         .HasForeignKey("GestorId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("FK_Demanda_Gestor");
+
+                    b.HasOne("Contratacao.Web.Domain.Qqp.ItemQqp", null)
+                        .WithMany()
+                        .HasForeignKey("ItemQqpId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_Demanda_ItemQqp");
+
+                    b.HasOne("Contratacao.Web.Domain.Catalogos.ModeloTrabalho", null)
+                        .WithMany()
+                        .HasForeignKey("ModeloTrabalhoId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_Demanda_ModeloTrabalho");
 
                     b.HasOne("Contratacao.Web.Domain.Usuarios.Usuario", null)
                         .WithMany()
@@ -1425,6 +1594,13 @@ namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
                         .HasConstraintName("FK_Demanda_Status");
+
+                    b.HasOne("Contratacao.Web.Domain.Catalogos.TipoDemanda", null)
+                        .WithMany()
+                        .HasForeignKey("TipoDemandaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_Demanda_TipoDemanda");
 
                     b.HasOne("Contratacao.Web.Domain.Usuarios.Usuario", null)
                         .WithMany()
@@ -1462,6 +1638,23 @@ namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
                         });
 
                     b.Navigation("Sla");
+                });
+
+            modelBuilder.Entity("Contratacao.Web.Domain.Demandas.DemandaRac", b =>
+                {
+                    b.HasOne("Contratacao.Web.Domain.Demandas.Demanda", null)
+                        .WithMany("Racs")
+                        .HasForeignKey("DemandaId")
+                        .OnDelete(DeleteBehavior.ClientCascade)
+                        .IsRequired()
+                        .HasConstraintName("FK_DemandaRac_Demanda");
+
+                    b.HasOne("Contratacao.Web.Domain.Catalogos.Rac", null)
+                        .WithMany()
+                        .HasForeignKey("RacId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("FK_DemandaRac_Rac");
                 });
 
             modelBuilder.Entity("Contratacao.Web.Domain.Demandas.EtapaDemanda", b =>
@@ -1660,11 +1853,15 @@ namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
 
             modelBuilder.Entity("Contratacao.Web.Domain.Demandas.Demanda", b =>
                 {
+                    b.Navigation("Alteracoes");
+
                     b.Navigation("Correcoes");
 
                     b.Navigation("Etapas");
 
                     b.Navigation("Historico");
+
+                    b.Navigation("Racs");
 
                     b.Navigation("Vaga");
                 });

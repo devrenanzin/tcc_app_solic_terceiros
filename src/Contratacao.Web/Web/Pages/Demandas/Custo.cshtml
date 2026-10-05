@@ -1,0 +1,20 @@
+@page
+@model Contratacao.Web.Web.Pages.Demandas.CustoModel
+@{
+    Layout = null;
+    var previa = Model.Previa;
+}
+@* Trecho trocado pelo htmx enquanto o formulário é preenchido. *@
+<dl class="resumo-custo">
+    <div><dt>Preço unitário QQP</dt><dd>@Formatacao.Reais(previa.PrecoUnitario)</dd></div>
+    <div><dt>Equipamentos por pessoa</dt><dd>@Formatacao.Reais(previa.EquipamentosPorPessoa)</dd></div>
+    <div><dt>Quantidade</dt><dd>@(Model.Quantidade is int q && q > 0 ? Formatacao.Numero(q) : "—")</dd></div>
+</dl>
+<div class="total-custo">
+    <span>Custo total mensal</span>
+    <strong>@Formatacao.Reais(previa.Total)</strong>
+</div>
+@if (previa.Total is null)
+{
+    <p class="ajuda mb-0 mt-2">Escolha o cargo no QQP e a quantidade de vagas para ver o total.</p>
+}

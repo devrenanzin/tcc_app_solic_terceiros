@@ -45,7 +45,7 @@ public sealed class MatrizTransicoesTests
         ["Aprovar"] = (c, d) => d.Aprovar(c.GestorNorte, Cenario.PrazoPadrao, c.Relogio, c.Calendario),
         ["DevolverPeloGestor"] = (c, d) => d.DevolverPeloGestor(c.GestorNorte, "Motivo.", c.Relogio),
         ["DevolverPeloSesi"] = (c, d) => d.DevolverPeloSesi(c.SesiNorte, TipoInconsistencia.Solicitante, "Motivo.", c.Relogio),
-        ["Corrigir"] = (c, d) => d.Corrigir(c.Solicitante, Cenario.ContratoNorte, c.Relogio),
+        ["Corrigir"] = (c, d) => c.Corrigir(d),
         ["Aceitar"] = (c, d) => d.Aceitar(c.SesiNorte, c.Relogio),
         ["RegistrarVaga"] = (c, d) => d.RegistrarVaga(c.SesiNorte, "https://vagas.exemplo.ucl.br/999", c.Relogio),
         ["IniciarEntrevistas"] = (c, d) => d.IniciarEntrevistas(c.SesiNorte, c.Relogio),

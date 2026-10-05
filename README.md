@@ -14,7 +14,25 @@ Os requisitos estão em [docs/REQUISITOS_v3.1.md](docs/REQUISITOS_v3.1.md), a ú
 | 1 — Domínio | Máquina de estados da demanda, devoluções e correções, cancelamento, SLA, farol, número AAAA-NNNNNN | Concluída |
 | 2 — Persistência | DbContext, mapeamento do modelo físico, migration inicial, carga inicial (catálogos, QQP, RACs, Admin) | Concluída |
 | 3 — Usuários e acesso | Login, autocadastro do Solicitante, cadastro de Gestores e Funcionários SESI, contratos, desativação, transferência de vínculo, telas | Concluída |
-| 4 a 8 | Ver o Guia de implementação no documento de requisitos | Pendentes |
+| 4 — Solicitação e validação | Formulário com QQP em cascata e custo, rascunho no navegador, envio com número AAAA-NNNNNN e anexos, validação do Gestor e do SESI, devoluções e correção | Concluída |
+| 5 a 8 | Ver o Guia de implementação no documento de requisitos | Pendentes |
+
+## Solicitação e validação (Etapa 4)
+
+| Tela | Quem acessa | O que faz |
+| --- | --- | --- |
+| `/Demandas/Nova` | Solicitante | UC02: formulário da seção 8.1 em 7 grupos, cargo pelas listas em cascata do QQP, contrato mostrado pelo corredor (RN13), custo mensal calculado pelo servidor a cada mudança (RN12) e anexos (De acordo VP-2 obrigatório). O rascunho fica só neste navegador por 3 dias desde o último salvamento; o botão "Descartar rascunho" pede confirmação (UC17). |
+| `/Demandas` | Todos | UC03: as demandas que o perfil vê (seção 4), com etapa, status, farol e custo. Os painéis por perfil ficam para a Etapa 7. |
+| `/Demandas/Detalhe/{id}` | Quem vê a demanda | Dados, anexos (download), linha do tempo, alterações das correções, SLA, custo. O Gestor do contrato aprova ou devolve (UC04, UC05); o SESI do contrato aceita ou devolve com o tipo da inconsistência (UC05, UC07). Só aparecem os botões que o domínio permite. |
+| `/Demandas/Corrigir/{id}` | Solicitante da demanda | UC06: o formulário preenchido, com o motivo da devolução. Cada campo alterado vai para o HistoricoAlteracao com usuário, perfil e IP. |
+| `/Admin/GerentesExecutivos` | Admin | Cadastra, desativa e reativa os gerentes executivos do formulário (o catálogo começa vazio). |
+
+- **Domínio.** `DadosSolicitacao` confere obrigatórios, condicionais (período em meses na vaga temporária, categoria da CNH) e os tamanhos do modelo físico. `CustoDemanda` tem a fórmula da RN12. `Demanda.Enviar` exige o De acordo VP-2 e o contrato do corredor; `Demanda.Corrigir` registra cada alteração e recalcula o custo inteiro com os valores atuais quando mudam o item QQP, a quantidade ou os equipamentos (Cliente). `FiltroVisibilidade` diz quem vê o quê; `Demanda.AcoesDisponiveis` diz quais botões cada um vê. `RegraArquivo` confere extensão, conteúdo e tamanho dos anexos.
+- **Número AAAA-NNNNNN.** A tabela `SequenciaNumeroDemanda` é atualizada com `MERGE ... WITH (HOLDLOCK)` na mesma transação do envio: envios simultâneos não repetem número, e um envio recusado não gasta número.
+- **Anexos.** Gravados na pasta `Anexos:Pasta` (padrão `src/Contratacao.Web/App_Data/anexos`, fora do Git) com nome gerado pelo sistema; o banco guarda nome original, tipo, tamanho, etapa e o caminho. Nada é apagado. Cada upload gera registro no LogAuditoria.
+- **RACs.** A tabela `DemandaRac` é editada direto na correção (seção 8.1): a RAC desmarcada sai da tabela de ligação, e a mudança fica no HistoricoAlteracao. No banco a chave continua sem exclusão em cascata.
+- **Concorrência.** Se duas pessoas agem sobre a mesma demanda, a segunda recebe "Esta demanda foi alterada por outra pessoa... Recarregue a página" (RNF10).
+- **Antes de testar:** o Admin precisa cadastrar ao menos um gerente executivo em `/Admin/GerentesExecutivos`, porque o campo é obrigatório.
 
 ## Usuários e acesso (Etapa 3)
 
@@ -46,13 +64,13 @@ Os requisitos estão em [docs/REQUISITOS_v3.1.md](docs/REQUISITOS_v3.1.md), a ú
 | `Domain/Contratos`, `Catalogos`, `Qqp` | Contratada, contrato, corredor e os catálogos do formulário e do QQP. |
 | `Domain/Auditoria`, `Anexos`, `Parametros` | `LogAuditoria`, `HistoricoAlteracao`, `Anexo`, `ParametroSistema` e `SequenciaNumeroDemanda`. |
 
-O relógio real (`Infrastructure/Tempo/RelogioSistema`) é registrado em `ConfiguracaoInfraestrutura`. Os campos do formulário, o custo e a verificação do anexo VP-2 no envio entram na Etapa 4.
+O relógio real (`Infrastructure/Tempo/RelogioSistema`) é registrado em `ConfiguracaoInfraestrutura`.
 
 Os testes ficam em `tests/Contratacao.Tests/Unitarios` e rodam sem banco. A matriz de transições testa as 10 ações em 10 situações da demanda (100 casos).
 
 ## Persistência (Etapa 2)
 
-- `Infrastructure/Persistencia/ContratacaoDbContext` com um mapeamento por tabela em `Configuracoes/`, seguindo o script da seção 23: nomes de chaves, tamanhos, tipos e checks. A tabela `DemandaRac` e as colunas do formulário entram na Etapa 4.
+- `Infrastructure/Persistencia/ContratacaoDbContext` com um mapeamento por tabela em `Configuracoes/`, seguindo o script da seção 23: nomes de chaves, tamanhos, tipos e checks. As colunas do formulário e a tabela `DemandaRac` vieram na migration `CamposDaSolicitacao` (Etapa 4).
 - Perfil, etapa e status são enums no domínio e viram `uniqueidentifier` fixos (`IdsFixos`) nas tabelas `Perfil`, `Etapa` e `Status`.
 - Datas gravadas e lidas como UTC; `DataLimiteSLA` é `date`.
 - Nenhuma chave estrangeira exclui em cascata. A demanda tem `RowVersion` para concorrência otimista (RNF10).
@@ -129,9 +147,12 @@ Cada suposição usada no código (as abertas na seção "Suposições e pendên
 
 | # | Suposição | Onde |
 | --- | --- | --- |
-| S4 | Depois do aceite, qualquer Funcionário SESI ativo do contrato registra vaga, entrevistas, exames e finalização; o responsável SESI é a referência | `Demanda.ExigirSesiDoContrato` |
+| S3 | O sequencial do número da demanda reinicia a cada ano (o ano do envio, no horário de Brasília) | `EnviarDemanda` |
+| S4 | Qualquer Funcionário SESI ativo do contrato executa as ações do SESI (aceite, devolução e etapas seguintes); o responsável SESI é a referência | `Demanda.EhSesiDoContrato` |
 | S7 | 45 dias corridos; dia limite em laranja; demanda cancelada em cinza | `Sla.Iniciar`, `RegraFarol` |
-| S9 | Classificação "-" na planilha QQP significa "sem classificação" (ClassificacaoId nulo) | `CargaInicial.CarregarQqpAsync` |
+| S8 | Imagens = .jpg, .jpeg e .png; e-mail = .eml e .msg | `RegraArquivo` |
+| S9 | Classificação "-" na planilha QQP significa "sem classificação" (ClassificacaoId nulo; "Sem classificação" na lista) | `CargaInicial.CarregarQqpAsync`, `formulario-demanda.js` |
+| S11 | Informações contratuais = OS e coletor de custo (o contrato vem do corredor) | `_Formulario.cshtml` |
 
 ## Pendências
 

@@ -34,11 +34,25 @@
                 <li><a class="nav-link @Ativo("/")" href="/"><i class="bi bi-house-door"></i> Início</a></li>
             </ul>
 
+            <div class="titulo-grupo">Demandas</div>
+            <ul class="nav flex-column">
+                @if (perfil == Perfil.Solicitante)
+                {
+                    <li><a class="nav-link @Ativo("/Demandas/Nova")" href="/Demandas/Nova"><i class="bi bi-file-earmark-plus"></i> Nova demanda</a></li>
+                }
+                <li>
+                    <a class="nav-link @(caminho.StartsWith("/Demandas", StringComparison.OrdinalIgnoreCase) && !caminho.StartsWith("/Demandas/Nova", StringComparison.OrdinalIgnoreCase) ? "ativo" : string.Empty)" href="/Demandas">
+                        <i class="bi bi-kanban"></i> @(perfil == Perfil.Solicitante ? "Minhas demandas" : "Demandas")
+                    </a>
+                </li>
+            </ul>
+
             @if (perfil == Perfil.Admin)
             {
                 <div class="titulo-grupo">Administração</div>
                 <ul class="nav flex-column">
                     <li><a class="nav-link @Ativo("/Admin/Gestores")" href="/Admin/Gestores"><i class="bi bi-person-badge"></i> Gestores</a></li>
+                    <li><a class="nav-link @Ativo("/Admin/GerentesExecutivos")" href="/Admin/GerentesExecutivos"><i class="bi bi-person-lines-fill"></i> Gerentes executivos</a></li>
                     <li><a class="nav-link @Ativo("/Admin/FuncionariosSesi")" href="/Admin/FuncionariosSesi"><i class="bi bi-people-fill"></i> Funcionários SESI</a></li>
                     <li><a class="nav-link @Ativo("/Admin/Transferencias")" href="/Admin/Transferencias"><i class="bi bi-arrow-left-right"></i> Transferir vínculo</a></li>
                     <li><a class="nav-link @Ativo("/Solicitantes")" href="/Solicitantes"><i class="bi bi-people"></i> Solicitantes</a></li>

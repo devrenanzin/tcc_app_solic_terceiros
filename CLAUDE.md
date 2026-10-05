@@ -44,7 +44,7 @@ Os diagramas existem como código PlantUML e Mermaid dentro do documento; use-os
 - **Anexos:** imagem, PDF e e-mail, até 10 MB, numa pasta do servidor, nunca apagados. O anexo "De acordo VP-2" é obrigatório para enviar a demanda.
 - **Contrato:** definido pelo corredor (RN13), nunca escolhido pelo Solicitante. A Contratada vem do contrato; hoje só o SESI.
 - **Cadastro:** o Solicitante se cadastra sozinho com e-mail `@ucl.br`; o Admin e qualquer Gestor ativo o desativam e reativam. O Gestor cadastra os Funcionários SESI e vincula cada um ao grupo de um dos seus contratos (outro contrato, só pelo Admin); o SESI só vê e trata demandas desse contrato. Gestor e Funcionário SESI trocam a senha inicial no primeiro acesso.
-- **Formulário e custo:** sem veículo e rastreador (melhoria futura). Custo mensal = Quantidade × (Preço QQP + equipamentos por pessoa). Período temporário em meses.
+- **Formulário e custo:** sem veículo e rastreador (melhoria futura). Custo mensal = Quantidade × (Preço QQP + equipamentos por pessoa). Período temporário em meses. Correção que muda item QQP, quantidade ou equipamentos recalcula o custo inteiro com os valores atuais; sem essas mudanças, ficam os valores do envio.
 - **Gestores e contratos:** o Admin vincula cada Gestor a um ou mais contratos (GestorContrato). Todo Gestor vê todas as demandas, mas só os Gestores do contrato da demanda a validam, devolvem e cancelam.
 - **Rascunho:** só no navegador do Solicitante, por 3 dias desde o último salvamento. Anexos são escolhidos no envio. A demanda passa a existir no sistema no envio.
 - **Gestor da demanda:** o Gestor que valida. O Gestor só aprova ou devolve; não edita campos.
@@ -85,7 +85,7 @@ A regra de dependência (Domain não depende de nada; Application só de Domain)
 | Códigos 466 e 467 do QQP repetem a mesma combinação | Nada: importados assim mesmo, com o código como chave |
 | LGPD: classificação dos dados pessoais, retenção e perfis autorizados | Antes da produção |
 
-As etapas 0 a 3 estão concluídas. Pergunte sobre o restante quando chegar nele.
+As etapas 0 a 4 estão concluídas. Pergunte sobre o restante quando chegar nele.
 
 ## Comandos
 

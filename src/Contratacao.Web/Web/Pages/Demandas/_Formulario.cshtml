@@ -1,0 +1,230 @@
+@using Contratacao.Web.Domain.Demandas
+@model Contratacao.Web.Web.Pages.Demandas.FormularioDemanda
+@{
+    var e = Model.Entrada;
+    var c = Model.Catalogos;
+}
+
+@* Os campos seguem a seção 8.1; a conferência dos obrigatórios e condicionais é feita no servidor (domínio). *@
+<script type="application/json" id="itens-qqp">@Html.Raw(Model.ItensQqpJson)</script>
+
+<section class="cartao secao-formulario">
+    <header><span class="numero-secao">1</span><div><h2>Identificação</h2><p>Quem pede e para qual área.</p></div></header>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label" for="area">Área do solicitante <span class="opcional">opcional</span></label>
+            <input id="area" name="Entrada.AreaSolicitante" value="@e.AreaSolicitante" maxlength="150" class="form-control" />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="tipo">Tipo de demanda</label>
+            <select id="tipo" name="Entrada.TipoDemandaId" class="form-select" required>
+                @if (c.TiposDemanda.Count != 1) { <option value="">Selecione</option> }
+                @foreach (var tipo in c.TiposDemanda)
+                {
+                    <option value="@tipo.Id" selected="@(e.TipoDemandaId == tipo.Id || c.TiposDemanda.Count == 1)">@tipo.Nome</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="gerente">Gerente executivo</label>
+            <select id="gerente" name="Entrada.GerenteExecutivoId" class="form-select" required>
+                <option value="">Selecione</option>
+                @foreach (var gerente in c.GerentesExecutivos)
+                {
+                    <option value="@gerente.Id" selected="@(e.GerenteExecutivoId == gerente.Id)">@gerente.Nome</option>
+                }
+            </select>
+            @if (c.GerentesExecutivos.Count == 0)
+            {
+                <div class="ajuda text-danger mt-1"><i class="bi bi-exclamation-circle"></i> Nenhum gerente executivo cadastrado. Peça ao Admin para cadastrar.</div>
+            }
+        </div>
+    </div>
+</section>
+
+<section class="cartao secao-formulario">
+    <header><span class="numero-secao">2</span><div><h2>Vaga</h2><p>Onde, como e quantas pessoas.</p></div></header>
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label" for="localidade">Localidade da vaga</label>
+            <input id="localidade" name="Entrada.LocalidadeVaga" value="@e.LocalidadeVaga" maxlength="200" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="corredor">Corredor</label>
+            <select id="corredor" name="Entrada.CorredorId" class="form-select" required data-contrato-alvo="#contrato-do-corredor">
+                <option value="">Selecione</option>
+                @foreach (var grupo in c.Corredores.GroupBy(x => x.Regiao))
+                {
+                    <optgroup label="@grupo.Key">
+                        @foreach (var corredor in grupo)
+                        {
+                            <option value="@corredor.Id" data-contrato="@corredor.Contrato" selected="@(e.CorredorId == corredor.Id)">@corredor.Nome</option>
+                        }
+                    </optgroup>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="modelo">Modelo de trabalho</label>
+            <select id="modelo" name="Entrada.ModeloTrabalhoId" class="form-select" required>
+                <option value="">Selecione</option>
+                @foreach (var modelo in c.ModelosTrabalho)
+                {
+                    <option value="@modelo.Id" selected="@(e.ModeloTrabalhoId == modelo.Id)">@modelo.Nome</option>
+                }
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="quantidade">Quantidade de vagas</label>
+            <input id="quantidade" name="Entrada.QuantidadeSolicitada" value="@e.QuantidadeSolicitada" type="number" min="1" step="1" class="form-control" required data-afeta-custo />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="formacao">Formação exigida <span class="opcional">opcional</span></label>
+            <input id="formacao" name="Entrada.Formacao" value="@e.Formacao" maxlength="300" class="form-control" />
+        </div>
+        <div class="col-12">
+            <label class="form-label" for="descricao">Descrição das atividades</label>
+            <textarea id="descricao" name="Entrada.DescricaoAtividades" rows="4" class="form-control" required>@e.DescricaoAtividades</textarea>
+        </div>
+        <div class="col-md-4">
+            <div class="form-check form-switch mt-md-4">
+                <input id="temporaria" name="Entrada.Temporaria" value="true" type="checkbox" class="form-check-input" checked="@e.Temporaria" />
+                <label class="form-check-label" for="temporaria">Vaga temporária</label>
+            </div>
+        </div>
+        <div class="col-md-4" data-depende-de="temporaria">
+            <label class="form-label" for="periodo">Período temporário, em meses</label>
+            <input id="periodo" name="Entrada.PeriodoTemporarioMeses" value="@e.PeriodoTemporarioMeses" type="number" min="1" step="1" class="form-control" />
+        </div>
+    </div>
+</section>
+
+<section class="cartao secao-formulario">
+    <header><span class="numero-secao">3</span><div><h2>Cargo e preço</h2><p>Escolha no catálogo QQP; cada lista mostra só as opções que combinam com as anteriores.</p></div></header>
+    <input type="hidden" name="Entrada.ItemQqpId" value="@e.ItemQqpId" data-afeta-custo />
+    <div class="row g-3">
+        <div class="col-md-4 col-xl">
+            <label class="form-label" for="qqp-regiao">Região</label>
+            <select id="qqp-regiao" class="form-select" data-qqp="regiao"></select>
+        </div>
+        <div class="col-md-4 col-xl">
+            <label class="form-label" for="qqp-funcao">Função</label>
+            <select id="qqp-funcao" class="form-select" data-qqp="funcao"></select>
+        </div>
+        <div class="col-md-4 col-xl">
+            <label class="form-label" for="qqp-classificacao">Classificação</label>
+            <select id="qqp-classificacao" class="form-select" data-qqp="classificacao"></select>
+        </div>
+        <div class="col-md-4 col-xl">
+            <label class="form-label" for="qqp-nivel">Nível</label>
+            <select id="qqp-nivel" class="form-select" data-qqp="nivel"></select>
+        </div>
+        <div class="col-md-4 col-xl">
+            <label class="form-label" for="qqp-carga">Carga horária</label>
+            <select id="qqp-carga" class="form-select" data-qqp="carga"></select>
+        </div>
+        <div class="col-md-4 col-xl d-none" data-qqp-codigo>
+            <label class="form-label" for="qqp-item">Código do item</label>
+            <select id="qqp-item" class="form-select" data-qqp="item"></select>
+        </div>
+    </div>
+    <div class="item-qqp mt-3" data-qqp-resumo hidden>
+        <div><span class="rotulo">Código</span><strong data-qqp-campo="codigo"></strong></div>
+        <div><span class="rotulo">Piso salarial</span><strong data-qqp-campo="piso"></strong></div>
+        <div><span class="rotulo">Preço unitário mensal</span><strong data-qqp-campo="preco"></strong></div>
+    </div>
+</section>
+
+<section class="cartao secao-formulario">
+    <header><span class="numero-secao">4</span><div><h2>Recursos</h2><p>Equipamentos entram no custo mensal por pessoa.</p></div></header>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="opcao-recurso">
+                <input name="Entrada.Notebook" value="true" type="checkbox" class="form-check-input" checked="@e.Notebook" data-afeta-custo />
+                <span><i class="bi bi-laptop"></i> Notebook <small>@Formatacao.Reais(c.Equipamentos.Notebook)/mês</small></span>
+            </label>
+        </div>
+        <div class="col-md-4">
+            <label class="opcao-recurso">
+                <input name="Entrada.SegundaTela" value="true" type="checkbox" class="form-check-input" checked="@e.SegundaTela" data-afeta-custo />
+                <span><i class="bi bi-display"></i> Segunda tela <small>@Formatacao.Reais(c.Equipamentos.SegundaTela)/mês</small></span>
+            </label>
+        </div>
+        <div class="col-md-4">
+            <label class="opcao-recurso">
+                <input name="Entrada.Celular" value="true" type="checkbox" class="form-check-input" checked="@e.Celular" data-afeta-custo />
+                <span><i class="bi bi-phone"></i> Celular <small>@Formatacao.Reais(c.Equipamentos.Celular)/mês</small></span>
+            </label>
+        </div>
+        <div class="col-md-4">
+            <div class="form-check form-switch mt-md-2">
+                <input id="exige-cnh" name="Entrada.ExigeCnh" value="true" type="checkbox" class="form-check-input" checked="@e.ExigeCnh" />
+                <label class="form-check-label" for="exige-cnh">Exige CNH</label>
+            </div>
+        </div>
+        <div class="col-md-4" data-depende-de="exige-cnh">
+            <label class="form-label" for="categoria-cnh">Categoria da CNH</label>
+            <select id="categoria-cnh" name="Entrada.CategoriaCnh" class="form-select">
+                <option value="">Selecione</option>
+                @foreach (var categoria in DadosSolicitacao.CategoriasCnh)
+                {
+                    <option value="@categoria" selected="@(e.CategoriaCnh == categoria)">@categoria</option>
+                }
+            </select>
+        </div>
+    </div>
+</section>
+
+<section class="cartao secao-formulario">
+    <header><span class="numero-secao">5</span><div><h2>Segurança</h2><p>RACs (regras de atividades críticas) que a função exige. Opcional.</p></div></header>
+    <div class="lista-racs">
+        @foreach (var rac in c.Racs)
+        {
+            <label class="opcao-rac">
+                <input name="Entrada.Racs" value="@rac.Id" type="checkbox" class="form-check-input" checked="@e.Racs.Contains(rac.Id)" />
+                <span><strong>@rac.Codigo</strong> @rac.Nome</span>
+            </label>
+        }
+    </div>
+</section>
+
+<section class="cartao secao-formulario">
+    <header><span class="numero-secao">6</span><div><h2>Contrato</h2><p>O número do contrato vem do corredor; você não escolhe.</p></div></header>
+    <div class="row g-3">
+        <div class="col-md-4">
+            <span class="form-label d-block">Número do contrato</span>
+            <div class="campo-automatico" id="contrato-do-corredor">Escolha o corredor</div>
+        </div>
+        @* SUPOSIÇÃO (S11): informações contratuais = OS e coletor de custo. *@
+        <div class="col-md-4">
+            <label class="form-label" for="os">OS do contrato</label>
+            <input id="os" name="Entrada.ContratoOs" value="@e.ContratoOs" maxlength="5" class="form-control" placeholder="Ex.: 15" required />
+        </div>
+        <div class="col-md-4">
+            <label class="form-label" for="coletor">Coletor de custo</label>
+            <input id="coletor" name="Entrada.ColetorCusto" value="@e.ColetorCusto" maxlength="30" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="responsavel-nome">Responsável efetivo: nome</label>
+            <input id="responsavel-nome" name="Entrada.ResponsavelEfetivoNome" value="@e.ResponsavelEfetivoNome" maxlength="150" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="responsavel-email">Responsável efetivo: e-mail</label>
+            <input id="responsavel-email" name="Entrada.ResponsavelEfetivoEmail" value="@e.ResponsavelEfetivoEmail" type="email" maxlength="254" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="fiscal-nome">Fiscal efetivo: nome</label>
+            <input id="fiscal-nome" name="Entrada.FiscalEfetivoNome" value="@e.FiscalEfetivoNome" maxlength="150" class="form-control" required />
+        </div>
+        <div class="col-md-6">
+            <label class="form-label" for="fiscal-email">Fiscal efetivo: e-mail</label>
+            <input id="fiscal-email" name="Entrada.FiscalEfetivoEmail" value="@e.FiscalEfetivoEmail" type="email" maxlength="254" class="form-control" required />
+        </div>
+    </div>
+</section>
+
+<section class="cartao secao-formulario">
+    <header><span class="numero-secao">7</span><div><h2>Outros</h2></div></header>
+    <label class="form-label" for="observacoes">Observações <span class="opcional">opcional</span></label>
+    <textarea id="observacoes" name="Entrada.Observacoes" rows="3" class="form-control">@e.Observacoes</textarea>
+</section>

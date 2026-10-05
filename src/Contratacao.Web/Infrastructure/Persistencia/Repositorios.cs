@@ -1,5 +1,6 @@
 using Contratacao.Web.Application;
 using Contratacao.Web.Domain.Auditoria;
+using Contratacao.Web.Domain.Comum;
 using Contratacao.Web.Domain.Usuarios;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -87,7 +88,32 @@ internal sealed class RegistroAuditoria(ContratacaoDbContext contexto) : IAudito
 
 internal sealed class UnidadeDeTrabalho(ContratacaoDbContext contexto) : IUnidadeDeTrabalho
 {
-    public Task SalvarAsync(CancellationToken cancelamento) => contexto.SaveChangesAsync(cancelamento);
+    public async Task SalvarAsync(CancellationToken cancelamento)
+    {
+        try
+        {
+            await contexto.SaveChangesAsync(cancelamento);
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            // RNF10: a demanda mudou desde que foi lida; nada foi gravado.
+            throw new RegraNegocioException(
+                "Esta demanda foi alterada por outra pessoa enquanto você a via. Recarregue a página e tente de novo.");
+        }
+    }
+
+    public async Task<T> EmTransacaoAsync<T>(Func<Task<T>> acao, CancellationToken cancelamento)
+    {
+        if (contexto.Database.CurrentTransaction is not null)
+        {
+            return await acao();
+        }
+
+        await using var transacao = await contexto.Database.BeginTransactionAsync(cancelamento);
+        var resultado = await acao();
+        await transacao.CommitAsync(cancelamento);
+        return resultado;
+    }
 }
 
 /// <summary>Hash de senha pelo mecanismo padrão do ASP.NET Core (seção 23).</summary>

@@ -1,5 +1,7 @@
+using Contratacao.Web.Domain.Catalogos;
 using Contratacao.Web.Domain.Contratos;
 using Contratacao.Web.Domain.Demandas;
+using Contratacao.Web.Domain.Qqp;
 using Contratacao.Web.Domain.Usuarios;
 using Contratacao.Web.Infrastructure.Persistencia.Catalogos;
 using Microsoft.EntityFrameworkCore;
@@ -7,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Contratacao.Web.Infrastructure.Persistencia.Configuracoes;
 
-// Demanda e tabelas filhas (seção 23). Os campos do formulário (seção 8.1) entram na Etapa 4.
+// Demanda e tabelas filhas (seção 23), com os campos do formulário (seção 8.1).
 
 internal sealed class ConfiguracaoDemanda : IEntityTypeConfiguration<Demanda>
 {
@@ -17,7 +19,13 @@ internal sealed class ConfiguracaoDemanda : IEntityTypeConfiguration<Demanda>
         {
             t.HasCheckConstraint("CK_Demanda_Finalizacao", "DataFinalizacao IS NULL OR DataFinalizacao >= DataCriacao");
             t.HasCheckConstraint("CK_Demanda_Sla", "DataLimiteSLA IS NULL OR DataLimiteSLA >= CAST(DataInicioSLA AS date)");
+            t.HasCheckConstraint("CK_Demanda_Quantidade", "QuantidadeSolicitada > 0");
+            t.HasCheckConstraint("CK_Demanda_CategoriaCnh", "CategoriaCnh IN ('A','B','C','D','E','AB','AC','AD','AE')");
+            t.HasCheckConstraint("CK_Demanda_Temporaria", "Temporaria = 0 OR PeriodoTemporarioMeses > 0");
+            t.HasCheckConstraint("CK_Demanda_Cnh", "ExigeCnh = 0 OR CategoriaCnh IS NOT NULL");
         });
+
+        ConfigurarFormulario(b);
 
         b.HasKey(d => d.Id);
         b.Property(d => d.Numero).HasMaxLength(30).IsRequired();
@@ -64,10 +72,63 @@ internal sealed class ConfiguracaoDemanda : IEntityTypeConfiguration<Demanda>
         b.HasMany(d => d.Correcoes).WithOne().HasForeignKey("DemandaId").HasConstraintName("FK_Correcao_Demanda");
         b.HasMany(d => d.Historico).WithOne().HasForeignKey("DemandaId").HasConstraintName("FK_HistDemanda_Demanda");
         b.HasOne(d => d.Vaga).WithOne().HasForeignKey<Vaga>("DemandaId").HasConstraintName("FK_Vaga_Demanda");
+        b.HasMany(d => d.Racs).WithOne().HasForeignKey("DemandaId").HasConstraintName("FK_DemandaRac_Demanda");
+        b.HasMany(d => d.Alteracoes).WithOne().HasForeignKey(h => h.DemandaId).HasConstraintName("FK_HistAlt_Demanda");
 
         b.Navigation(d => d.Etapas).HasField("_etapas").UsePropertyAccessMode(PropertyAccessMode.Field);
         b.Navigation(d => d.Correcoes).HasField("_correcoes").UsePropertyAccessMode(PropertyAccessMode.Field);
         b.Navigation(d => d.Historico).HasField("_historico").UsePropertyAccessMode(PropertyAccessMode.Field);
+        b.Navigation(d => d.Racs).HasField("_racs").UsePropertyAccessMode(PropertyAccessMode.Field);
+        b.Navigation(d => d.Alteracoes).HasField("_alteracoes").UsePropertyAccessMode(PropertyAccessMode.Field);
+    }
+
+    private static void ConfigurarFormulario(EntityTypeBuilder<Demanda> b)
+    {
+        b.Property(d => d.AreaSolicitante).HasMaxLength(150);
+        b.Property(d => d.TipoDemandaId);
+        b.Property(d => d.GerenteExecutivoId);
+        b.Property(d => d.LocalidadeVaga).HasMaxLength(200).IsRequired();
+        b.Property(d => d.CorredorId);
+        b.Property(d => d.ModeloTrabalhoId);
+        b.Property(d => d.QuantidadeSolicitada);
+        b.Property(d => d.DescricaoAtividades).IsRequired();
+        b.Property(d => d.Formacao).HasMaxLength(300);
+        b.Property(d => d.Temporaria);
+        b.Property(d => d.PeriodoTemporarioMeses);
+        b.Property(d => d.ItemQqpId);
+        b.Property(d => d.Notebook);
+        b.Property(d => d.SegundaTela);
+        b.Property(d => d.Celular);
+        b.Property(d => d.ExigeCnh);
+        b.Property(d => d.CategoriaCnh).HasMaxLength(2).IsUnicode(false);
+        b.Property(d => d.ContratoOs).HasMaxLength(5).IsRequired();
+        b.Property(d => d.ColetorCusto).HasMaxLength(30).IsRequired();
+        b.Property(d => d.ResponsavelEfetivoNome).HasMaxLength(150).IsRequired();
+        b.Property(d => d.ResponsavelEfetivoEmail).HasMaxLength(254).IsRequired();
+        b.Property(d => d.FiscalEfetivoNome).HasMaxLength(150).IsRequired();
+        b.Property(d => d.FiscalEfetivoEmail).HasMaxLength(254).IsRequired();
+        b.Property(d => d.Observacoes);
+        b.Property(d => d.PisoSalarialQqp);
+        b.Property(d => d.PrecoUnitarioQqp);
+        b.Property(d => d.ValorEquipamentosPorPessoa);
+        b.Property(d => d.CustoTotal).HasPrecision(14, 2);
+
+        b.HasOne<TipoDemanda>().WithMany().HasForeignKey(d => d.TipoDemandaId).HasConstraintName("FK_Demanda_TipoDemanda");
+        b.HasOne<GerenteExecutivo>().WithMany().HasForeignKey(d => d.GerenteExecutivoId).HasConstraintName("FK_Demanda_GerenteExecutivo");
+        b.HasOne<Corredor>().WithMany().HasForeignKey(d => d.CorredorId).HasConstraintName("FK_Demanda_Corredor");
+        b.HasOne<ModeloTrabalho>().WithMany().HasForeignKey(d => d.ModeloTrabalhoId).HasConstraintName("FK_Demanda_ModeloTrabalho");
+        b.HasOne<ItemQqp>().WithMany().HasForeignKey(d => d.ItemQqpId).HasConstraintName("FK_Demanda_ItemQqp");
+    }
+}
+
+internal sealed class ConfiguracaoDemandaRac : IEntityTypeConfiguration<DemandaRac>
+{
+    public void Configure(EntityTypeBuilder<DemandaRac> b)
+    {
+        b.ToTable("DemandaRac");
+        b.Property(r => r.RacId);
+        b.HasKey("DemandaId", nameof(DemandaRac.RacId)).HasName("PK_DemandaRac");
+        b.HasOne<Rac>().WithMany().HasForeignKey(r => r.RacId).HasConstraintName("FK_DemandaRac_Rac");
     }
 }
 

@@ -32,7 +32,14 @@ internal interface IAuditoria
 
 internal interface IUnidadeDeTrabalho
 {
+    /// <summary>
+    /// Grava tudo. Se outra pessoa alterou a mesma demanda antes (RNF10), recusa com uma
+    /// RegraNegocioException para a tela pedir que a página seja recarregada.
+    /// </summary>
     Task SalvarAsync(CancellationToken cancelamento);
+
+    /// <summary>Executa a ação numa transação do banco, confirmada só se a ação terminar sem erro.</summary>
+    Task<T> EmTransacaoAsync<T>(Func<Task<T>> acao, CancellationToken cancelamento);
 }
 
 internal interface IHashSenha

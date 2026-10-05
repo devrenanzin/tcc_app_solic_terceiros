@@ -1,5 +1,7 @@
 using Contratacao.Web.Application;
+using Contratacao.Web.Application.Demandas;
 using Contratacao.Web.Domain.Comum;
+using Contratacao.Web.Infrastructure.Anexos;
 using Contratacao.Web.Domain.Usuarios;
 using Contratacao.Web.Infrastructure.Carga;
 using Contratacao.Web.Infrastructure.Persistencia;
@@ -29,6 +31,13 @@ internal static class ConfiguracaoInfraestrutura
         services.AddScoped<IAuditoria, RegistroAuditoria>();
         services.AddScoped<IUnidadeDeTrabalho, UnidadeDeTrabalho>();
         services.AddSingleton<IHashSenha, HashSenha>();
+
+        services.AddScoped<IDemandas, RepositorioDemandas>();
+        services.AddScoped<ICatalogosDemanda, CatalogosDemanda>();
+        services.AddScoped<IAnexos, RepositorioAnexos>();
+        services.AddScoped<IParametros, Parametros>();
+        services.Configure<OpcoesAnexos>(configuracao.GetSection(OpcoesAnexos.Secao));
+        services.AddSingleton<IArmazenamentoArquivos, ArmazenamentoEmDisco>();
 
         return services;
     }

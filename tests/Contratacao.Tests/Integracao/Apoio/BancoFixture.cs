@@ -11,6 +11,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Hosting.Internal;
 
 namespace Contratacao.Tests.Integracao.Apoio;
 
@@ -21,6 +23,12 @@ namespace Contratacao.Tests.Integracao.Apoio;
 public sealed class BancoFixture : IAsyncLifetime
 {
     private readonly string _connectionString = ServidorSql.ConnectionString($"Contratacao_Testes_{Guid.NewGuid():N}");
+
+    /// <summary>Gerente executivo fictício: o catálogo começa vazio e o formulário o exige.</summary>
+    internal static readonly Guid GerenteExecutivoId = Guid.Parse("00000000-0000-0000-0000-0000000000e1");
+
+    /// <summary>Pasta temporária dos anexos gravados pelos testes, apagada no fim.</summary>
+    internal string PastaAnexos { get; } = Path.Combine(Path.GetTempPath(), $"contratacao-anexos-{Guid.NewGuid():N}");
 
     // 01/09/2026 08:45 em Brasília.
     internal RelogioFixo Relogio { get; } = new(new DateTime(2026, 9, 1, 11, 45, 0, DateTimeKind.Utc));
@@ -41,11 +49,16 @@ public sealed class BancoFixture : IAsyncLifetime
     internal ServiceProvider CriarServicos()
     {
         var configuracao = new ConfigurationBuilder()
-            .AddInMemoryCollection(new Dictionary<string, string?> { ["ConnectionStrings:Contratacao"] = _connectionString })
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ConnectionStrings:Contratacao"] = _connectionString,
+                ["Anexos:Pasta"] = PastaAnexos,
+            })
             .Build();
 
         var servicos = new ServiceCollection();
         servicos.AddLogging();
+        servicos.AddSingleton<IHostEnvironment>(new HostingEnvironment { EnvironmentName = "Testes", ContentRootPath = PastaAnexos });
         servicos.AdicionarAplicacao();
         servicos.AdicionarInfraestrutura(configuracao);
         servicos.AddSingleton<IRelogio>(Relogio);
@@ -101,24 +114,64 @@ public sealed class BancoFixture : IAsyncLifetime
         return new Ator(id, perfil, true, contratos.ToHashSet(), "10.0.0.1");
     }
 
-    internal static Task<Demanda> CarregarDemandaAsync(ContratacaoDbContext contexto, Guid id)
-        => contexto.Demandas
-            .Include(d => d.Etapas)
-            .Include(d => d.Correcoes)
-            .Include(d => d.Historico)
-            .Include(d => d.Vaga)
-            .SingleAsync(d => d.Id == id);
+    internal static async Task<Demanda> CarregarDemandaAsync(ContratacaoDbContext contexto, Guid id)
+        => await new RepositorioDemandas(contexto).ObterAsync(id, CancellationToken.None)
+            ?? throw new InvalidOperationException("Demanda não encontrada.");
+
+    /// <summary>Formulário completo com os catálogos reais da carga: corredor Norte, primeiro item QQP e RAC 01.</summary>
+    internal async Task<DadosSolicitacao> DadosAsync(Guid? corredorId = null)
+    {
+        await using var contexto = NovoContexto();
+        var item = await contexto.ItensQqp.OrderBy(i => i.Codigo).Select(i => i.Id).FirstAsync();
+        var rac = await contexto.Racs.OrderBy(r => r.Codigo).Select(r => r.Id).FirstAsync();
+
+        return new DadosSolicitacao
+        {
+            TipoDemandaId = IdsFixos.TipoNovaContratacao,
+            GerenteExecutivoId = GerenteExecutivoId,
+            LocalidadeVaga = "Vitória",
+            CorredorId = corredorId ?? IdsFixos.CorredorNorte,
+            ModeloTrabalhoId = IdsFixos.ModeloPresencial,
+            QuantidadeSolicitada = 2,
+            DescricaoAtividades = "Apoio à manutenção preventiva.",
+            ItemQqpId = item,
+            Notebook = true,
+            Racs = new HashSet<Guid> { rac },
+            ContratoOs = "15",
+            ColetorCusto = "CC-1234",
+            ResponsavelEfetivoNome = "Pessoa Responsável",
+            ResponsavelEfetivoEmail = "responsavel@ucl.br",
+            FiscalEfetivoNome = "Pessoa Fiscal",
+            FiscalEfetivoEmail = "fiscal@ucl.br",
+        };
+    }
+
+    /// <summary>Corredor, contrato, preço e equipamentos atuais para o formulário.</summary>
+    internal async Task<ReferenciasSolicitacao> ReferenciasAsync(DadosSolicitacao dados)
+    {
+        await using var contexto = NovoContexto();
+        var catalogos = new CatalogosDemanda(contexto);
+        var preco = await catalogos.PrecoQqpAsync(dados.ItemQqpId, CancellationToken.None);
+        var equipamentos = await catalogos.EquipamentosAsync(CancellationToken.None);
+        return (await catalogos.ReferenciasAsync(dados.CorredorId, preco!, equipamentos, CancellationToken.None))!;
+    }
 
     public async ValueTask InitializeAsync()
     {
         await using var contexto = NovoContexto();
         await contexto.Database.MigrateAsync();
         await NovaCarga(contexto).ExecutarAsync(CancellationToken.None);
+        await contexto.Database.ExecuteSqlAsync(
+            $"INSERT INTO GerenteExecutivo (Id, Nome, Ativo) VALUES ({GerenteExecutivoId}, {"Gerência Fictícia de Testes"}, 1)");
     }
 
     public async ValueTask DisposeAsync()
     {
         await using var contexto = NovoContexto();
         await contexto.Database.EnsureDeletedAsync();
+        if (Directory.Exists(PastaAnexos))
+        {
+            Directory.Delete(PastaAnexos, recursive: true);
+        }
     }
 }
