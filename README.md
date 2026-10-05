@@ -11,7 +11,21 @@ Os requisitos estão em [docs/REQUISITOS_v3.1.md](docs/REQUISITOS_v3.1.md), a ú
 | Etapa | Entrega | Situação |
 | --- | --- | --- |
 | 0 — Estrutura | Solution, camadas, testes de arquitetura, provas de tipos internal | Concluída |
-| 1 a 8 | Ver o Guia de implementação no documento de requisitos | Pendentes |
+| 1 — Domínio | Máquina de estados da demanda, devoluções e correções, cancelamento, SLA, farol, número AAAA-NNNNNN | Concluída |
+| 2 a 8 | Ver o Guia de implementação no documento de requisitos | Pendentes |
+
+## Domínio (Etapa 1)
+
+| Pasta | Conteúdo |
+| --- | --- |
+| `Domain/Demandas` | `Demanda` com a máquina de estados (seções 6–7 e 24): envio, aprovação, devoluções do Gestor e do SESI, correção, aceite, vaga, entrevistas, exames, finalização e cancelamento. Cada ação valida etapa, status e permissão do ator (perfil, atividade e contrato) e grava o histórico. Também `EtapaDemanda` (data de conclusão imutável), `SolicitacaoCorrecao`, `Vaga`, `HistoricoDemanda` e `NumeroDemanda`. |
+| `Domain/Prazos` | `Sla` (45 dias corridos sobre a data de Brasília, sem pausa nem reinício) e `RegraFarol`. |
+| `Domain/Comum` | `IRelogio`, `ICalendarioSla` com `CalendarioBrasilia` (fuso America/Sao_Paulo) e `RegraNegocioException`. |
+| `Domain/Usuarios` | `Perfil` e `Ator` (quem executa: perfil, contratos e IP). |
+
+O relógio real (`Infrastructure/Tempo/RelogioSistema`) é registrado em `ConfiguracaoInfraestrutura`. Os campos do formulário, o custo e a verificação do anexo VP-2 no envio entram na Etapa 4.
+
+Os testes ficam em `tests/Contratacao.Tests/Unitarios` e rodam sem banco. A matriz de transições testa as 10 ações em 10 situações da demanda (100 casos).
 
 ## Tecnologias
 
@@ -30,6 +44,7 @@ src/Contratacao.Web/
 tests/Contratacao.Tests/
   Arquitetura/     regra de dependência e regra de tipos internal
   Integracao/      páginas, endpoints e migrations com tipos internal
+  Unitarios/       regras do domínio, sem banco
 ```
 
 Regra de dependência (verificada por testes): Domain não depende de nenhuma camada nem de ASP.NET Core ou EF Core; Application depende só de Domain; Infrastructure não depende de Web.
@@ -73,4 +88,13 @@ dotnet ef database update --project src/Contratacao.Web
 
 ## Suposições em uso
 
-Nenhuma até a Etapa 0. Cada suposição usada no código (as abertas na seção "Suposições e pendências" do documento de requisitos) será listada aqui e marcada com `// SUPOSIÇÃO (S<n>)`.
+Cada suposição usada no código (as abertas na seção "Suposições e pendências" do documento de requisitos) é listada aqui e marcada com `// SUPOSIÇÃO (S<n>)`.
+
+| # | Suposição | Onde |
+| --- | --- | --- |
+| S4 | Depois do aceite, qualquer Funcionário SESI ativo do contrato registra vaga, entrevistas, exames e finalização; o responsável SESI é a referência | `Demanda.ExigirSesiDoContrato` |
+| S7 | 45 dias corridos; dia limite em laranja; demanda cancelada em cinza | `Sla.Iniciar`, `RegraFarol` |
+
+## Pendências
+
+- **Gestor da demanda após nova aprovação:** quando a demanda volta ao Gestor por correção contratual e é aprovada de novo, ainda falta definir se `GestorId` fica com o Gestor da primeira ou da última aprovação. Hoje fica o da última (`Demanda.Aprovar`, marcado com `PENDENTE`).

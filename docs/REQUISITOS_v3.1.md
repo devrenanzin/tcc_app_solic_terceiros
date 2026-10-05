@@ -1437,7 +1437,7 @@ O README do repositório deve repetir esses passos, ajustados ao que for de fato
 
 ## Suposições e pendências
 
-Treze suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; três decisões continuam abertas e serão necessárias em etapas específicas da implementação.
+Doze suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; três decisões continuam abertas e serão necessárias em etapas específicas da implementação.
 
 ### Suposições a confirmar
 
@@ -1446,7 +1446,6 @@ Treze suposições foram adotadas para não travar o desenvolvimento e precisam 
 | S2 | A equipe de um Gestor desativado continua ativa, e o Admin pode transferir o vínculo dela | 4.5, UC19 |
 | S3 | O sequencial do número da demanda reinicia a cada ano | UC02 |
 | S4 | Depois do aceite, qualquer Funcionário SESI ativo pode registrar as etapas seguintes | 24 |
-| S6 | Retorno direto ao SESI após correção do Solicitante, sem nova aprovação do Gestor | RN02a |
 | S7 | 45 dias corridos; dia limite em laranja; demanda cancelada em cinza | 9–11 |
 | S8 | Imagens = .jpg, .jpeg e .png; e-mail = .eml e .msg | 18 |
 | S9 | Classificação "-" na planilha QQP significa "sem classificação" | 23 |
@@ -1456,7 +1455,7 @@ Treze suposições foram adotadas para não travar o desenvolvimento e precisam 
 | S14 | Veículo e rastreador cobrados uma vez por demanda, não por vaga | 8.1 |
 | S15 | Valores de notebook, segunda tela, celular e rastreador deduzidos dos dados, por mês | 8.1 |
 | S16 | C. Integrado da região Sudeste cai no contrato do Sudeste | 8.1 |
-S1, S5, S17, S18, S19 e S20 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32 e 34).
+S1, S5, S6, S17, S18, S19 e S20 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32 e 34).
 
 A antiga S10 (escolha do item QQP na demanda) foi confirmada pelo cliente.
 

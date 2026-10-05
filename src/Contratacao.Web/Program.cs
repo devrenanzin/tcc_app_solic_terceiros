@@ -1,7 +1,9 @@
+using Contratacao.Web.Infrastructure;
 using Contratacao.Web.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AdicionarInfraestrutura();
 builder.Services.AdicionarInterfaceWeb();
 
 var app = builder.Build();
