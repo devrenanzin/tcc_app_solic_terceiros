@@ -52,7 +52,7 @@ internal static class ConfiguracaoWeb
             opcoes.Conventions.AuthorizeFolder("/Admin", Politicas.Admin);
             opcoes.Conventions.AuthorizeFolder("/Equipe", Politicas.Gestor);
             opcoes.Conventions.AuthorizeFolder("/Solicitantes", Politicas.AdminOuGestor);
-        });
+        }).AddMvcOptions(opcoes => opcoes.Filters.Add<FiltroTrocaSenha>());
 
         return services;
     }

@@ -9,6 +9,7 @@ internal static class ConfiguracaoAplicacao
         services.AddScoped<AutenticarUsuario>();
         services.AddScoped<CadastrarSolicitante>();
         services.AddScoped<ObterAtor>();
+        services.AddScoped<TrocarSenha>();
         services.AddScoped<CadastrarGestor>();
         services.AddScoped<CadastrarFuncionarioSesi>();
         services.AddScoped<AlterarSituacaoUsuario>();

@@ -1,0 +1,51 @@
+@page
+@model Contratacao.Web.Web.Pages.Admin.FuncionariosSesi.IndexModel
+@{
+    ViewData["Title"] = "Funcionários SESI";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Funcionários SESI</h1>
+        <p>O Gestor cadastra e gerencia a própria equipe; aqui o Admin troca o contrato quando for preciso usar um contrato que não é do Gestor.</p>
+    </div>
+</div>
+
+<div class="cartao">
+    @if (Model.Funcionarios.Count == 0)
+    {
+        <div class="vazio"><i class="bi bi-people-fill"></i>Nenhum Funcionário SESI cadastrado ainda.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table tabela-cartao">
+                <thead>
+                    <tr><th>Nome</th><th>Gestor responsável</th><th>Contrato</th><th>Situação</th><th class="text-end">Ações</th></tr>
+                </thead>
+                <tbody>
+                    @foreach (var funcionario in Model.Funcionarios)
+                    {
+                        <tr>
+                            <td>
+                                <div class="fw-semibold">@funcionario.Nome</div>
+                                <div class="small text-body-secondary">@funcionario.Email</div>
+                            </td>
+                            <td>@(funcionario.GestorResponsavelNome ?? "—")</td>
+                            <td>
+                                @foreach (var numero in funcionario.Contratos)
+                                {
+                                    <span class="etiqueta-contrato">@numero</span>
+                                }
+                            </td>
+                            <td><partial name="_SituacaoUsuario" model="funcionario.Ativo" /></td>
+                            <td class="text-end">
+                                <a href="/Admin/FuncionariosSesi/Contrato?id=@funcionario.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-diagram-3"></i> Contrato</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

@@ -60,6 +60,16 @@ internal sealed partial class Navegador : IAsyncDisposable
         Assert.Equal("/", resposta.Headers.Location?.OriginalString);
     }
 
+    /// <summary>Primeiro acesso de quem recebeu senha inicial: entra e troca a senha.</summary>
+    internal async Task EntrarPelaPrimeiraVezAsync(string email, string senhaInicial, string novaSenha)
+    {
+        await EntrarAsync(email, senhaInicial);
+        using var troca = await EnviarAsync("/TrocarSenha",
+            ("Entrada.SenhaAtual", senhaInicial), ("Entrada.NovaSenha", novaSenha), ("Entrada.ConfirmacaoSenha", novaSenha));
+        Assert.Equal(HttpStatusCode.Redirect, troca.StatusCode);
+        Assert.Equal("/", troca.Headers.Location?.OriginalString);
+    }
+
     public async ValueTask DisposeAsync()
     {
         Cliente.Dispose();

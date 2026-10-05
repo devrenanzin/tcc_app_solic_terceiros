@@ -93,26 +93,6 @@ internal sealed class ConfiguracaoModeloTrabalho : IEntityTypeConfiguration<Mode
     }
 }
 
-internal sealed class ConfiguracaoVeiculo : IEntityTypeConfiguration<Veiculo>
-{
-    public void Configure(EntityTypeBuilder<Veiculo> b)
-    {
-        b.ToTable("Veiculo");
-        b.HasKey(v => v.Id);
-        b.Property(v => v.Tipo).HasMaxLength(100).IsRequired();
-        b.Property(v => v.Valor);
-        b.Property(v => v.Ativo);
-        b.HasIndex(v => v.Tipo).IsUnique().HasDatabaseName("UQ_Veiculo_Tipo");
-
-        // Lista Tb_veiculos informada pelo cliente (RN12).
-        b.HasData(
-            new { Id = IdsFixos.Veiculo4x4, Tipo = "Veículo 4x4", Valor = 9113.47m, Ativo = true },
-            new { Id = IdsFixos.VeiculoPasseio, Tipo = "Veículo de passeio", Valor = 5292.29m, Ativo = true },
-            new { Id = IdsFixos.VeiculoVan, Tipo = "Veículo van", Valor = 18874.06m, Ativo = true },
-            new { Id = IdsFixos.VeiculoTransporte, Tipo = "Transporte", Valor = 539.26m, Ativo = true });
-    }
-}
-
 internal sealed class ConfiguracaoItemEquipamento : IEntityTypeConfiguration<ItemEquipamento>
 {
     public void Configure(EntityTypeBuilder<ItemEquipamento> b)
@@ -124,12 +104,11 @@ internal sealed class ConfiguracaoItemEquipamento : IEntityTypeConfiguration<Ite
         b.Property(i => i.Ativo);
         b.HasIndex(i => i.Nome).IsUnique().HasDatabaseName("UQ_ItemEquipamento_Nome");
 
-        // Valores confirmados pelo cliente (revisão de 05/10/2026, item 37).
+        // Valores confirmados pelo cliente (revisão de 05/10/2026, item 37). Rastreador saiu com o veículo (item 42).
         b.HasData(
             new { Id = IdsFixos.EquipamentoNotebook, Nome = "Notebook", Valor = 444.35m, Ativo = true },
             new { Id = IdsFixos.EquipamentoSegundaTela, Nome = "Segunda tela", Valor = 53.93m, Ativo = true },
-            new { Id = IdsFixos.EquipamentoCelular, Nome = "Celular", Valor = 118.64m, Ativo = true },
-            new { Id = IdsFixos.EquipamentoRastreador, Nome = "Rastreador", Valor = 345.13m, Ativo = true });
+            new { Id = IdsFixos.EquipamentoCelular, Nome = "Celular", Valor = 118.64m, Ativo = true });
     }
 }
 

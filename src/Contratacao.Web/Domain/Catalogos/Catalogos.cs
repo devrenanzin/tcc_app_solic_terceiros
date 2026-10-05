@@ -29,17 +29,10 @@ internal sealed class ModeloTrabalho
     internal string Nome { get; private set; } = string.Empty;
 }
 
-internal sealed class Veiculo
-{
-    private Veiculo() { } // EF Core
-
-    internal Guid Id { get; private set; }
-    internal string Tipo { get; private set; } = string.Empty;
-    internal decimal Valor { get; private set; }
-    internal bool Ativo { get; private set; }
-}
-
-/// <summary>Itens que entram no custo (RN12): notebook, segunda tela, celular e rastreador.</summary>
+/// <summary>
+/// Itens cobrados por pessoa no custo (RN12): notebook, segunda tela e celular.
+/// Veículo e rastreador saíram do MVP (revisão de 05/10/2026, item 42).
+/// </summary>
 internal sealed class ItemEquipamento
 {
     private ItemEquipamento() { } // EF Core

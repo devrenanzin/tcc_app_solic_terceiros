@@ -54,17 +54,24 @@ public sealed class CargaInicialTests(BancoFixture banco) : IClassFixture<BancoF
         Assert.Equal("Nova contratação", (await contexto.TiposDemanda.SingleAsync(Cancelamento)).Nome);
         Assert.Empty(await contexto.GerentesExecutivos.ToListAsync(Cancelamento));
 
-        var veiculos = await contexto.Veiculos.ToDictionaryAsync(v => v.Tipo, v => v.Valor, Cancelamento);
-        Assert.Equal(9113.47m, veiculos["Veículo 4x4"]);
-        Assert.Equal(5292.29m, veiculos["Veículo de passeio"]);
-        Assert.Equal(18874.06m, veiculos["Veículo van"]);
-        Assert.Equal(539.26m, veiculos["Transporte"]);
-
         var equipamentos = await contexto.ItensEquipamento.ToDictionaryAsync(i => i.Nome, i => i.Valor, Cancelamento);
+        Assert.Equal(3, equipamentos.Count);
         Assert.Equal(444.35m, equipamentos["Notebook"]);
         Assert.Equal(53.93m, equipamentos["Segunda tela"]);
         Assert.Equal(118.64m, equipamentos["Celular"]);
-        Assert.Equal(345.13m, equipamentos["Rastreador"]);
+    }
+
+    [Fact]
+    public async Task Veiculo_e_rastreador_ficaram_fora_do_mvp()
+    {
+        await using var contexto = banco.NovoContexto();
+
+        var tabelaVeiculo = await contexto.Database
+            .SqlQuery<int>($"SELECT COUNT(*) AS Value FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Veiculo'")
+            .SingleAsync(Cancelamento);
+
+        Assert.Equal(0, tabelaVeiculo);
+        Assert.False(await contexto.ItensEquipamento.AnyAsync(i => i.Nome == "Rastreador", Cancelamento));
     }
 
     [Fact]

@@ -58,6 +58,11 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 39 | Login | Coluna própria, sem regra (L8) | O login é o e-mail completo; a coluna Login passa a ter 254 caracteres, como o e-mail | Cliente |
 | 40 | Perfil e IP nas alterações de campo | HistoricoAlteracao sem perfil e IP (L6) | HistoricoAlteracao ganha PerfilUsuario e EnderecoIp, como os demais registros de auditoria | Cliente |
 | 41 | Custo mensal (S15) | A confirmar | O custo total é mensal | Cliente |
+| 42 | Veículo e rastreador (S14) | Campos do formulário e itens do custo | Saem do MVP e ficam como possível melhoria; o custo passa a ser Quantidade × (Preço QQP + Equipamentos por pessoa) | Cliente |
+| 43 | Período temporário (S13) | Em dias | Em meses | Cliente |
+| 44 | Senha inicial (S22) | Definida por quem cadastra, sem troca prevista | Gestor e Funcionário SESI trocam a senha inicial no primeiro acesso, antes de usar o sistema | Cliente |
+| 45 | Contrato do Funcionário SESI (S23) | Qualquer contrato ativo | O Gestor só usa os seus contratos; para outro contrato, o Admin faz a troca | Cliente |
+| 46 | Senha, equipe do Gestor desativado e campos obrigatórios (S21, S2, S12) | Suposições | Confirmadas: senha de 8 a 128 caracteres; a equipe de Gestor desativado continua ativa; obrigatórios conforme a seção 8.1 | Cliente |
 
 ## 1–3. Objetivo e escopo
 
@@ -72,6 +77,7 @@ O sistema digitaliza, centraliza e controla a solicitação e a contratação de
 - Executar o recrutamento na plataforma externa do SESI. O sistema apenas registra e acompanha o que acontece lá.
 - Notificações automáticas: ficam para uma fase posterior ao MVP (seção 29).
 - Indicadores gerenciais: fase posterior, como já previa a v3.0 (seção 30).
+- Veículo e rastreador na demanda: possível melhoria futura (Cliente, revisão de 05/10/2026).
 
 ## 4. Atores, hierarquia e visibilidade
 
@@ -92,10 +98,10 @@ A hierarquia de cadastro da v3.0 se mantém. A mudança é que o vínculo com o 
 4. Um Gestor não edita, desativa nem reativa usuários de outro Gestor.
 5. Todo Gestor ativo visualiza todas as demandas, de qualquer Solicitante. A demanda chega aos Gestores do seu contrato (definido pelo corredor, RN13), e só eles a validam, devolvem e cancelam (Cliente). O Gestor não edita campos da demanda: se algo estiver errado, devolve ao Solicitante (Cliente).
 6. Usuários nunca são excluídos, apenas desativados.
-7. Gestor desativado: as demandas dos seus contratos continuam com os demais Gestores desses contratos. Se um contrato ficar sem Gestor ativo, suas demandas aguardam até o Admin vincular um Gestor a ele. **SUPOSIÇÃO — confirmar:** a equipe do Gestor desativado continua ativa e o Admin pode transferir o vínculo dela para outro Gestor (UC19).
+7. Gestor desativado: as demandas dos seus contratos continuam com os demais Gestores desses contratos. Se um contrato ficar sem Gestor ativo, suas demandas aguardam até o Admin vincular um Gestor a ele. A equipe do Gestor desativado continua ativa e o Admin pode transferir o vínculo dela para outro Gestor (UC19; confirmado pelo cliente).
 8. Cada contrato tem um grupo de Funcionários SESI, e cada funcionário pertence ao grupo de um contrato. Ele vê e trata só as demandas desse contrato (Cliente). O contrato da demanda vem do corredor (RN13). "Tratar" inclui aceitar, registrar vaga, entrevistas e exames e finalizar; devolver é uma ação opcional, usada só quando há inconsistência (Cliente).
 
-**RN11 — Autenticação (Cliente).** Todo usuário, de qualquer perfil, entra com um e-mail do domínio @ucl.br e uma senha própria do sistema. O sistema recusa cadastro e login com qualquer outro domínio e guarda só o hash da senha. O Solicitante faz o próprio cadastro; os demais perfis são cadastrados pelo Admin (Gestor) ou pelo Gestor (Funcionário SESI). O domínio imita o Google Workspace da UCL, mas, por ser um sistema de teste, não há conexão real com o Workspace.
+**RN11 — Autenticação (Cliente).** Todo usuário, de qualquer perfil, entra com um e-mail do domínio @ucl.br e uma senha própria do sistema. O sistema recusa cadastro e login com qualquer outro domínio e guarda só o hash da senha. O Solicitante faz o próprio cadastro; os demais perfis são cadastrados pelo Admin (Gestor) ou pelo Gestor (Funcionário SESI), que define a senha inicial. Gestor e Funcionário SESI trocam essa senha no primeiro acesso, antes de usar o sistema. A senha tem de 8 a 128 caracteres (Cliente). O domínio imita o Google Workspace da UCL, mas, por ser um sistema de teste, não há conexão real com o Workspace.
 
 ## 5. Etapas, status e eventos
 
@@ -177,12 +183,12 @@ São 19 casos de uso ativos: os 15 da v3.0, com ajustes, e 4 novos (UC17 a UC20)
 | UC11 | Finalizar Contratação | SESI | Exige etapa Exames Médicos |
 | UC12 | Cadastrar Gestor | Admin | Vincula o Gestor a um ou mais contratos (Cliente) |
 | UC13 | Cadastrar-se como Solicitante | Solicitante | Autocadastro com e-mail @ucl.br (Cliente); antes o Gestor cadastrava |
-| UC14 | Cadastrar Funcionário SESI | Gestor | Vincula o funcionário a um contrato (Cliente) |
+| UC14 | Cadastrar Funcionário SESI | Gestor | Vincula o funcionário a um dos contratos do próprio Gestor; outro contrato, só pelo Admin (Cliente) |
 | UC15 | Acompanhar Demanda | Todos | Escopo conforme seção 4 |
 | UC16 | ~~Corrigir Informações Contratuais~~ | — | Removido: só o Solicitante corrige (Cliente) |
 | UC17 | Descartar Rascunho | Solicitante | Novo; o rascunho é apagado do navegador (Cliente) |
 | UC18 | Cancelar Demanda | Gestor | Novo (a v3.0 citava, sem caso de uso) |
-| UC19 | Transferir Vínculo de Usuário | Admin | Novo (SUPOSIÇÃO — confirmar) |
+| UC19 | Transferir Vínculo de Usuário | Admin | Novo (confirmado pelo cliente) |
 | UC20 | Executar Operação Excepcional | Admin | Novo (a v3.0 citava na seção 4.1, sem caso de uso) |
 
 ### UC02 — Numeração
@@ -205,7 +211,7 @@ No envio, o sistema gera o número no formato AAAA-NNNNNN: o ano do envio e um s
 
 ### UC14 — Cadastrar Funcionário SESI (alterado)
 
-O Gestor cadastra o Funcionário SESI na sua equipe e escolhe o contrato a que ele fica vinculado. A troca de contrato é registrada no log de auditoria com valor anterior e novo.
+O Gestor cadastra o Funcionário SESI na sua equipe e escolhe, entre os seus contratos, aquele a que ele fica vinculado. O Gestor também troca o contrato, sempre entre os seus; para colocar o funcionário num contrato que não é do Gestor, o Admin faz a troca (Cliente). Toda troca de contrato é registrada no log de auditoria com valor anterior e novo.
 
 ### UC16 — Removido
 
@@ -242,7 +248,7 @@ O formulário da demanda reproduz as colunas da lista tb\_demandas\_cadastradas 
 
 ### Campos
 
-Obrigatório = campo preenchido em todos os registros analisados (**SUPOSIÇÃO S12 — confirmar**). Campos "condicionais" só aparecem e só são exigidos quando o campo anterior é marcado.
+Obrigatório = campo preenchido em todos os registros analisados (confirmado pelo cliente). Campos "condicionais" só aparecem e só são exigidos quando o campo anterior é marcado.
 
 | Grupo | Campo | Tipo | Obrigatório | Lista ou regra |
 | --- | --- | --- | --- | --- |
@@ -257,13 +263,10 @@ Obrigatório = campo preenchido em todos os registros analisados (**SUPOSIÇÃO 
 | Vaga | Descrição das atividades | Texto longo | Sim | Livre |
 | Vaga | Formação exigida | Texto | Não | Livre |
 | Vaga | Temporária | Sim/não | Sim | — |
-| Vaga | Período temporário | Inteiro, em dias (**S13**) | Condicional | Exigido quando Temporária = sim |
+| Vaga | Período temporário | Inteiro, em meses (Cliente) | Condicional | Exigido quando Temporária = sim |
 | Cargo e preço | Região, função, classificação, nível, carga horária | Listas em cascata | Sim | Catálogo QQP (seção 23); a combinação define o item |
 | Cargo e preço | Piso salarial e preço unitário | Somente leitura | — | Mostrados ao escolher o item |
 | Recursos | Notebook, segunda tela, celular | Sim/não cada | Sim | Entram no custo (RN12) |
-| Recursos | Veículo | Sim/não | Sim | — |
-| Recursos | Tipo de veículo | Lista | Condicional | Veiculo (ex.: Veículo 4x4); exigido quando Veículo = sim |
-| Recursos | Rastreador | Sim/não | Condicional | Só disponível com veículo |
 | Recursos | Exige CNH | Sim/não | Sim | — |
 | Recursos | Categoria da CNH | Lista | Condicional | A, B, C, D, E, AB, AC, AD, AE; exigida quando Exige CNH = sim |
 | Segurança | RACs | Múltipla escolha | Não | Rac: RAC 01 a RAC 13, da lista tb\_racs (ex.: RAC 01 Trabalhos em altura) |
@@ -308,20 +311,18 @@ A demanda guarda o contrato vigente no envio. Se o corredor for trocado numa cor
 O custo total é calculado pelo sistema e gravado na demanda com os valores vigentes no envio; mudanças posteriores de preço não alteram demandas já enviadas. Se uma correção alterar qualquer campo do QQP (região, função, classificação, nível ou carga horária), o custo é recalculado (Cliente) e a alteração fica no HistoricoAlteracao.
 
 ```latex
-\text{Custo total} = \text{Quantidade} \times (\text{Preço unitário QQP} + \text{Equipamentos por pessoa}) + \text{Veículo} + \text{Rastreador}
+\text{Custo total mensal} = \text{Quantidade} \times (\text{Preço unitário QQP} + \text{Equipamentos por pessoa})
 ```
 
-Os valores abaixo foram deduzidos dos 154 registros: a fórmula reproduz o custo total de 153 deles, com diferença de centavos. Ficam numa tabela de catálogo, editável pelo Admin.
+Equipamentos por pessoa é a soma dos itens marcados no formulário (notebook, segunda tela e celular). Os valores ficam numa tabela de catálogo, editável pelo Admin, e foram confirmados pelo cliente; o custo total é mensal (revisão de 05/10/2026).
 
-| Item | Valor deduzido | Cobrança |
+| Item | Valor | Cobrança |
 | --- | --- | --- |
-| Notebook | `R$ 444,35` | Por pessoa |
-| Segunda tela | `R$ 53,93` | Por pessoa |
-| Celular | `R$ 118,64` | Por pessoa |
-| Veículo 4x4 | `R$ 9.113,47` | Uma vez por demanda (**S14**) |
-| Rastreador | `R$ 345,13` | Uma vez por demanda (**S14**) |
+| Notebook | `R$ 444,35` | Por pessoa, por mês |
+| Segunda tela | `R$ 53,93` | Por pessoa, por mês |
+| Celular | `R$ 118,64` | Por pessoa, por mês |
 
-**Valores confirmados pelo cliente** na revisão de 05/10/2026, e o custo total é mensal. **Confirmar (S14):** se veículo e rastreador são mesmo cobrados uma vez por demanda. Numa demanda de 3 vagas que pedia 2 veículos, o custo registrado inclui um único veículo. Valores de veículo informados pelo cliente (lista Tb\_veiculos): Veículo 4x4 \`R$ 9.113,47\`, Veículo de passeio \`R$ 5.292,29\`, Veículo van \`R$ 18.874,06\` e Transporte \`R$ 539,26\`.
+**Veículo e rastreador ficaram fora do MVP** (Cliente, revisão de 05/10/2026, item 42) e podem entrar numa melhoria futura. Para referência, o aplicativo atual usava a lista Tb\_veiculos (Veículo 4x4 \`R$ 9.113,47\`, Veículo de passeio \`R$ 5.292,29\`, Veículo van \`R$ 18.874,06\`, Transporte \`R$ 539,26\`) e o rastreador (\`R$ 345,13\`), cobrados uma vez por demanda.
 
 ### Correspondência com o aplicativo atual
 
@@ -527,7 +528,7 @@ Notação UML: cada classe tem nome, atributos e operações, com visibilidade p
 
 ### Modelo lógico
 
-O modelo lógico mostra 26 entidades (o físico tem 31 tabelas, contando as cinco listas do catálogo QQP); Demanda é o centro e todas as tabelas filhas apontam para ela sem exclusão em cascata. Notação de entidade-relacionamento: || = exatamente um, |o = zero ou um, o{ = zero ou muitos, |{ = um ou muitos.
+O modelo lógico mostra 25 entidades (o físico tem 30 tabelas, contando as cinco listas do catálogo QQP); Demanda é o centro e todas as tabelas filhas apontam para ela sem exclusão em cascata. Notação de entidade-relacionamento: || = exatamente um, |o = zero ou um, o{ = zero ou muitos, |{ = um ou muitos.
 
 ```mermaid
 erDiagram
@@ -555,7 +556,6 @@ erDiagram
   CORREDOR ||--o{ DEMANDA : "localiza"
   MODELO_TRABALHO ||--o{ DEMANDA : "define"
   ITEM_QQP ||--o{ DEMANDA : "precifica"
-  VEICULO |o--o{ DEMANDA : "equipa"
   DEMANDA ||--o{ DEMANDA_RAC : "exige"
   RAC ||--o{ DEMANDA_RAC : "aplicada em"
   CONTRATO ||--o{ DEMANDA : "vincula"
@@ -583,6 +583,7 @@ erDiagram
     datetime DataCadastro
     datetime DataUltimoAcesso "nulo"
     string SenhaHash
+    bool DeveTrocarSenha
   }
   CONTRATADA {
     guid Id PK
@@ -612,7 +613,7 @@ erDiagram
     guid EtapaAtualId FK
     guid StatusAtualId FK
     datetime DataCriacao
-    datetime DataEnvio "nulo"
+    datetime DataEnvio
     datetime DataInicioSLA "nulo"
     int PrazoDiasSla "nulo"
     date DataLimiteSLA "nulo"
@@ -623,18 +624,16 @@ erDiagram
     guid CorredorId FK
     guid ModeloTrabalhoId FK
     guid ItemQqpId FK
-    guid VeiculoId FK "nulo"
     string AreaSolicitante "nulo"
     string LocalidadeVaga
     int QuantidadeSolicitada
     string DescricaoAtividades
     string Formacao "nulo"
     bool Temporaria
-    int PeriodoTemporarioDias "nulo"
+    int PeriodoTemporarioMeses "nulo"
     bool Notebook
     bool SegundaTela
     bool Celular
-    bool Rastreador
     bool ExigeCnh
     string CategoriaCnh "nulo"
     guid ContratoId FK
@@ -648,8 +647,6 @@ erDiagram
     decimal PisoSalarialQqp
     decimal PrecoUnitarioQqp
     decimal ValorEquipamentosPorPessoa
-    decimal ValorVeiculo
-    decimal ValorRastreador
     decimal CustoTotal
     binary RowVersion
   }
@@ -768,12 +765,6 @@ erDiagram
     decimal PisoSalarial
     decimal PrecoUnitario
   }
-  VEICULO {
-    guid Id PK
-    string Tipo UK
-    decimal Valor
-    bool Ativo
-  }
   ITEM_EQUIPAMENTO {
     guid Id PK
     string Nome UK
@@ -832,7 +823,8 @@ CREATE TABLE Usuario (
   Ativo bit NOT NULL,
   DataCadastro datetime2 NOT NULL,
   DataUltimoAcesso datetime2 NULL,
-  SenhaHash nvarchar(500) NOT NULL
+  SenhaHash nvarchar(500) NOT NULL,
+  DeveTrocarSenha bit NOT NULL
 );
 
 CREATE TABLE Contratada (
@@ -877,18 +869,16 @@ CREATE TABLE Demanda (
   CorredorId uniqueidentifier NOT NULL CONSTRAINT FK_Demanda_Corredor REFERENCES Corredor(Id),
   ModeloTrabalhoId uniqueidentifier NOT NULL CONSTRAINT FK_Demanda_ModeloTrabalho REFERENCES ModeloTrabalho(Id),
   ItemQqpId uniqueidentifier NOT NULL CONSTRAINT FK_Demanda_ItemQqp REFERENCES ItemQqp(Id),
-  VeiculoId uniqueidentifier NULL CONSTRAINT FK_Demanda_Veiculo REFERENCES Veiculo(Id),
   AreaSolicitante nvarchar(150) NULL,
   LocalidadeVaga nvarchar(200) NOT NULL,
   QuantidadeSolicitada smallint NOT NULL CONSTRAINT CK_Demanda_Quantidade CHECK (QuantidadeSolicitada > 0),
   DescricaoAtividades nvarchar(max) NOT NULL,
   Formacao nvarchar(300) NULL,
   Temporaria bit NOT NULL,
-  PeriodoTemporarioDias smallint NULL,
+  PeriodoTemporarioMeses smallint NULL,
   Notebook bit NOT NULL,
   SegundaTela bit NOT NULL,
   Celular bit NOT NULL,
-  Rastreador bit NOT NULL,
   ExigeCnh bit NOT NULL,
   CategoriaCnh varchar(2) NULL CONSTRAINT CK_Demanda_CategoriaCnh CHECK (CategoriaCnh IN ('A','B','C','D','E','AB','AC','AD','AE')),
   ContratoId uniqueidentifier NOT NULL CONSTRAINT FK_Demanda_Contrato REFERENCES Contrato(Id),
@@ -902,12 +892,9 @@ CREATE TABLE Demanda (
   PisoSalarialQqp decimal(12,2) NOT NULL,
   PrecoUnitarioQqp decimal(12,2) NOT NULL,
   ValorEquipamentosPorPessoa decimal(12,2) NOT NULL,
-  ValorVeiculo decimal(12,2) NOT NULL,
-  ValorRastreador decimal(12,2) NOT NULL,
   CustoTotal decimal(14,2) NOT NULL,
   RowVersion rowversion NOT NULL,
-  CONSTRAINT CK_Demanda_Temporaria CHECK (Temporaria = 0 OR PeriodoTemporarioDias > 0),
-  CONSTRAINT CK_Demanda_Veiculo CHECK (Rastreador = 0 OR VeiculoId IS NOT NULL),
+  CONSTRAINT CK_Demanda_Temporaria CHECK (Temporaria = 0 OR PeriodoTemporarioMeses > 0),
   CONSTRAINT CK_Demanda_Cnh CHECK (ExigeCnh = 0 OR CategoriaCnh IS NOT NULL),
   CONSTRAINT CK_Demanda_Finalizacao CHECK (DataFinalizacao IS NULL OR DataFinalizacao >= DataCriacao),
   CONSTRAINT CK_Demanda_Sla CHECK (DataLimiteSLA IS NULL OR DataLimiteSLA >= CAST(DataInicioSLA AS date))
@@ -1098,7 +1085,7 @@ Regras de importação:
 
 ### Catálogos do formulário
 
-Oito catálogos alimentam as listas do formulário e o cálculo de custo, e a tabela DemandaRac liga as RACs à demanda; o Admin as mantém pela tela de parâmetros. Nas migrations, os catálogos são criados antes de Demanda.
+Sete catálogos alimentam as listas do formulário e o cálculo de custo, e a tabela DemandaRac liga as RACs à demanda; o Admin as mantém pela tela de parâmetros. Nas migrations, os catálogos são criados antes de Demanda.
 
 ```sql
 CREATE TABLE TipoDemanda (
@@ -1122,12 +1109,6 @@ CREATE TABLE Corredor (
 CREATE TABLE ModeloTrabalho (
   Id uniqueidentifier NOT NULL CONSTRAINT PK_ModeloTrabalho PRIMARY KEY,
   Nome nvarchar(30) NOT NULL CONSTRAINT UQ_ModeloTrabalho_Nome UNIQUE
-);
-CREATE TABLE Veiculo (
-  Id uniqueidentifier NOT NULL CONSTRAINT PK_Veiculo PRIMARY KEY,
-  Tipo nvarchar(100) NOT NULL CONSTRAINT UQ_Veiculo_Tipo UNIQUE,
-  Valor decimal(12,2) NOT NULL,
-  Ativo bit NOT NULL
 );
 CREATE TABLE ItemEquipamento (
   Id uniqueidentifier NOT NULL CONSTRAINT PK_ItemEquipamento PRIMARY KEY,
@@ -1166,11 +1147,10 @@ O CNPJ da Contratada é opcional (Cliente); quando informado, não pode se repet
 | ModeloTrabalho | Presencial, Híbrido, Remoto | Completo (cliente) |
 | TipoDemanda | Nova contratação | Completo (cliente) |
 | Rac | 13 itens, do arquivo tb\_racs.csv, que vai para o repositório; espaços no início dos nomes são removidos | Completo |
-| Veiculo | Veículo 4x4, Veículo de passeio, Veículo van, Transporte, com os valores da RN12 | Completo (cliente) |
 | Contratada | SESI, a única Contratada hoje, sem CNPJ (Cliente) | Completo |
 | Contrato | 5900125082 (Norte) e 5900118506 (Sudeste), ambos da Contratada SESI | Completo (cliente) |
 | Corredor | As 7 combinações da RN13, cada uma com região e contrato | Completo (cliente) |
-| ItemEquipamento | Notebook, Segunda tela, Celular, Rastreador, com os valores da RN12 | Completo (cliente) |
+| ItemEquipamento | Notebook, Segunda tela e Celular, com os valores da RN12 | Completo (cliente) |
 | GerenteExecutivo | Vazio na seed; o Admin cadastra pela tela (são nomes de pessoas) | Completo |
 
 ## 24. Transições permitidas
@@ -1407,7 +1387,7 @@ Este documento é a fonte única de verdade para implementar o sistema: implemen
 
 1. Quando uma regra não estiver neste documento, pare e pergunte. Não preencha lacunas por conta própria.
 2. Toda suposição da seção "Suposições e pendências" usada no código leva um comentário `// SUPOSIÇÃO (S1)` com o número correspondente, e entra na lista do README.
-3. Decisões em aberto bloqueiam a etapa que dependem delas: A cobrança de veículo e rastreador (S14) bloqueia o cálculo de custo da Etapa 4. Pergunte antes de começar essas partes.
+3. Decisões em aberto bloqueiam a etapa que dependem delas. Pergunte antes de começar essas partes.
 4. Todo tipo C# é `internal`. Exceções públicas só onde o framework exige, cada uma com um comentário explicando por quê (seção 27).
 5. Regras de negócio ficam no Domain e são testadas sem banco. Controllers e páginas não contêm regra.
 6. Use um relógio injetável (`IRelogio`) e um calendário do SLA injetável; nada de `DateTime.Now` no domínio.
@@ -1450,27 +1430,20 @@ O README do repositório deve repetir esses passos, ajustados ao que for de fato
 
 ## Suposições e pendências
 
-Treze suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; duas decisões continuam abertas e serão necessárias em etapas específicas da implementação.
+Seis suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; duas decisões continuam abertas e serão necessárias em etapas específicas da implementação.
 
 ### Suposições a confirmar
 
 | # | Suposição adotada | Seção |
 | --- | --- | --- |
-| S2 | A equipe de um Gestor desativado continua ativa, e o Admin pode transferir o vínculo dela | 4.5, UC19 |
 | S3 | O sequencial do número da demanda reinicia a cada ano | UC02 |
 | S4 | Depois do aceite, qualquer Funcionário SESI ativo pode registrar as etapas seguintes | 24 |
 | S7 | 45 dias corridos; dia limite em laranja; demanda cancelada em cinza | 9–11 |
 | S8 | Imagens = .jpg, .jpeg e .png; e-mail = .eml e .msg | 18 |
 | S9 | Classificação "-" na planilha QQP significa "sem classificação" | 23 |
 | S11 | Informações contratuais = OS e coletor de custo (o contrato vem do corredor) | 8.1 |
-| S12 | Campo obrigatório = campo preenchido em todos os registros do aplicativo atual | 8.1 |
-| S13 | Período temporário em dias | 8.1 |
-| S14 | Veículo e rastreador cobrados uma vez por demanda, não por vaga | 8.1 |
-| S21 | Senha com no mínimo 8 e no máximo 128 caracteres (o documento não define regra de senha) | RN11 |
-| S22 | Quem cadastra um Gestor ou Funcionário SESI define a senha inicial e a repassa ao novo usuário; a troca de senha pelo próprio usuário não está nos casos de uso | UC12, UC14 |
-| S23 | O Gestor pode vincular o Funcionário SESI a qualquer contrato ativo, e não só aos seus | UC14 |
 
-S1, S5, S6, S15, S16, S17, S18, S19 e S20 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32, 34, 36 e 41).
+S1, S2, S5, S6, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22 e S23 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32, 34, 36 e 41 a 46).
 
 A antiga S10 (escolha do item QQP na demanda) foi confirmada pelo cliente.
 

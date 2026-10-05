@@ -30,7 +30,7 @@
     <div class="mb-4">
         <label asp-for="Entrada.SenhaInicial" class="form-label">Senha inicial</label>
         <input asp-for="Entrada.SenhaInicial" type="password" class="form-control" autocomplete="new-password" />
-        <div class="ajuda mt-1">Mínimo de @Senha.TamanhoMinimo caracteres. Repasse ao Gestor por um canal seguro.</div>
+        <div class="ajuda mt-1">Mínimo de @Senha.TamanhoMinimo caracteres. Repasse ao Gestor por um canal seguro; ele a troca no primeiro acesso.</div>
         <span asp-validation-for="Entrada.SenhaInicial" class="text-danger small"></span>
     </div>
 

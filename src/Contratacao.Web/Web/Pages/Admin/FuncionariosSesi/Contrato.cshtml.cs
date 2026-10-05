@@ -4,9 +4,9 @@ using Contratacao.Web.Domain.Usuarios;
 using Contratacao.Web.Web.Autenticacao;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Contratacao.Web.Web.Pages.Equipe;
+namespace Contratacao.Web.Web.Pages.Admin.FuncionariosSesi;
 
-/// <summary>Troca o contrato do grupo de um Funcionário SESI da equipe.</summary>
+/// <summary>Admin troca o contrato de qualquer Funcionário SESI, para qualquer contrato ativo.</summary>
 internal sealed class ContratoModel(IUsuarios usuarios, IContratos contratos, AtorAtual atorAtual, AlterarContratoFuncionarioSesi alterar) : PaginaBase
 {
     [BindProperty(SupportsGet = true)]
@@ -50,21 +50,19 @@ internal sealed class ContratoModel(IUsuarios usuarios, IContratos contratos, At
         }
 
         Sucesso($"Contrato de {NomeFuncionario} atualizado.");
-        return Redirect("/Equipe");
+        return Redirect("/Admin/FuncionariosSesi");
     }
 
-    /// <summary>Só funcionários da equipe do Gestor logado; os de outro Gestor aparecem como inexistentes.</summary>
     private async Task<Usuario?> CarregarAsync()
     {
-        var gestor = await atorAtual.ObterAsync();
         var funcionario = await usuarios.ObterAsync(Id, Cancelamento);
-        if (funcionario is null || !funcionario.PodeSerGerenciadoPor(gestor) || funcionario.Perfil != Perfil.FuncionarioSesi)
+        if (funcionario is not { Perfil: Perfil.FuncionarioSesi })
         {
             return null;
         }
 
         NomeFuncionario = funcionario.Nome;
-        ContratosDisponiveis = [.. (await contratos.ListarAtivosAsync(Cancelamento)).Where(c => gestor.Contratos.Contains(c.Id))];
+        ContratosDisponiveis = await contratos.ListarAtivosAsync(Cancelamento);
         return funcionario;
     }
 }

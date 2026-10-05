@@ -62,6 +62,32 @@ internal sealed class CadastrarSolicitante(
     }
 }
 
+/// <summary>Troca de senha pelo próprio usuário; obrigatória no primeiro acesso de Gestores e Funcionários SESI.</summary>
+internal sealed class TrocarSenha(IUsuarios usuarios, IHashSenha hash, IAuditoria auditoria, IUnidadeDeTrabalho unidade, IRelogio relogio)
+{
+    internal async Task<Usuario> ExecutarAsync(Ator ator, string senhaAtual, string novaSenha, CancellationToken cancelamento)
+    {
+        var usuario = await usuarios.ObterAsync(ator.Id, cancelamento)
+            ?? throw new RegraNegocioException("Usuário não encontrado.");
+
+        if (string.IsNullOrEmpty(senhaAtual) || !hash.Conferir(usuario, senhaAtual))
+        {
+            throw new RegraNegocioException("A senha atual não confere.");
+        }
+
+        Senha.Validar(novaSenha);
+        if (novaSenha == senhaAtual)
+        {
+            throw new RegraNegocioException("A nova senha precisa ser diferente da atual.");
+        }
+
+        usuario.TrocarSenha(hash.Gerar(usuario, novaSenha));
+        auditoria.Registrar(LogAuditoria.De(ator, nameof(Usuario), usuario.Id, "TrocaSenha", null, null, null, relogio.AgoraUtc));
+        await unidade.SalvarAsync(cancelamento);
+        return usuario;
+    }
+}
+
 /// <summary>Monta o ator da requisição: perfil, contratos e IP. Nulo se o usuário não existe ou foi desativado.</summary>
 internal sealed class ObterAtor(IUsuarios usuarios)
 {

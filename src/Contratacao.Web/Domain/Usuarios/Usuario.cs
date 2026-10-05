@@ -37,6 +37,12 @@ internal sealed class Usuario
     /// <summary>Só o hash, gerado pelo mecanismo padrão do ASP.NET Core; a senha nunca é gravada.</summary>
     internal string SenhaHash { get; private set; } = string.Empty;
 
+    /// <summary>
+    /// Senha inicial definida por quem cadastrou (Gestor e Funcionário SESI): o usuário troca no primeiro
+    /// acesso, antes de usar o sistema (Cliente, revisão de 05/10/2026).
+    /// </summary>
+    internal bool DeveTrocarSenha { get; private set; }
+
     /// <summary>Admin inicial, criado pela preparação do banco a partir da configuração (seção 23).</summary>
     internal static Usuario CriarAdminInicial(string nome, string email, DateTime agoraUtc)
         => Novo(Perfil.Admin, nome, email, agoraUtc, criadoPorId: null);
@@ -49,18 +55,25 @@ internal sealed class Usuario
     internal static Usuario CadastrarGestor(Ator admin, string nome, string email, DateTime agoraUtc)
     {
         Exigir(admin.Eh(Perfil.Admin), "Só o Admin cadastra Gestores.");
-        return Novo(Perfil.Gestor, nome, email, agoraUtc, admin.Id);
+        var gestor = Novo(Perfil.Gestor, nome, email, agoraUtc, admin.Id);
+        gestor.DeveTrocarSenha = true;
+        return gestor;
     }
 
-    /// <summary>Cadastro de Funcionário SESI pelo Gestor, na sua equipe e no grupo de um contrato (UC14).</summary>
+    /// <summary>
+    /// Cadastro de Funcionário SESI pelo Gestor, na sua equipe e no grupo de um dos contratos do próprio Gestor
+    /// (UC14; Cliente, revisão de 05/10/2026).
+    /// </summary>
     internal static Usuario CadastrarFuncionarioSesi(Ator gestor, string nome, string email, Guid contratoId, DateTime agoraUtc)
     {
         Exigir(gestor.Eh(Perfil.Gestor), "Só um Gestor ativo cadastra Funcionários SESI.");
         Exigir(contratoId != Guid.Empty, "Escolha o contrato do Funcionário SESI.");
+        Exigir(gestor.AtuaNoContrato(contratoId), "Escolha um dos seus contratos. Para outro contrato, peça ao Admin.");
 
         var usuario = Novo(Perfil.FuncionarioSesi, nome, email, agoraUtc, gestor.Id);
         usuario.GestorResponsavelId = gestor.Id;
         usuario.ContratoId = contratoId;
+        usuario.DeveTrocarSenha = true;
         return usuario;
     }
 
@@ -90,18 +103,34 @@ internal sealed class Usuario
         Ativo = true;
     }
 
-    /// <summary>Troca o contrato do grupo do Funcionário SESI; só o Gestor responsável.</summary>
-    internal void AlterarContrato(Ator gestor, Guid contratoId)
+    /// <summary>
+    /// Troca o contrato do grupo do Funcionário SESI (Cliente, revisão de 05/10/2026): o Gestor responsável,
+    /// só entre os seus contratos; o Admin, para qualquer contrato.
+    /// </summary>
+    internal void AlterarContrato(Ator ator, Guid contratoId)
     {
         Exigir(Perfil == Perfil.FuncionarioSesi, "Só Funcionários SESI têm contrato próprio.");
-        Exigir(PodeSerGerenciadoPor(gestor), "Você não gerencia o cadastro deste usuário.");
         Exigir(contratoId != Guid.Empty, "Escolha o contrato.");
+
+        if (!ator.Eh(Perfil.Admin))
+        {
+            Exigir(PodeSerGerenciadoPor(ator), "Você não gerencia o cadastro deste usuário.");
+            Exigir(ator.AtuaNoContrato(contratoId), "Escolha um dos seus contratos. Para outro contrato, peça ao Admin.");
+        }
+
         ContratoId = contratoId;
+    }
+
+    /// <summary>Troca de senha pelo próprio usuário; encerra a obrigação do primeiro acesso.</summary>
+    internal void TrocarSenha(string novoHash)
+    {
+        DefinirSenhaHash(novoHash);
+        DeveTrocarSenha = false;
     }
 
     /// <summary>
     /// Transferência do Funcionário SESI para outro Gestor (UC19), pelo Admin.
-    /// SUPOSIÇÃO (S2): a equipe de um Gestor desativado continua ativa e pode ser transferida.
+    /// A equipe de um Gestor desativado continua ativa e pode ser transferida (Cliente).
     /// </summary>
     internal void TransferirPara(Ator admin, Usuario novoGestor)
     {

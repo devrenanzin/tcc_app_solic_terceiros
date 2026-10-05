@@ -18,18 +18,27 @@ internal static class Politicas
 /// <summary>Cookie de sessão: guarda só id, nome, e-mail e perfil. Perfil e contratos são relidos do banco a cada ação.</summary>
 internal static class Sessao
 {
+    /// <summary>Marca a sessão de quem ainda precisa trocar a senha inicial.</summary>
+    internal const string ClaimTrocarSenha = "contratacao:trocar-senha";
+
     internal static ClaimsPrincipal CriarPrincipal(Usuario usuario)
     {
-        var identidade = new ClaimsIdentity(
-        [
-            new Claim(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
-            new Claim(ClaimTypes.Name, usuario.Nome),
-            new Claim(ClaimTypes.Email, usuario.Email),
-            new Claim(ClaimTypes.Role, usuario.Perfil.ToString()),
-        ], CookieAuthenticationDefaults.AuthenticationScheme);
+        var claims = new List<Claim>
+        {
+            new(ClaimTypes.NameIdentifier, usuario.Id.ToString()),
+            new(ClaimTypes.Name, usuario.Nome),
+            new(ClaimTypes.Email, usuario.Email),
+            new(ClaimTypes.Role, usuario.Perfil.ToString()),
+        };
+        if (usuario.DeveTrocarSenha)
+        {
+            claims.Add(new Claim(ClaimTrocarSenha, "1"));
+        }
 
-        return new ClaimsPrincipal(identidade);
+        return new ClaimsPrincipal(new ClaimsIdentity(claims, CookieAuthenticationDefaults.AuthenticationScheme));
     }
+
+    internal static bool DeveTrocarSenha(ClaimsPrincipal principal) => principal.HasClaim(c => c.Type == ClaimTrocarSenha);
 
     internal static Guid? UsuarioId(ClaimsPrincipal principal)
         => Guid.TryParse(principal.FindFirstValue(ClaimTypes.NameIdentifier), out var id) ? id : null;

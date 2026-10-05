@@ -107,12 +107,19 @@ public sealed class UsuariosTests(BancoFixture banco) : IClassFixture<BancoFixtu
     }
 
     [Fact]
-    public async Task Gestor_cadastra_funcionario_sesi_que_ve_so_o_seu_contrato()
+    public async Task Gestor_cadastra_funcionario_sesi_so_nos_seus_contratos_e_o_admin_troca_para_outro()
     {
         var admin = await banco.AdminAsync();
         var gestor = await banco.AtorAsync((await CadastrarGestorAsync(admin, IdsFixos.ContratoNorte)).Id);
 
-        var funcionario = await CadastrarSesiAsync(gestor, IdsFixos.ContratoSudeste);
+        await Assert.ThrowsAsync<RegraNegocioException>(() => CadastrarSesiAsync(gestor, IdsFixos.ContratoSudeste));
+        var funcionario = await CadastrarSesiAsync(gestor, IdsFixos.ContratoNorte);
+        Assert.True((await banco.AtorAsync(funcionario.Id)).Contratos.SetEquals([IdsFixos.ContratoNorte]));
+
+        await Assert.ThrowsAsync<RegraNegocioException>(() => banco.ExecutarAsync<AlterarContratoFuncionarioSesi>(a =>
+            a.ExecutarAsync(gestor, funcionario.Id, IdsFixos.ContratoSudeste, Cancelamento)));
+        await banco.ExecutarAsync<AlterarContratoFuncionarioSesi>(a =>
+            a.ExecutarAsync(admin, funcionario.Id, IdsFixos.ContratoSudeste, Cancelamento));
 
         var ator = await banco.AtorAsync(funcionario.Id);
         Assert.Equal(Perfil.FuncionarioSesi, ator.Perfil);
@@ -122,7 +129,36 @@ public sealed class UsuariosTests(BancoFixture banco) : IClassFixture<BancoFixtu
             u.ListarAsync(Perfil.FuncionarioSesi, gestor.Id, Cancelamento));
         var resumo = Assert.Single(equipe);
         Assert.Equal(["5900118506"], resumo.Contratos);
+
+        await using var contexto = banco.NovoContexto();
+        var log = await contexto.LogsAuditoria.SingleAsync(l => l.EntidadeId == funcionario.Id && l.Acao == "AlteracaoContratoSesi", Cancelamento);
+        Assert.Equal(("5900125082", "5900118506", "Admin"), (log.ValorAnterior, log.NovoValor, log.PerfilUsuario));
     }
+
+    [Fact]
+    public async Task Troca_de_senha_confere_a_atual_libera_o_acesso_e_fica_na_auditoria()
+    {
+        var admin = await banco.AdminAsync();
+        var email = Email("troca");
+        var gestor = await CadastrarGestorAsync(admin, email, IdsFixos.ContratoNorte);
+        Assert.True(gestor.DeveTrocarSenha);
+        var ator = await banco.AtorAsync(gestor.Id);
+
+        await Assert.ThrowsAsync<RegraNegocioException>(() => TrocarSenhaAsync(ator, "senha-errada-1", "nova-senha-123"));
+        await Assert.ThrowsAsync<RegraNegocioException>(() => TrocarSenhaAsync(ator, SenhaPadrao, SenhaPadrao));
+        await Assert.ThrowsAsync<RegraNegocioException>(() => TrocarSenhaAsync(ator, SenhaPadrao, "curta"));
+
+        var trocado = await TrocarSenhaAsync(ator, SenhaPadrao, "nova-senha-123");
+
+        Assert.False(trocado.DeveTrocarSenha);
+        Assert.Null(await AutenticarAsync(email, SenhaPadrao));
+        Assert.Equal(gestor.Id, (await AutenticarAsync(email, "nova-senha-123"))?.Id);
+        await using var contexto = banco.NovoContexto();
+        Assert.True(await contexto.LogsAuditoria.AnyAsync(l => l.EntidadeId == gestor.Id && l.Acao == "TrocaSenha", Cancelamento));
+    }
+
+    private Task<Usuario> TrocarSenhaAsync(Ator ator, string atual, string nova)
+        => banco.ExecutarAsync<TrocarSenha, Usuario>(t => t.ExecutarAsync(ator, atual, nova, Cancelamento));
 
     [Fact]
     public async Task Gestor_nao_gerencia_equipe_de_outro_gestor_mas_gerencia_qualquer_solicitante()

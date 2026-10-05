@@ -44,15 +44,9 @@ internal static class IdsFixos
 
     internal static readonly Guid TipoNovaContratacao = Guid.Parse("00000005-0000-0000-0000-000000000001");
 
-    internal static readonly Guid Veiculo4x4 = Guid.Parse("00000006-0000-0000-0000-000000000001");
-    internal static readonly Guid VeiculoPasseio = Guid.Parse("00000006-0000-0000-0000-000000000002");
-    internal static readonly Guid VeiculoVan = Guid.Parse("00000006-0000-0000-0000-000000000003");
-    internal static readonly Guid VeiculoTransporte = Guid.Parse("00000006-0000-0000-0000-000000000004");
-
     internal static readonly Guid EquipamentoNotebook = Guid.Parse("00000007-0000-0000-0000-000000000001");
     internal static readonly Guid EquipamentoSegundaTela = Guid.Parse("00000007-0000-0000-0000-000000000002");
     internal static readonly Guid EquipamentoCelular = Guid.Parse("00000007-0000-0000-0000-000000000003");
-    internal static readonly Guid EquipamentoRastreador = Guid.Parse("00000007-0000-0000-0000-000000000004");
 
     internal static readonly Guid ContratadaSesi = Guid.Parse("00000008-0000-0000-0000-000000000001");
 

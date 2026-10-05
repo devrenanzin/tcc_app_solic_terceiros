@@ -43,6 +43,7 @@ internal sealed class ConfiguracaoUsuario : IEntityTypeConfiguration<Usuario>
         b.Property(u => u.DataCadastro);
         b.Property(u => u.DataUltimoAcesso);
         b.Property(u => u.SenhaHash).HasMaxLength(500).IsRequired();
+        b.Property(u => u.DeveTrocarSenha);
 
         b.HasIndex(u => u.Email).IsUnique().HasDatabaseName("UQ_Usuario_Email");
         b.HasIndex(u => u.Login).IsUnique().HasDatabaseName("UQ_Usuario_Login");

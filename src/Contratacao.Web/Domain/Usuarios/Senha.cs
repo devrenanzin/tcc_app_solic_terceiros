@@ -5,7 +5,7 @@ namespace Contratacao.Web.Domain.Usuarios;
 /// <summary>Regras da senha própria do sistema (RN11). A senha nunca é gravada, só o hash.</summary>
 internal static class Senha
 {
-    // SUPOSIÇÃO (S21): mínimo de 8 caracteres; o documento não define regra de senha.
+    // De 8 a 128 caracteres (Cliente, revisão de 05/10/2026).
     internal const int TamanhoMinimo = 8;
     internal const int TamanhoMaximo = 128;
 

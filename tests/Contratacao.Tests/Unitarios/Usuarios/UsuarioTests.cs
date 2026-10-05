@@ -56,7 +56,7 @@ public sealed class UsuarioTests
     }
 
     [Fact]
-    public void Gestor_cadastra_funcionario_sesi_na_sua_equipe_e_num_contrato()
+    public void Gestor_cadastra_funcionario_sesi_na_sua_equipe_e_num_dos_seus_contratos()
     {
         var funcionario = Usuario.CadastrarFuncionarioSesi(_c.GestorNorte, "Carla Sesi", "carla@ucl.br", Cenario.ContratoNorte.Id, Agora);
 
@@ -126,13 +126,53 @@ public sealed class UsuarioTests
     }
 
     [Fact]
-    public void Gestor_troca_o_contrato_do_seu_funcionario()
+    public void Gestor_so_coloca_funcionario_num_dos_seus_contratos()
+    {
+        Assert.Throws<RegraNegocioException>(() =>
+            Usuario.CadastrarFuncionarioSesi(_c.GestorNorte, "Sesi", "sesi@ucl.br", Cenario.ContratoSudeste.Id, Agora));
+
+        var sesi = Usuario.CadastrarFuncionarioSesi(_c.GestorNorte, "Sesi", "sesi@ucl.br", Cenario.ContratoNorte.Id, Agora);
+        Assert.Throws<RegraNegocioException>(() => sesi.AlterarContrato(_c.GestorNorte, Cenario.ContratoSudeste.Id));
+        Assert.Equal(Cenario.ContratoNorte.Id, sesi.ContratoId);
+    }
+
+    [Fact]
+    public void Gestor_com_dois_contratos_troca_o_contrato_do_seu_funcionario()
+    {
+        var sesi = Usuario.CadastrarFuncionarioSesi(_c.GestorDosDois, "Sesi", "sesi@ucl.br", Cenario.ContratoNorte.Id, Agora);
+
+        sesi.AlterarContrato(_c.GestorDosDois, Cenario.ContratoSudeste.Id);
+
+        Assert.Equal(Cenario.ContratoSudeste.Id, sesi.ContratoId);
+    }
+
+    [Fact]
+    public void Admin_coloca_funcionario_em_qualquer_contrato_mas_nao_desativa()
     {
         var sesi = Usuario.CadastrarFuncionarioSesi(_c.GestorNorte, "Sesi", "sesi@ucl.br", Cenario.ContratoNorte.Id, Agora);
 
-        sesi.AlterarContrato(_c.GestorNorte, Cenario.ContratoSudeste.Id);
+        sesi.AlterarContrato(_c.Admin, Cenario.ContratoSudeste.Id);
 
         Assert.Equal(Cenario.ContratoSudeste.Id, sesi.ContratoId);
+        Assert.Throws<RegraNegocioException>(() => sesi.Desativar(_c.Admin));
+    }
+
+    [Fact]
+    public void Quem_recebe_senha_de_outra_pessoa_troca_no_primeiro_acesso()
+    {
+        var gestor = Usuario.CadastrarGestor(_c.Admin, "Gestor", "gestor@ucl.br", Agora);
+        var sesi = Usuario.CadastrarFuncionarioSesi(_c.GestorNorte, "Sesi", "sesi@ucl.br", Cenario.ContratoNorte.Id, Agora);
+        var solicitante = Usuario.CadastrarSolicitante("Sol", "sol@ucl.br", Agora);
+        var admin = Usuario.CriarAdminInicial("Admin", "admin@ucl.br", Agora);
+
+        Assert.True(gestor.DeveTrocarSenha);
+        Assert.True(sesi.DeveTrocarSenha);
+        Assert.False(solicitante.DeveTrocarSenha);
+        Assert.False(admin.DeveTrocarSenha);
+
+        gestor.TrocarSenha("novo-hash");
+        Assert.False(gestor.DeveTrocarSenha);
+        Assert.Equal("novo-hash", gestor.SenhaHash);
     }
 
     [Fact]

@@ -1,0 +1,40 @@
+@page
+@using Contratacao.Web.Domain.Usuarios
+@model TrocarSenhaModel
+@{
+    ViewData["Title"] = "Trocar senha";
+    Layout = "_LayoutPublico";
+}
+
+<h2 class="mb-1">Crie sua senha</h2>
+@if (Model.Obrigatoria)
+{
+    <p class="text-body-secondary mb-4">Este é seu primeiro acesso. Troque a senha inicial que você recebeu por uma senha só sua.</p>
+}
+
+<form method="post" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+
+    <div class="mb-3">
+        <label asp-for="Entrada.SenhaAtual" class="form-label">Senha atual</label>
+        <input asp-for="Entrada.SenhaAtual" class="form-control" autocomplete="current-password" autofocus />
+        <span asp-validation-for="Entrada.SenhaAtual" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Entrada.NovaSenha" class="form-label">Nova senha</label>
+        <input asp-for="Entrada.NovaSenha" class="form-control" autocomplete="new-password" />
+        <span asp-validation-for="Entrada.NovaSenha" class="text-danger small"></span>
+    </div>
+    <div class="mb-2">
+        <label asp-for="Entrada.ConfirmacaoSenha" class="form-label">Confirme a nova senha</label>
+        <input asp-for="Entrada.ConfirmacaoSenha" class="form-control" autocomplete="new-password" />
+        <span asp-validation-for="Entrada.ConfirmacaoSenha" class="text-danger small"></span>
+    </div>
+    <div class="ajuda mb-4">Mínimo de @Senha.TamanhoMinimo caracteres, diferente da senha atual.</div>
+
+    <button type="submit" class="btn btn-primary btn-lg w-100">Salvar nova senha</button>
+</form>
+
+<form method="post" action="/Sair" class="text-center mt-3">
+    <button type="submit" class="btn btn-link">Sair</button>
+</form>

@@ -11,7 +11,7 @@ internal sealed class CadastrarGestor(
     internal async Task<Usuario> ExecutarAsync(
         Ator admin, string nome, string email, string senhaInicial, IReadOnlyCollection<Guid> contratosDoGestor, CancellationToken cancelamento)
     {
-        // SUPOSIÇÃO (S22): quem cadastra define a senha inicial e a repassa ao novo usuário.
+        // Quem cadastra define a senha inicial; o usuário a troca no primeiro acesso (Cliente).
         Senha.Validar(senhaInicial);
         var gestor = Usuario.CadastrarGestor(admin, nome, email, relogio.AgoraUtc);
         await CadastrarSolicitante.GarantirEmailLivreAsync(usuarios, gestor.Email, cancelamento);
@@ -37,12 +37,11 @@ internal sealed class CadastrarFuncionarioSesi(
     internal async Task<Usuario> ExecutarAsync(
         Ator gestor, string nome, string email, string senhaInicial, Guid contratoId, CancellationToken cancelamento)
     {
-        // SUPOSIÇÃO (S22): quem cadastra define a senha inicial e a repassa ao novo usuário.
+        // Quem cadastra define a senha inicial; o usuário a troca no primeiro acesso (Cliente).
         Senha.Validar(senhaInicial);
         var funcionario = Usuario.CadastrarFuncionarioSesi(gestor, nome, email, contratoId, relogio.AgoraUtc);
         await CadastrarSolicitante.GarantirEmailLivreAsync(usuarios, funcionario.Email, cancelamento);
 
-        // SUPOSIÇÃO (S23): qualquer contrato ativo, e não só os contratos do próprio Gestor.
         await ValidacaoContratos.ExigirAtivosAsync(contratos, [contratoId], cancelamento);
 
         funcionario.DefinirSenhaHash(hash.Gerar(funcionario, senhaInicial));
@@ -113,7 +112,6 @@ internal sealed class AlterarContratoFuncionarioSesi(
         var funcionario = await usuarios.ObterAsync(funcionarioId, cancelamento)
             ?? throw new RegraNegocioException("Usuário não encontrado.");
 
-        // SUPOSIÇÃO (S23): qualquer contrato ativo, e não só os contratos do próprio Gestor.
         await ValidacaoContratos.ExigirAtivosAsync(contratos, [contratoId], cancelamento);
 
         var anterior = funcionario.ContratoId;

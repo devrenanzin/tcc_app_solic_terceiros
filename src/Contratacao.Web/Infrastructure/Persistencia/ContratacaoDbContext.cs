@@ -22,7 +22,6 @@ internal sealed class ContratacaoDbContext(DbContextOptions<ContratacaoDbContext
     internal DbSet<TipoDemanda> TiposDemanda => Set<TipoDemanda>();
     internal DbSet<GerenteExecutivo> GerentesExecutivos => Set<GerenteExecutivo>();
     internal DbSet<ModeloTrabalho> ModelosTrabalho => Set<ModeloTrabalho>();
-    internal DbSet<Veiculo> Veiculos => Set<Veiculo>();
     internal DbSet<ItemEquipamento> ItensEquipamento => Set<ItemEquipamento>();
     internal DbSet<Rac> Racs => Set<Rac>();
     internal DbSet<QqpRegiao> QqpRegioes => Set<QqpRegiao>();

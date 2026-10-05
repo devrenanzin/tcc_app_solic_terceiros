@@ -12,6 +12,7 @@ namespace Contratacao.Tests.Integracao;
 public sealed class TelasAcessoTests(BancoFixture banco) : IClassFixture<BancoFixture>
 {
     private const string Senha = "senha-segura-1";
+    private const string NovaSenha = "senha-propria-2";
 
     private static CancellationToken Cancelamento => TestContext.Current.CancellationToken;
     private static string EmailAdmin => BancoFixture.Admin.Email!.Trim().ToLowerInvariant();
@@ -102,19 +103,73 @@ public sealed class TelasAcessoTests(BancoFixture banco) : IClassFixture<BancoFi
             c.ExecutarAsync(admin, "Gestor Equipe", email, Senha, [IdsFixos.ContratoNorte], Cancelamento));
 
         await using var navegador = new Navegador(banco);
-        await navegador.EntrarAsync(email, Senha);
+        await navegador.EntrarPelaPrimeiraVezAsync(email, Senha, NovaSenha);
+
+        var formulario = await navegador.HtmlAsync("/Equipe/Novo");
+        Assert.Contains("5900125082", formulario, StringComparison.Ordinal);
+        Assert.DoesNotContain("5900118506", formulario, StringComparison.Ordinal);
 
         using var resposta = await navegador.EnviarAsync("/Equipe/Novo",
             ("Entrada.Nome", "Funcionário Pela Tela"), ("Entrada.Email", $"sesi.tela.{Guid.NewGuid():N}@ucl.br"),
-            ("Entrada.SenhaInicial", Senha), ("Contrato", IdsFixos.ContratoSudeste.ToString()));
+            ("Entrada.SenhaInicial", Senha), ("Contrato", IdsFixos.ContratoNorte.ToString()));
 
         Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
         var equipe = await navegador.HtmlAsync("/Equipe");
         Assert.Contains("Funcionário Pela Tela", equipe, StringComparison.Ordinal);
-        Assert.Contains("5900118506", equipe, StringComparison.Ordinal);
+        Assert.Contains("5900125082", equipe, StringComparison.Ordinal);
 
         using var negado = await navegador.AbrirAsync("/Admin/Gestores");
         Assert.StartsWith("http://localhost/AcessoNegado", negado.Headers.Location?.ToString(), StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task No_primeiro_acesso_o_gestor_so_chega_a_troca_de_senha()
+    {
+        var email = $"gestor.primeiro.{Guid.NewGuid():N}@ucl.br";
+        var admin = await banco.AdminAsync();
+        await banco.ExecutarAsync<CadastrarGestor, Usuario>(c =>
+            c.ExecutarAsync(admin, "Gestor Primeiro Acesso", email, Senha, [IdsFixos.ContratoNorte], Cancelamento));
+
+        await using var navegador = new Navegador(banco);
+        await navegador.EntrarAsync(email, Senha);
+
+        foreach (var caminho in new[] { "/", "/Equipe", "/Solicitantes" })
+        {
+            using var desviada = await navegador.AbrirAsync(caminho);
+            Assert.Equal(HttpStatusCode.Redirect, desviada.StatusCode);
+            Assert.Equal("/TrocarSenha", desviada.Headers.Location?.OriginalString);
+        }
+
+        Assert.Contains("Este é seu primeiro acesso.", await navegador.HtmlAsync("/TrocarSenha"), StringComparison.Ordinal);
+        using var troca = await navegador.EnviarAsync("/TrocarSenha",
+            ("Entrada.SenhaAtual", Senha), ("Entrada.NovaSenha", NovaSenha), ("Entrada.ConfirmacaoSenha", NovaSenha));
+        Assert.Equal(HttpStatusCode.Redirect, troca.StatusCode);
+        Assert.Equal(HttpStatusCode.OK, (await navegador.AbrirAsync("/Equipe")).StatusCode);
+
+        await using var outroNavegador = new Navegador(banco);
+        await outroNavegador.EntrarAsync(email, NovaSenha);
+        Assert.Equal(HttpStatusCode.OK, (await outroNavegador.AbrirAsync("/Equipe")).StatusCode);
+    }
+
+    [Fact]
+    public async Task Admin_troca_o_contrato_de_funcionario_pela_tela()
+    {
+        var admin = await banco.AdminAsync();
+        var gestor = await banco.ExecutarAsync<CadastrarGestor, Usuario>(c =>
+            c.ExecutarAsync(admin, "Gestor Norte", $"gestor.norte.{Guid.NewGuid():N}@ucl.br", Senha, [IdsFixos.ContratoNorte], Cancelamento));
+        var sesi = await banco.ExecutarAsync<CadastrarFuncionarioSesi, Usuario>(async c =>
+            await c.ExecutarAsync(await banco.AtorAsync(gestor.Id), "Sesi Para Trocar", $"sesi.troca.{Guid.NewGuid():N}@ucl.br", Senha, IdsFixos.ContratoNorte, Cancelamento));
+
+        await using var navegador = new Navegador(banco);
+        await navegador.EntrarAsync(EmailAdmin, BancoFixture.Admin.Senha!);
+        Assert.Contains("Sesi Para Trocar", await navegador.HtmlAsync("/Admin/FuncionariosSesi"), StringComparison.Ordinal);
+
+        using var resposta = await navegador.EnviarAsync($"/Admin/FuncionariosSesi/Contrato?id={sesi.Id}",
+            ("Id", sesi.Id.ToString()), ("Contrato", IdsFixos.ContratoSudeste.ToString()));
+
+        Assert.Equal(HttpStatusCode.Redirect, resposta.StatusCode);
+        await using var contexto = banco.NovoContexto();
+        Assert.Equal(IdsFixos.ContratoSudeste, (await contexto.Usuarios.SingleAsync(u => u.Id == sesi.Id, Cancelamento)).ContratoId);
     }
 
     [Fact]
@@ -130,7 +185,7 @@ public sealed class TelasAcessoTests(BancoFixture banco) : IClassFixture<BancoFi
             await c.ExecutarAsync(await banco.AtorAsync(gestorB.Id), "Sesi de B", $"sesi.b.{Guid.NewGuid():N}@ucl.br", Senha, IdsFixos.ContratoNorte, Cancelamento));
 
         await using var navegador = new Navegador(banco);
-        await navegador.EntrarAsync(emailA, Senha);
+        await navegador.EntrarPelaPrimeiraVezAsync(emailA, Senha, NovaSenha);
         using var resposta = await navegador.AbrirAsync($"/Equipe/Contrato?id={sesiDeB.Id}");
 
         Assert.Equal(HttpStatusCode.NotFound, resposta.StatusCode);
