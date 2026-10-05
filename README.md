@@ -73,4 +73,4 @@ dotnet ef database update --project src/Contratacao.Web
 
 ## Suposições em uso
 
-Nenhuma até a Etapa 0. Cada suposição usada no código (S1–S20 do documento de requisitos) será listada aqui e marcada com `// SUPOSIÇÃO (S<n>)`.
+Nenhuma até a Etapa 0. Cada suposição usada no código (S1–S17 do documento de requisitos) será listada aqui e marcada com `// SUPOSIÇÃO (S<n>)`.

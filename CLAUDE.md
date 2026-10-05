@@ -28,7 +28,7 @@ Os diagramas existem como código PlantUML e Mermaid dentro do documento; use-os
 ## Regras inegociáveis
 
 1. **Não invente regra de negócio.** Se algo não está no documento, pare e pergunte antes de implementar.
-2. **Suposições marcadas.** Todo código que depende de uma suposição da lista S1–S20 leva o comentário `// SUPOSIÇÃO (S<n>)` e entra na lista de suposições do README.
+2. **Suposições marcadas.** Todo código que depende de uma suposição da lista S1–S17 leva o comentário `// SUPOSIÇÃO (S<n>)` e entra na lista de suposições do README.
 3. **Tipos `internal`.** Todo tipo C# é `internal`. Exceção pública só onde o framework exige, com comentário dizendo por quê. O projeto de testes acessa os tipos por `InternalsVisibleTo`.
 4. **Regras no domínio.** Máquina de estados, SLA, farol, custo e permissões ficam em `Domain` e são testadas sem banco. Controllers e páginas não contêm regra.
 5. **Tempo controlado.** Nada de `DateTime.Now` no domínio: use um relógio injetável. Datas gravadas em UTC; contagem de prazo no fuso `America/Sao_Paulo`.
@@ -43,9 +43,11 @@ Os diagramas existem como código PlantUML e Mermaid dentro do documento; use-os
 - **Login:** e-mail do domínio `@ucl.br` e senha própria do sistema, guardada só como hash. O domínio imita o Google Workspace da UCL, mas não há integração real com ele.
 - **Anexos:** imagem, PDF e e-mail, até 10 MB, numa pasta do servidor, nunca apagados. O anexo "De acordo VP-2" é obrigatório para enviar a demanda.
 - **Contrato:** definido pelo corredor (RN13), nunca escolhido pelo Solicitante. A Contratada vem do contrato; hoje só o SESI.
-- **Cadastro:** o Solicitante se cadastra sozinho com e-mail `@ucl.br`. O Gestor cadastra os Funcionários SESI e vincula cada um a um contrato; o SESI só vê e trata demandas desse contrato.
-- **Rascunho:** só no navegador do Solicitante, por 3 dias. A demanda passa a existir no sistema no envio.
-- **Gestor da demanda:** o Gestor que valida (qualquer Gestor ativo pode validar).
+- **Cadastro:** o Solicitante se cadastra sozinho com e-mail `@ucl.br`; o Admin e qualquer Gestor ativo o desativam e reativam. O Gestor cadastra os Funcionários SESI e vincula cada um ao grupo de um contrato; o SESI só vê e trata demandas desse contrato.
+- **Gestores e contratos:** o Admin vincula cada Gestor a um ou mais contratos (GestorContrato). Todo Gestor vê todas as demandas, mas só os Gestores do contrato da demanda a validam, devolvem e cancelam.
+- **Rascunho:** só no navegador do Solicitante, por 3 dias desde o último salvamento. Anexos são escolhidos no envio. A demanda passa a existir no sistema no envio.
+- **Gestor da demanda:** o Gestor que valida.
+- **Contratada:** hoje só o SESI; CNPJ opcional.
 - **Revisão de 05/10/2026:** a lista completa está na seção "Revisão de 05/10/2026" do documento de requisitos.
 - **Estrutura:** um projeto web único com camadas em pastas, mais um projeto de testes.
 
@@ -82,8 +84,7 @@ A regra de dependência (Domain não depende de nada; Application só de Domain)
 | Confirmar os valores de notebook, segunda tela, celular e rastreador, se o custo é mensal e se veículo é cobrado uma vez por demanda (S14, S15) | Cálculo de custo na Etapa 4 |
 | Códigos 466 e 467 do QQP repetem a mesma combinação | Seed do QQP (importe mesmo assim; o código é a chave) |
 | Período temporário em dias ou meses (S13) | Etapa 4 |
-| CNPJ do SESI para a seed da Contratada (D7) | Seed da Contratada na Etapa 2 |
-| Confirmar S17–S20 (SESI com um contrato, gestão do Solicitante pelo Admin, anexos no envio, 3 dias desde o último salvamento) | Etapas 3 e 4 |
+| Confirmar S1 (UC16 restrito aos Gestores do contrato) e S17 (o que o SESI "trata") | Etapas 3 e 4 |
 
 As etapas 0, 1 e 3 podem começar já. Pergunte sobre o restante quando chegar nele.
 
