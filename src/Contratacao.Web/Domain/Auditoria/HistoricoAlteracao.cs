@@ -1,13 +1,18 @@
+using Contratacao.Web.Domain.Usuarios;
+
 namespace Contratacao.Web.Domain.Auditoria;
 
-/// <summary>Alteração de um campo da demanda: valor anterior e novo (seção 12–15). Usado a partir da Etapa 4.</summary>
+/// <summary>
+/// Alteração de um campo da demanda: valor anterior e novo, com usuário, perfil e IP (seção 12–15).
+/// Usado a partir da Etapa 4.
+/// </summary>
 internal sealed class HistoricoAlteracao
 {
     private HistoricoAlteracao() { } // EF Core
 
     internal HistoricoAlteracao(
         Guid demandaId,
-        Guid usuarioId,
+        Ator ator,
         string campo,
         string? valorAnterior,
         string? novoValor,
@@ -15,7 +20,9 @@ internal sealed class HistoricoAlteracao
         DateTime dataHoraUtc)
     {
         DemandaId = demandaId;
-        UsuarioId = usuarioId;
+        UsuarioId = ator.Id;
+        PerfilUsuario = ator.Perfil;
+        EnderecoIp = ator.EnderecoIp;
         Campo = campo;
         ValorAnterior = valorAnterior;
         NovoValor = novoValor;
@@ -26,6 +33,8 @@ internal sealed class HistoricoAlteracao
     internal Guid Id { get; private set; }
     internal Guid DemandaId { get; private set; }
     internal Guid UsuarioId { get; private set; }
+    internal Perfil PerfilUsuario { get; private set; }
+    internal string? EnderecoIp { get; private set; }
     internal string Campo { get; private set; } = string.Empty;
     internal string? ValorAnterior { get; private set; }
     internal string? NovoValor { get; private set; }

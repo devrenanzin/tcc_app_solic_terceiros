@@ -20,9 +20,6 @@ internal static partial class EmailUcl
         return normalizado;
     }
 
-    /// <summary>Parte antes do @; como o domínio é único, também é única por usuário.</summary>
-    internal static string ParteLocal(string emailNormalizado) => emailNormalizado[..emailNormalizado.IndexOf('@')];
-
     // Parte local de 1 a 64 caracteres (RFC 5321), seguida de @ucl.br.
     [GeneratedRegex(@"^[a-z0-9._%+\-]{1,64}@ucl\.br$", RegexOptions.CultureInvariant)]
     private static partial Regex Formato();

@@ -55,6 +55,9 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 36 | Contratos e corredores (D5, S16) | A confirmar | Números confirmados: 5900125082 (Norte) e 5900118506 (Sudeste). C. Integrado e Pelotização seguem a região: Norte no contrato do Norte, Sudeste no do Sudeste | Cliente |
 | 37 | Valores dos equipamentos | Deduzidos dos dados (S15) | Confirmados: Notebook R$ 444,35, Segunda tela R$ 53,93, Celular R$ 118,64, Rastreador R$ 345,13 | Cliente |
 | 38 | Data de envio e carga inicial | DataEnvio nula; seed na primeira migration | DataEnvio sempre preenchida, porque a demanda nasce no envio; no histórico, etapa e status novos também são sempre preenchidos. Catálogos fixos vão na migration; QQP, RACs e Admin inicial são carregados pelo comando de preparação do banco, que lê os CSV e a configuração | Consequência das decisões 23 e da regra de não copiar os CSV para o código |
+| 39 | Login | Coluna própria, sem regra (L8) | O login é o e-mail completo; a coluna Login passa a ter 254 caracteres, como o e-mail | Cliente |
+| 40 | Perfil e IP nas alterações de campo | HistoricoAlteracao sem perfil e IP (L6) | HistoricoAlteracao ganha PerfilUsuario e EnderecoIp, como os demais registros de auditoria | Cliente |
+| 41 | Custo mensal (S15) | A confirmar | O custo total é mensal | Cliente |
 
 ## 1–3. Objetivo e escopo
 
@@ -318,7 +321,7 @@ Os valores abaixo foram deduzidos dos 154 registros: a fórmula reproduz o custo
 | Veículo 4x4 | `R$ 9.113,47` | Uma vez por demanda (**S14**) |
 | Rastreador | `R$ 345,13` | Uma vez por demanda (**S14**) |
 
-**Valores confirmados pelo cliente** na revisão de 05/10/2026. **Confirmar (S14, S15):** se o custo é mensal e se veículo e rastreador são mesmo cobrados uma vez por demanda. Numa demanda de 3 vagas que pedia 2 veículos, o custo registrado inclui um único veículo. Valores de veículo informados pelo cliente (lista Tb\_veiculos): Veículo 4x4 \`R$ 9.113,47\`, Veículo de passeio \`R$ 5.292,29\`, Veículo van \`R$ 18.874,06\` e Transporte \`R$ 539,26\`.
+**Valores confirmados pelo cliente** na revisão de 05/10/2026, e o custo total é mensal. **Confirmar (S14):** se veículo e rastreador são mesmo cobrados uma vez por demanda. Numa demanda de 3 vagas que pedia 2 veículos, o custo registrado inclui um único veículo. Valores de veículo informados pelo cliente (lista Tb\_veiculos): Veículo 4x4 \`R$ 9.113,47\`, Veículo de passeio \`R$ 5.292,29\`, Veículo van \`R$ 18.874,06\` e Transporte \`R$ 539,26\`.
 
 ### Correspondência com o aplicativo atual
 
@@ -389,7 +392,7 @@ Toda ação relevante deixa rastro com usuário, perfil, data/hora e IP; as alte
 | Registro | Conteúdo | Uso |
 | --- | --- | --- |
 | HistoricoDemanda | Ação, etapa e status anterior e novo, usuário, perfil, IP, observação | Fluxo de cada demanda |
-| HistoricoAlteracao | Campo, valor anterior, novo valor, usuário, justificativa | Edição de campos de uma demanda |
+| HistoricoAlteracao | Campo, valor anterior, novo valor, usuário, perfil, IP, justificativa | Edição de campos de uma demanda |
 | LogAuditoria (novo) | Entidade, ação, valores, usuário, perfil, IP, justificativa | Cadastros (inclusive o autocadastro), vínculo do SESI a contrato, parâmetros, transferências e operações administrativas |
 
 Nenhum desses registros pode ser alterado ou excluído pela aplicação.
@@ -505,7 +508,7 @@ As entidades da v3.0 se mantêm. A v3.1 acrescenta campos que as próprias regra
 | Contrato | + ContratadaId: cada contrato pertence a uma Contratada (Cliente) |
 | EtapaDemanda | Sem mudança; data de conclusão imutável |
 | HistoricoDemanda | + Perfil do usuário; + Endereço IP |
-| HistoricoAlteracao | + Justificativa |
+| HistoricoAlteracao | + Justificativa; + Perfil do usuário e Endereço IP (Cliente) |
 | Anexo | + EtapaId |
 | SolicitacaoCorrecao | Adotada: origem, tipo da inconsistência, motivo, datas de solicitação e resolução (o destino é sempre o Solicitante) |
 | LogAuditoria | Nova: entidade, ação, valores, usuário, perfil, IP, justificativa, data/hora |
@@ -707,6 +710,8 @@ erDiagram
     guid Id PK
     guid DemandaId FK
     guid UsuarioId FK
+    string PerfilUsuario
+    string EnderecoIp "nulo"
     string Campo
     string ValorAnterior "nulo"
     string NovoValor "nulo"
@@ -823,7 +828,7 @@ CREATE TABLE Usuario (
   ContratoId uniqueidentifier NULL CONSTRAINT FK_Usuario_Contrato REFERENCES Contrato(Id),
   Nome nvarchar(150) NOT NULL,
   Email nvarchar(254) NOT NULL CONSTRAINT UQ_Usuario_Email UNIQUE CONSTRAINT CK_Usuario_Email_Dominio CHECK (Email LIKE '%@ucl.br'),
-  Login nvarchar(100) NOT NULL CONSTRAINT UQ_Usuario_Login UNIQUE,
+  Login nvarchar(254) NOT NULL CONSTRAINT UQ_Usuario_Login UNIQUE,
   Ativo bit NOT NULL,
   DataCadastro datetime2 NOT NULL,
   DataUltimoAcesso datetime2 NULL,
@@ -982,6 +987,8 @@ CREATE TABLE HistoricoAlteracao (
   Id uniqueidentifier NOT NULL CONSTRAINT PK_HistoricoAlteracao PRIMARY KEY,
   DemandaId uniqueidentifier NOT NULL CONSTRAINT FK_HistAlt_Demanda REFERENCES Demanda(Id),
   UsuarioId uniqueidentifier NOT NULL CONSTRAINT FK_HistAlt_Usuario REFERENCES Usuario(Id),
+  PerfilUsuario nvarchar(50) NOT NULL,
+  EnderecoIp varchar(45) NULL,
   Campo nvarchar(150) NOT NULL,
   ValorAnterior nvarchar(max) NULL,
   NovoValor nvarchar(max) NULL,
@@ -1400,7 +1407,7 @@ Este documento é a fonte única de verdade para implementar o sistema: implemen
 
 1. Quando uma regra não estiver neste documento, pare e pergunte. Não preencha lacunas por conta própria.
 2. Toda suposição da seção "Suposições e pendências" usada no código leva um comentário `// SUPOSIÇÃO (S1)` com o número correspondente, e entra na lista do README.
-3. Decisões em aberto bloqueiam a etapa que dependem delas: A forma de cobrança (S14, S15) bloqueia o cálculo de custo da Etapa 4. Pergunte antes de começar essas partes.
+3. Decisões em aberto bloqueiam a etapa que dependem delas: A cobrança de veículo e rastreador (S14) bloqueia o cálculo de custo da Etapa 4. Pergunte antes de começar essas partes.
 4. Todo tipo C# é `internal`. Exceções públicas só onde o framework exige, cada uma com um comentário explicando por quê (seção 27).
 5. Regras de negócio ficam no Domain e são testadas sem banco. Controllers e páginas não contêm regra.
 6. Use um relógio injetável (`IRelogio`) e um calendário do SLA injetável; nada de `DateTime.Now` no domínio.
@@ -1443,7 +1450,7 @@ O README do repositório deve repetir esses passos, ajustados ao que for de fato
 
 ## Suposições e pendências
 
-Onze suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; duas decisões continuam abertas e serão necessárias em etapas específicas da implementação.
+Dez suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; duas decisões continuam abertas e serão necessárias em etapas específicas da implementação.
 
 ### Suposições a confirmar
 
@@ -1459,8 +1466,8 @@ Onze suposições foram adotadas para não travar o desenvolvimento e precisam d
 | S12 | Campo obrigatório = campo preenchido em todos os registros do aplicativo atual | 8.1 |
 | S13 | Período temporário em dias | 8.1 |
 | S14 | Veículo e rastreador cobrados uma vez por demanda, não por vaga | 8.1 |
-| S15 | O custo total é mensal (os valores dos equipamentos foram confirmados pelo cliente) | 8.1 |
-S1, S5, S6, S16, S17, S18, S19 e S20 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32 e 34).
+
+S1, S5, S6, S15, S16, S17, S18, S19 e S20 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32, 34, 36 e 41).
 
 A antiga S10 (escolha do item QQP na demanda) foi confirmada pelo cliente.
 

@@ -25,6 +25,8 @@ internal sealed class Usuario
 
     internal string Nome { get; private set; } = string.Empty;
     internal string Email { get; private set; } = string.Empty;
+
+    /// <summary>Igual ao e-mail completo, usado para entrar no sistema.</summary>
     internal string Login { get; private set; } = string.Empty;
     internal bool Ativo { get; private set; }
     internal DateTime DataCadastro { get; private set; }
@@ -47,8 +49,8 @@ internal sealed class Usuario
             Perfil = Perfil.Admin,
             Nome = nome.Trim(),
             Email = emailNormalizado,
-            // PENDENTE (L8): o documento não diferencia Login de E-mail; usamos a parte antes do @.
-            Login = EmailUcl.ParteLocal(emailNormalizado),
+            // O login é o e-mail completo (Cliente, revisão de 05/10/2026).
+            Login = emailNormalizado,
             Ativo = true,
             DataCadastro = agoraUtc,
         };

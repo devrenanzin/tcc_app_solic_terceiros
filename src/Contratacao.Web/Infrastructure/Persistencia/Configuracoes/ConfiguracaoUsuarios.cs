@@ -38,7 +38,7 @@ internal sealed class ConfiguracaoUsuario : IEntityTypeConfiguration<Usuario>
         b.Property(u => u.ContratoId);
         b.Property(u => u.Nome).HasMaxLength(150).IsRequired();
         b.Property(u => u.Email).HasMaxLength(254).IsRequired();
-        b.Property(u => u.Login).HasMaxLength(100).IsRequired();
+        b.Property(u => u.Login).HasMaxLength(254).IsRequired();
         b.Property(u => u.Ativo);
         b.Property(u => u.DataCadastro);
         b.Property(u => u.DataUltimoAcesso);

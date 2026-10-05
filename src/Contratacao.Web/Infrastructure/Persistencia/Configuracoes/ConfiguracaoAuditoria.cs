@@ -39,6 +39,8 @@ internal sealed class ConfiguracaoHistoricoAlteracao : IEntityTypeConfiguration<
         b.HasKey(h => h.Id);
         b.Property(h => h.DemandaId);
         b.Property(h => h.UsuarioId);
+        b.Property(h => h.PerfilUsuario).HasConversion<string>().HasMaxLength(50);
+        b.Property(h => h.EnderecoIp).HasMaxLength(45).IsUnicode(false);
         b.Property(h => h.Campo).HasMaxLength(150).IsRequired();
         b.Property(h => h.ValorAnterior);
         b.Property(h => h.NovoValor);

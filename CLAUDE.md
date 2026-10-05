@@ -81,7 +81,7 @@ A regra de dependência (Domain não depende de nada; Application só de Domain)
 
 | Pendência | Bloqueia |
 | --- | --- |
-| Confirmar se o custo é mensal e se veículo e rastreador são cobrados uma vez por demanda (S14, S15); os valores já foram confirmados | Cálculo de custo na Etapa 4 |
+| Confirmar se veículo e rastreador são cobrados uma vez por demanda (S14); valores e custo mensal já confirmados | Cálculo de custo na Etapa 4 |
 | Códigos 466 e 467 do QQP repetem a mesma combinação | Seed do QQP (importe mesmo assim; o código é a chave) |
 | Período temporário em dias ou meses (S13) | Etapa 4 |
 

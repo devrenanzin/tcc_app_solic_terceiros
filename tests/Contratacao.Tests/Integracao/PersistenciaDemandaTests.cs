@@ -129,7 +129,31 @@ public sealed class PersistenciaDemandaTests(BancoFixture banco) : IClassFixture
         Assert.Contains("CK_Usuario_Email_Dominio", erro.Message, StringComparison.Ordinal);
     }
 
+    [Fact]
+    public async Task Alteracao_de_campo_guarda_usuario_perfil_e_ip()
+    {
+        var (solicitante, _, _) = await CriarAtoresAsync();
+        var id = await EnviarAsync(solicitante);
+
+        await using (var contexto = banco.NovoContexto())
+        {
+            contexto.HistoricosAlteracao.Add(new Contratacao.Web.Domain.Auditoria.HistoricoAlteracao(
+                id, solicitante, "LocalidadeVaga", "Vitória", "Serra", null, banco.Relogio.AgoraUtc));
+            await contexto.SaveChangesAsync(Cancelamento);
+        }
+
+        await using var leitura = banco.NovoContexto();
+        var alteracao = await leitura.HistoricosAlteracao.SingleAsync(h => h.DemandaId == id, Cancelamento);
+        Assert.Equal(solicitante.Id, alteracao.UsuarioId);
+        Assert.Equal(Perfil.Solicitante, alteracao.PerfilUsuario);
+        Assert.Equal("10.0.0.1", alteracao.EnderecoIp);
+        Assert.Equal(("Vitória", "Serra"), (alteracao.ValorAnterior, alteracao.NovoValor));
+    }
+
     [Theory]
+    [InlineData("Usuario", "Login", "nvarchar", "NO")]
+    [InlineData("HistoricoAlteracao", "PerfilUsuario", "nvarchar", "NO")]
+    [InlineData("HistoricoAlteracao", "EnderecoIp", "varchar", "YES")]
     [InlineData("Demanda", "DataLimiteSLA", "date", "YES")]
     [InlineData("Demanda", "Numero", "nvarchar", "NO")]
     [InlineData("Demanda", "GestorId", "uniqueidentifier", "YES")]

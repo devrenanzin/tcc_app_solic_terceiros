@@ -115,7 +115,5 @@ Cada suposição usada no código (as abertas na seção "Suposições e pendên
 
 ## Pendências
 
-- **Forma de cobrança (S14, S15):** se o custo é mensal e se veículo e rastreador são cobrados uma vez por demanda. Bloqueia o cálculo de custo da Etapa 4. Os valores dos equipamentos já foram confirmados.
+- **Cobrança de veículo e rastreador (S14):** se são cobrados uma vez por demanda, e não por vaga. Bloqueia o cálculo de custo da Etapa 4. Valores e custo mensal já confirmados.
 - **QQP 466 e 467:** repetem a mesma combinação; são importados assim mesmo, com o código como chave.
-- **Login x e-mail (L8):** o documento não diferencia os dois; `Usuario.Login` guarda a parte do e-mail antes do @ (marcado com `PENDENTE` em `Usuario`).
-- **HistoricoAlteracao sem perfil e IP (L6):** o script da seção 23 não tem essas colunas, embora a regra de auditoria peça perfil e IP em todo registro. Mantido como no script até decisão.

@@ -175,7 +175,7 @@ public sealed class CargaInicialTests(BancoFixture banco) : IClassFixture<BancoF
         var admin = await contexto.Usuarios.SingleAsync(u => u.Perfil == Perfil.Admin, Cancelamento);
 
         Assert.Equal("admin.testes@ucl.br", admin.Email);
-        Assert.Equal("admin.testes", admin.Login);
+        Assert.Equal("admin.testes@ucl.br", admin.Login);
         Assert.True(admin.Ativo);
         Assert.Null(admin.GestorResponsavelId);
         Assert.DoesNotContain(BancoFixture.Admin.Senha!, admin.SenhaHash);
