@@ -36,6 +36,7 @@ internal static class ConfiguracaoInfraestrutura
         services.AddScoped<ICatalogosDemanda, CatalogosDemanda>();
         services.AddScoped<IAnexos, RepositorioAnexos>();
         services.AddScoped<IParametros, Parametros>();
+        services.AddScoped<Application.Notificacoes.INotificacoes, RepositorioNotificacoes>();
         services.AddScoped<Application.Auditoria.IConsultaAuditoria, ConsultaAuditoria>();
         services.Configure<OpcoesAnexos>(configuracao.GetSection(OpcoesAnexos.Secao));
         services.AddSingleton<IArmazenamentoArquivos, ArmazenamentoEmDisco>();

@@ -18,6 +18,9 @@ internal interface IUsuarios
 
     /// <summary>Lista para as telas de cadastro; filtra por perfil e, opcionalmente, pelo Gestor responsável.</summary>
     Task<IReadOnlyList<ResumoUsuario>> ListarAsync(Perfil perfil, Guid? gestorResponsavelId, CancellationToken cancelamento);
+
+    /// <summary>Usuários ativos de um contrato: Gestores (GestorContrato) ou Funcionários da Gerenciadora (grupo do contrato).</summary>
+    Task<IReadOnlyList<Guid>> AtivosDoContratoAsync(Perfil perfil, Guid contratoId, CancellationToken cancelamento);
 }
 
 internal interface IContratos

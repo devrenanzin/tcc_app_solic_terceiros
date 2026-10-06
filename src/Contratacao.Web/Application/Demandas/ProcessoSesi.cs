@@ -40,12 +40,13 @@ internal sealed class IniciarExames(IDemandas demandas, IUnidadeDeTrabalho unida
 }
 
 /// <summary>UC11 — Finalizar a contratação; exige a etapa Exames Médicos e encerra o SLA.</summary>
-internal sealed class FinalizarContratacao(IDemandas demandas, IUnidadeDeTrabalho unidade, IRelogio relogio)
+internal sealed class FinalizarContratacao(IDemandas demandas, IUnidadeDeTrabalho unidade, IRelogio relogio, Notificacoes.Notificador notificador)
 {
     internal async Task ExecutarAsync(Ator sesi, Guid demandaId, CancellationToken cancelamento)
     {
         var demanda = await Carregar.DemandaAsync(demandas, demandaId, cancelamento);
         demanda.Finalizar(sesi, relogio);
+        await notificador.RegistrarAsync(demanda, Domain.Notificacoes.TipoNotificacao.ContratacaoFinalizada, cancelamento);
         await unidade.SalvarAsync(cancelamento);
     }
 }

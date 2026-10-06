@@ -1,0 +1,49 @@
+@page
+@using Contratacao.Web.Domain.Notificacoes
+@model NotificacoesModel
+@{
+    ViewData["Title"] = "Avisos";
+    var naoLidos = Model.Avisos.Count(a => !a.Lida);
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>Avisos</h1>
+        <p>@(naoLidos == 0 ? "Nenhum aviso novo." : $"{naoLidos} aviso(s) não lido(s).") Mostra os @Contratacao.Web.Application.Notificacoes.ConsultarNotificacoes.Limite mais recentes.</p>
+    </div>
+    @if (naoLidos > 0)
+    {
+        <form method="post" asp-page-handler="LerTodas">
+            <button type="submit" class="btn btn-outline-primary"><i class="bi bi-check2-all"></i> Marcar todos como lidos</button>
+        </form>
+    }
+</div>
+
+<div class="cartao">
+    @if (Model.Avisos.Count == 0)
+    {
+        <div class="vazio"><i class="bi bi-bell"></i>Você ainda não recebeu avisos.</div>
+    }
+    else
+    {
+        <ul class="lista-avisos">
+            @foreach (var aviso in Model.Avisos)
+            {
+                <li class="@(aviso.Lida ? "lido" : "novo")">
+                    <span class="icone-aviso aviso-@(aviso.Tipo is TipoNotificacao.PrazoVencido or TipoNotificacao.DemandaCancelada ? "alerta" : aviso.Tipo == TipoNotificacao.ProximaDoVencimento ? "atencao" : "normal")">
+                        <i class="bi @NotificacoesModel.Icone(aviso.Tipo)"></i>
+                    </span>
+                    <div class="flex-grow-1">
+                        <div class="@(aviso.Lida ? string.Empty : "fw-semibold")">@aviso.Mensagem</div>
+                        <div class="small text-body-secondary">@Formatacao.DataHora(aviso.DataCriacao)@(aviso.Lida ? " · lido" : string.Empty)</div>
+                    </div>
+                    <form method="post" asp-page-handler="Abrir" asp-route-id="@aviso.Id">
+                        <button type="submit" class="btn btn-sm @(aviso.Lida ? "btn-light" : "btn-primary")">
+                            @(aviso.DemandaId is null ? "Marcar como lido" : "Abrir demanda")
+                        </button>
+                    </form>
+                </li>
+            }
+        </ul>
+    }
+</div>

@@ -115,6 +115,15 @@ public sealed class BancoFixture : IAsyncLifetime
             VALUES ({id}, {perfilId}, {contratoSesi}, {"Usuário de teste"}, {login + "@ucl.br"}, {login}, 1, SYSUTCDATETIME(), {"hash"})
             """);
 
+        // Os contratos do Gestor ficam em GestorContrato (usados, por exemplo, para saber quem recebe os avisos).
+        if (perfil == Perfil.Gestor)
+        {
+            foreach (var contrato in contratos)
+            {
+                await contexto.Database.ExecuteSqlAsync($"INSERT INTO GestorContrato (GestorId, ContratoId) VALUES ({id}, {contrato})");
+            }
+        }
+
         return new Ator(id, perfil, true, contratos.ToHashSet(), "10.0.0.1");
     }
 

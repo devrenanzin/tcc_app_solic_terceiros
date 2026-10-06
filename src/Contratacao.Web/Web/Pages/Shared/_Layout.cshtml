@@ -1,10 +1,15 @@
 @using System.Security.Claims
 @using Contratacao.Web.Domain.Usuarios
+@inject Contratacao.Web.Application.Notificacoes.ConsultarNotificacoes Avisos
 @{
     var nome = User.Identity?.Name ?? string.Empty;
     var iniciais = string.Concat(nome.Split(' ', StringSplitOptions.RemoveEmptyEntries).Take(2).Select(p => char.ToUpperInvariant(p[0])));
     var perfil = Enum.TryParse<Perfil>(User.FindFirstValue(ClaimTypes.Role), out var p) ? p : (Perfil?)null;
     var caminho = Context.Request.Path.Value ?? "/";
+    // Sininho: avisos não lidos do usuário logado (seção 29).
+    var naoLidos = Contratacao.Web.Web.Autenticacao.Sessao.UsuarioId(User) is { } usuarioId
+        ? await Avisos.NaoLidasAsync(usuarioId, Context.RequestAborted)
+        : 0;
     string Ativo(string prefixo) => (prefixo == "/" ? caminho == "/" : caminho.StartsWith(prefixo, StringComparison.OrdinalIgnoreCase)) ? "ativo" : string.Empty;
 }
 <!DOCTYPE html>
@@ -24,7 +29,14 @@
             <i class="bi bi-list fs-4"></i>
         </button>
         <span class="fw-semibold">Sistema de Contratação</span>
-        <a href="/Sair" class="btn btn-sm text-white ms-auto" aria-label="Sair"><i class="bi bi-box-arrow-right fs-5"></i></a>
+        <a href="/Notificacoes" class="btn btn-sm text-white ms-auto position-relative" aria-label="Avisos">
+            <i class="bi @(naoLidos > 0 ? "bi-bell-fill" : "bi-bell") fs-5"></i>
+            @if (naoLidos > 0)
+            {
+                <span class="contador-avisos contador-flutuante">@(naoLidos > 99 ? "99+" : naoLidos)</span>
+            }
+        </a>
+        <a href="/Sair" class="btn btn-sm text-white" aria-label="Sair"><i class="bi bi-box-arrow-right fs-5"></i></a>
     </div>
 
     <div class="app">
@@ -33,6 +45,15 @@
 
             <ul class="nav flex-column">
                 <li><a class="nav-link @Ativo("/")" href="/"><i class="bi bi-house-door"></i> Início</a></li>
+                <li>
+                    <a class="nav-link @Ativo("/Notificacoes")" href="/Notificacoes">
+                        <i class="bi @(naoLidos > 0 ? "bi-bell-fill" : "bi-bell")"></i> Avisos
+                        @if (naoLidos > 0)
+                        {
+                            <span class="contador-avisos" aria-label="@naoLidos avisos não lidos">@(naoLidos > 99 ? "99+" : naoLidos)</span>
+                        }
+                    </a>
+                </li>
             </ul>
 
             <div class="titulo-grupo">Demandas</div>

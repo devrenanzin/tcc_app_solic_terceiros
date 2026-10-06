@@ -15,7 +15,8 @@ internal sealed class EnviarDemanda(
     IAuditoria auditoria,
     IUnidadeDeTrabalho unidade,
     IRelogio relogio,
-    ICalendarioSla calendario)
+    ICalendarioSla calendario,
+    Notificacoes.Notificador notificador)
 {
     internal async Task<Demanda> ExecutarAsync(
         Ator solicitante,
@@ -68,6 +69,7 @@ internal sealed class EnviarDemanda(
                     $"{demanda.Numero}; {categoria}; {conferido.NomeArquivo}; {conferido.Tamanho} bytes", null, agora));
             }
 
+            await notificador.RegistrarAsync(demanda, Domain.Notificacoes.TipoNotificacao.NovaDemanda, cancelamento);
             await unidade.SalvarAsync(cancelamento);
             return demanda;
         }, cancelamento);

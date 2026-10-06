@@ -9,6 +9,12 @@ builder.Services.AdicionarAplicacao();
 builder.Services.AdicionarInfraestrutura(builder.Configuration);
 builder.Services.AdicionarInterfaceWeb();
 
+// Avisos de prazo (seção 29). Nos testes, a verificação é chamada diretamente, com relógio controlado.
+if (!builder.Environment.IsEnvironment("Testes"))
+{
+    builder.Services.AddHostedService<VerificacaoPeriodicaPrazos>();
+}
+
 var app = builder.Build();
 
 // dotnet run --project src/Contratacao.Web -- preparar-banco

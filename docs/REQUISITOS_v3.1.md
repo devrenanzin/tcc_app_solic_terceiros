@@ -85,6 +85,9 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 67 | Conta com demandas em andamento | — | Não pode ser vinculada a outro perfil enquanto tiver demandas em andamento como Solicitante, porque só o Solicitante as corrige | Recomendação |
 | 68 | Nome da contratada e do perfil | SESI | Gerenciadora em todo o sistema: a Contratada, o perfil Funcionário da Gerenciadora, a etapa Validação da Gerenciadora e os demais textos | Cliente |
 | 69 | RAC | RAC 01 a RAC 13 | Risco: os códigos passam a RISCO 01 a RISCO 13, e a lista do formulário se chama Riscos | Cliente |
+| 70 | Notificações | Fora do MVP; canais a definir | Entram no sistema como avisos dentro do próprio sistema (sininho no menu), sem e-mail | Cliente |
+| 71 | Avisos de prazo | Frequência e destinatários a definir | Um aviso quando a demanda fica próxima do vencimento (farol amarelo ou laranja) e outro quando vence, uma vez cada; recebem todos os Gestores e Funcionários da Gerenciadora do contrato | Cliente |
+| 72 | Avisos ao Solicitante | Só a correção solicitada | Também quando a demanda é aprovada, quando a contratação é finalizada e quando a demanda é cancelada | Cliente |
 | 47 | Custo na correção que muda quantidade ou equipamentos | Só a mudança no QQP recalculava (item 27) | Qualquer correção que mude o item QQP, a quantidade de vagas ou os equipamentos recalcula o custo inteiro com os valores atuais dos catálogos; sem essas mudanças, ficam os valores do envio | Cliente |
 
 ## 1–3. Objetivo e escopo
@@ -541,7 +544,7 @@ As entidades da v3.0 se mantêm. A v3.1 acrescenta campos que as próprias regra
 | ParametroSistema | Nova: guarda o prazo padrão do SLA e demais parâmetros do Admin |
 | SequenciaNumeroDemanda | Nova: último sequencial por ano, para o número AAAA-NNNNNN |
 | TransicaoEtapa | Não adotada: transições ficam em código, auditadas pelo histórico |
-| Notificacao | Adiada para a fase de notificações |
+| Notificacao | Adotada (Cliente, item 70): aviso de um usuário, ligado à demanda, com tipo, mensagem, data e leitura |
 
 Datas gravadas em UTC. Ids em Guid, como no documento de projeto. Demanda.ContratadaId é a Contratada do contrato da demanda (Cliente).
 
@@ -553,7 +556,7 @@ Notação UML: cada classe tem nome, atributos e operações, com visibilidade p
 
 ### Modelo lógico
 
-O modelo lógico mostra 27 entidades (o físico tem 32 tabelas, contando as cinco listas do catálogo QQP); Demanda é o centro e todas as tabelas filhas apontam para ela sem exclusão em cascata. Notação de entidade-relacionamento: || = exatamente um, |o = zero ou um, o{ = zero ou muitos, |{ = um ou muitos.
+O modelo lógico mostra 28 entidades (o físico tem 33 tabelas, contando as cinco listas do catálogo QQP); Demanda é o centro e todas as tabelas filhas apontam para ela sem exclusão em cascata. Notação de entidade-relacionamento: || = exatamente um, |o = zero ou um, o{ = zero ou muitos, |{ = um ou muitos.
 
 ```mermaid
 erDiagram
@@ -588,6 +591,8 @@ erDiagram
   CONTRATO ||--o{ ORDEM_SERVICO : "tem"
   ORDEM_SERVICO ||--o{ DEMANDA : "referencia"
   GERENTE_EXECUTIVO ||--|{ GERENTE_EXECUTIVO_CORREDOR : "atende"
+  USUARIO ||--o{ NOTIFICACAO : "recebe"
+  DEMANDA |o--o{ NOTIFICACAO : "gera"
   CORREDOR ||--o{ GERENTE_EXECUTIVO_CORREDOR : "atendido por"
   CONTRATADA ||--o{ CONTRATO : "detem"
   CONTRATO |o--o{ USUARIO : "vincula SESI"
@@ -818,6 +823,15 @@ erDiagram
   GESTOR_CONTRATO {
     guid GestorId PK
     guid ContratoId PK
+  }
+  NOTIFICACAO {
+    guid Id PK
+    guid UsuarioId FK
+    guid DemandaId FK "nulo"
+    string Tipo
+    string Mensagem
+    datetime DataCriacao
+    datetime DataLeitura "nulo"
   }
   GERENTE_EXECUTIVO_CORREDOR {
     guid GerenteExecutivoId PK
@@ -1167,6 +1181,17 @@ CREATE TABLE Contrato (
   Ativo bit NOT NULL,
   CONSTRAINT CK_Contrato_Numero CHECK (Numero LIKE '59%' AND Numero NOT LIKE '%[^0-9]%')
 );
+CREATE TABLE Notificacao (
+  Id uniqueidentifier NOT NULL CONSTRAINT PK_Notificacao PRIMARY KEY,
+  UsuarioId uniqueidentifier NOT NULL CONSTRAINT FK_Notificacao_Usuario REFERENCES Usuario(Id),
+  DemandaId uniqueidentifier NULL CONSTRAINT FK_Notificacao_Demanda REFERENCES Demanda(Id),
+  Tipo varchar(40) NOT NULL,
+  Mensagem nvarchar(300) NOT NULL,
+  DataCriacao datetime2 NOT NULL,
+  DataLeitura datetime2 NULL
+);
+CREATE INDEX IX_Notificacao_Usuario ON Notificacao(UsuarioId, DataLeitura);
+CREATE INDEX IX_Notificacao_DemandaTipo ON Notificacao(DemandaId, Tipo);
 CREATE TABLE GerenteExecutivoCorredor (
   GerenteExecutivoId uniqueidentifier NOT NULL CONSTRAINT FK_GerenteCorredor_Gerente REFERENCES GerenteExecutivo(Id),
   CorredorId uniqueidentifier NOT NULL CONSTRAINT FK_GerenteCorredor_Corredor REFERENCES Corredor(Id),
@@ -1400,9 +1425,22 @@ CorrigirSESI .> ValidarSESI : <<extend>>
 
 ## 29–30. Notificações e indicadores
 
-As duas ficam fora do MVP, mas o sistema já registra os eventos que vão alimentá-las, para que entrem depois sem retrabalho.
+As notificações entraram no sistema como avisos dentro do próprio sistema, com um sininho no menu (Cliente, item 70); não há e-mail. Os indicadores continuam fora do MVP.
 
-**Notificações previstas** (canais, frequência e reenvio a definir): nova demanda → Gestores do contrato; demanda aprovada → Gerenciadora; correção solicitada → destinatário da devolução; aceite pela Gerenciadora → Gestor; SLA próximo do vencimento → Gerenciadora e Gestores; SLA vencido → responsáveis.
+**Notificações (Cliente, itens 70 a 72):**
+
+| Evento | Quem recebe |
+| --- | --- |
+| Nova demanda | Gestores ativos do contrato |
+| Demanda aprovada | Funcionários da Gerenciadora do contrato e o Solicitante |
+| Correção solicitada (pelo Gestor ou pela Gerenciadora) | Solicitante |
+| Aceite pela Gerenciadora | Gestor da demanda |
+| Prazo próximo do vencimento (farol amarelo ou laranja) | Todos os Gestores e Funcionários da Gerenciadora do contrato, uma vez |
+| Prazo vencido | Todos os Gestores e Funcionários da Gerenciadora do contrato, uma vez |
+| Contratação finalizada | Solicitante |
+| Demanda cancelada | Solicitante |
+
+Os avisos de prazo são gerados por uma verificação periódica (de hora em hora). Avisos nunca são excluídos; só são marcados como lidos pelo próprio usuário.
 
 **Indicadores previstos:** os 14 da seção 30 da v3.0, sem mudança (totais por situação, cumprimento do SLA, tempo médio total e por etapa, correções, e quantidades por contratada, Gestor e Gerenciadora).
 
@@ -1457,7 +1495,7 @@ Este documento é a fonte única de verdade para implementar o sistema: implemen
 | 5 — Processo da Gerenciadora | UC08–11, congelamento de datas | Sequência obrigatória e imutabilidade das datas | Se necessário |
 | 6 — Cancelamento e anexos | UC18, UC20, anexos | Justificativa obrigatória; ninguém exclui demanda enviada | Se necessário |
 | 7 — Telas | Dashboards por perfil, tela da Gerenciadora, linha do tempo, histórico | Integração das consultas e filtros | — |
-| 8 — Notificações | Só se confirmadas | — | Notificacao |
+| 8 — Notificações | Avisos dentro do sistema (confirmadas pelo cliente, itens 70 a 72) | Destinatários de cada aviso e avisos de prazo uma vez cada | Notificacao |
 
 A etapa só termina quando os critérios de aceite das seções 31–32 que ela cobre estiverem cobertos por testes.
 

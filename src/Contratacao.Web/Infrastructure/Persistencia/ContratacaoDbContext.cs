@@ -3,6 +3,7 @@ using Contratacao.Web.Domain.Auditoria;
 using Contratacao.Web.Domain.Catalogos;
 using Contratacao.Web.Domain.Contratos;
 using Contratacao.Web.Domain.Demandas;
+using Contratacao.Web.Domain.Notificacoes;
 using Contratacao.Web.Domain.Parametros;
 using Contratacao.Web.Domain.Qqp;
 using Contratacao.Web.Domain.Usuarios;
@@ -34,6 +35,7 @@ internal sealed class ContratacaoDbContext(DbContextOptions<ContratacaoDbContext
     internal DbSet<Anexo> Anexos => Set<Anexo>();
     internal DbSet<HistoricoAlteracao> HistoricosAlteracao => Set<HistoricoAlteracao>();
     internal DbSet<LogAuditoria> LogsAuditoria => Set<LogAuditoria>();
+    internal DbSet<Notificacao> Notificacoes => Set<Notificacao>();
     internal DbSet<ParametroSistema> Parametros => Set<ParametroSistema>();
     internal DbSet<SequenciaNumeroDemanda> SequenciasNumeroDemanda => Set<SequenciaNumeroDemanda>();
 

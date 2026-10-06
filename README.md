@@ -18,7 +18,23 @@ Os requisitos estão em [docs/REQUISITOS_v3.1.md](docs/REQUISITOS_v3.1.md), a ú
 | 5 — Processo da Gerenciadora | Vaga com link, entrevistas, exames médicos e finalização, na sequência obrigatória; datas das etapas congeladas | Concluída |
 | 6 — Cancelamento e anexos | Cancelamento pelo Gestor, operações excepcionais do Admin (cancelar, mudar etapa, alterar data congelada) e anexos na correção | Concluída |
 | 7 — Telas | Painel de cada perfil, tela de acompanhamento com filtros e consulta da auditoria | Concluída |
-| 8 — Notificações | Só se confirmadas pelo cliente (fora do MVP) | Pendente |
+| 8 — Notificações | Avisos dentro do sistema (sininho), com os destinatários da seção 29 e avisos de prazo | Concluída |
+
+## Avisos (Etapa 8)
+
+O sininho do menu (`/Notificacoes`) mostra os avisos do usuário, com a contagem dos não lidos. Abrir um aviso o marca como lido e leva à demanda. Não há e-mail.
+
+| Evento | Quem recebe |
+| --- | --- |
+| Nova demanda | Gestores ativos do contrato |
+| Demanda aprovada | Funcionários da Gerenciadora do contrato e o Solicitante |
+| Correção solicitada | Solicitante |
+| Aceite pela Gerenciadora | Gestor da demanda |
+| Prazo perto de vencer (farol amarelo ou laranja) e prazo vencido | Todos os Gestores e Funcionários da Gerenciadora do contrato, uma vez cada |
+| Contratação finalizada e demanda cancelada | Solicitante |
+
+- **Regras.** Quem recebe cada aviso fica em `Domain/Notificacoes` (`RegrasNotificacao`); os casos de uso geram os avisos na mesma gravação da ação, por meio do `Notificador`.
+- **Prazos.** `VerificacaoPeriodicaPrazos` roda de hora em hora com a aplicação e chama `VerificarPrazos`, que só gera cada aviso de prazo uma vez por demanda. No ambiente de testes ela fica desligada e os testes a chamam com o relógio controlado.
 
 ## Painéis, acompanhamento e auditoria (Etapa 7)
 

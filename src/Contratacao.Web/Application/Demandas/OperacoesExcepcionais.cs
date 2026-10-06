@@ -9,7 +9,8 @@ namespace Contratacao.Web.Application.Demandas;
 /// UC18 — Cancelar demanda: Gestor do contrato, ou o Admin em caráter excepcional (UC20), sempre com
 /// justificativa. Nada é excluído; o histórico e o log de auditoria registram quem, quando e por quê.
 /// </summary>
-internal sealed class CancelarDemanda(IDemandas demandas, IAuditoria auditoria, IUnidadeDeTrabalho unidade, IRelogio relogio)
+internal sealed class CancelarDemanda(
+    IDemandas demandas, IAuditoria auditoria, IUnidadeDeTrabalho unidade, IRelogio relogio, Notificacoes.Notificador notificador)
 {
     internal async Task ExecutarAsync(Ator ator, Guid demandaId, string justificativa, CancellationToken cancelamento)
     {
@@ -20,6 +21,7 @@ internal sealed class CancelarDemanda(IDemandas demandas, IAuditoria auditoria, 
         auditoria.Registrar(LogAuditoria.De(ator, nameof(Demanda), demanda.Id,
             ator.Eh(Perfil.Admin) ? "OperacaoExcepcional.Cancelamento" : "Cancelamento",
             situacao, $"{demanda.Etapa} / {demanda.Status}", demanda.MotivoCancelamento, relogio.AgoraUtc));
+        await notificador.RegistrarAsync(demanda, Domain.Notificacoes.TipoNotificacao.DemandaCancelada, cancelamento);
         await unidade.SalvarAsync(cancelamento);
     }
 }

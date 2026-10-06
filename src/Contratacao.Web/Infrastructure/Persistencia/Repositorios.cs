@@ -34,6 +34,15 @@ internal sealed class RepositorioUsuarios(ContratacaoDbContext contexto) : IUsua
             .Select(c => new GestorContrato(gestorId, c)));
     }
 
+    public async Task<IReadOnlyList<Guid>> AtivosDoContratoAsync(Perfil perfil, Guid contratoId, CancellationToken cancelamento)
+        => perfil == Perfil.Gestor
+            ? await (from gc in contexto.GestoresContratos
+                     join u in contexto.Usuarios on gc.GestorId equals u.Id
+                     where gc.ContratoId == contratoId && u.Ativo && u.Perfil == Perfil.Gestor
+                     select u.Id).ToListAsync(cancelamento)
+            : await contexto.Usuarios.Where(u => u.Perfil == perfil && u.Ativo && u.ContratoId == contratoId)
+                .Select(u => u.Id).ToListAsync(cancelamento);
+
     public async Task<IReadOnlyList<ResumoUsuario>> ListarAsync(Perfil perfil, Guid? gestorResponsavelId, CancellationToken cancelamento)
     {
         var consulta = contexto.Usuarios.Where(u => u.Perfil == perfil);
