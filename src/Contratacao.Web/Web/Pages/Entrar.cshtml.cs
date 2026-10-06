@@ -16,7 +16,10 @@ internal sealed class EntrarModel(AutenticarUsuario autenticar) : PaginaBase
     [BindProperty(SupportsGet = true)]
     public string? ReturnUrl { get; set; }
 
-    public IActionResult OnGet() => User.Identity?.IsAuthenticated == true ? Redirect("/") : Page();
+    /// <summary>Nome de quem já está conectado neste navegador; a tela oferece continuar ou trocar de conta.</summary>
+    internal string? Conectado { get; private set; }
+
+    public void OnGet() => Conectado = User.Identity?.IsAuthenticated == true ? User.Identity.Name : null;
 
     public async Task<IActionResult> OnPostAsync()
     {

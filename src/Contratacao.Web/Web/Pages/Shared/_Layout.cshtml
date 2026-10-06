@@ -24,6 +24,7 @@
             <i class="bi bi-list fs-4"></i>
         </button>
         <span class="fw-semibold">Sistema de Contratação</span>
+        <a href="/Sair" class="btn btn-sm text-white ms-auto" aria-label="Sair"><i class="bi bi-box-arrow-right fs-5"></i></a>
     </div>
 
     <div class="app">
@@ -76,7 +77,8 @@
                         <div class="perfil">@(perfil is { } valor ? Contratacao.Web.Web.Formatacao.Perfil(valor) : string.Empty)</div>
                     </div>
                 </div>
-                <form method="post" action="/Sair">
+                @* asp-page: o formulário leva o token antifalsificação, sem o qual o POST é recusado. *@
+                <form method="post" asp-page="/Sair">
                     <button type="submit" class="nav-link w-100 border-0 bg-transparent"><i class="bi bi-box-arrow-right"></i> Sair</button>
                 </form>
             </div>
