@@ -149,7 +149,7 @@ internal sealed record ResumoDemanda(
 {
     internal Farol Farol { get; init; }
 
-    internal PosicaoDemanda Posicao => new(Etapa, Status, Farol, ContratoId);
+    internal PosicaoDemanda Posicao => new(Etapa, Status, Farol, ContratoId, SolicitanteId);
 }
 
 /// <summary>Nomes para mostrar a demanda; os dicionários traduzem os ids gravados no histórico de alterações.</summary>

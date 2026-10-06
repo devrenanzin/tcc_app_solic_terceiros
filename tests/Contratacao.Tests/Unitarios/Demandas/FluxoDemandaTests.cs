@@ -40,10 +40,29 @@ public sealed class FluxoDemandaTests
         => Assert.Throws<RegraNegocioException>(() => _c.Enviar(numero));
 
     [Fact]
-    public void Envio_so_por_solicitante_ativo()
+    public void Abrem_demanda_solicitante_gestor_e_admin_ativos()
     {
-        Assert.Throws<RegraNegocioException>(() => _c.Enviar(Cenario.Numero, _c.GestorNorte));
+        // Gestor e Admin também abrem demandas (Cliente, revisão de 06/10/2026); a Gerenciadora, não.
+        Assert.Equal(_c.GestorSudeste.Id, _c.Enviar(Cenario.Numero, _c.GestorSudeste).UsuarioSolicitanteId);
+        Assert.Equal(_c.Admin.Id, _c.Enviar(Cenario.Numero, _c.Admin).UsuarioSolicitanteId);
+        Assert.Throws<RegraNegocioException>(() => _c.Enviar(Cenario.Numero, _c.SesiNorte));
         Assert.Throws<RegraNegocioException>(() => _c.Enviar(Cenario.Numero, _c.Solicitante with { Ativo = false }));
+        Assert.Throws<RegraNegocioException>(() => _c.Enviar(Cenario.Numero, _c.GestorInativo));
+    }
+
+    [Fact]
+    public void Gestor_que_abriu_corrige_a_propria_demanda_e_pode_aprova_la()
+    {
+        // O Gestor do contrato pode aprovar a demanda que ele mesmo abriu (Cliente).
+        var demanda = _c.Enviar(Cenario.Numero, _c.GestorNorte);
+        demanda.DevolverPeloGestor(_c.GestorNorte, "Faltou a formação.", _c.Relogio);
+
+        Assert.Contains(AcaoDemanda.Corrigir, demanda.AcoesDisponiveis(_c.GestorNorte));
+        _c.Corrigir(demanda, _c.GestorNorte);
+        demanda.Aprovar(_c.GestorNorte, Cenario.PrazoPadrao, _c.Relogio, _c.Calendario);
+
+        Assert.Equal((Etapa.ValidacaoSesi, _c.GestorNorte.Id), (demanda.Etapa, demanda.GestorId));
+        Assert.Throws<RegraNegocioException>(() => _c.Corrigir(demanda, _c.GestorDosDois)); // quem não abriu não corrige
     }
 
     [Fact]

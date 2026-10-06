@@ -150,6 +150,7 @@ internal static class Formatacao
         Domain.Demandas.Quadro.Recrutamento => ("Recrutamento", "bi-megaphone", "Vaga a registrar ou aberta"),
         Domain.Demandas.Quadro.Entrevistas => ("Entrevistas", "bi-chat-square-text", "Entrevistas em andamento"),
         Domain.Demandas.Quadro.ExamesMedicos => ("Exames médicos", "bi-heart-pulse", "Exames em andamento"),
+        Domain.Demandas.Quadro.DevolvidasParaMim => ("Devolvidas para mim", "bi-pencil-square", "Demandas que você abriu, para corrigir"),
         _ => (quadro.ToString(), "bi-circle", string.Empty),
     };
 

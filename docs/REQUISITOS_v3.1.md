@@ -82,12 +82,13 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 64 | Filtro padrão das listas | Sem definição | A lista abre só com as demandas em andamento; o filtro de situação mostra concluídas, canceladas ou todas | Cliente |
 | 65 | Acessos do Admin | Cadastra Gestores; Gerenciadora só pelo Gestor | O Admin faz todos os cadastros: Gestores, Funcionários da Gerenciadora na equipe de qualquer Gestor ativo e em qualquer contrato, desativação e reativação de qualquer Funcionário da Gerenciadora, Solicitantes e catálogos. Nas demandas, continua só com as operações excepcionais (UC20) | Cliente |
 | 66 | Vínculo de conta já cadastrada | Só cadastro de conta nova | Uma conta de Solicitante pode ser vinculada como Funcionário da Gerenciadora (pelo Gestor, na própria equipe e nos seus contratos; pelo Admin, em qualquer equipe e contrato) ou como Gestor (pelo Admin): o perfil muda e o e-mail e a senha continuam | Cliente |
-| 67 | Conta com demandas em andamento | — | Não pode ser vinculada a outro perfil enquanto tiver demandas em andamento como Solicitante, porque só o Solicitante as corrige | Recomendação |
+| 67 | Conta com demandas em andamento | — | Não pode ser vinculada a outro perfil enquanto tiver demandas em andamento como Solicitante, porque só o Solicitante as corrige | Cliente |
 | 68 | Nome da contratada e do perfil | SESI | Gerenciadora em todo o sistema: a Contratada, o perfil Funcionário da Gerenciadora, a etapa Validação da Gerenciadora e os demais textos | Cliente |
 | 69 | RAC | RAC 01 a RAC 13 | Risco: os códigos passam a RISCO 01 a RISCO 13, e a lista do formulário se chama Riscos | Cliente |
 | 70 | Notificações | Fora do MVP; canais a definir | Entram no sistema como avisos dentro do próprio sistema (sininho no menu), sem e-mail | Cliente |
 | 71 | Avisos de prazo | Frequência e destinatários a definir | Um aviso quando a demanda fica próxima do vencimento (farol amarelo ou laranja) e outro quando vence, uma vez cada; recebem todos os Gestores e Funcionários da Gerenciadora do contrato | Cliente |
 | 72 | Avisos ao Solicitante | Só a correção solicitada | Também quando a demanda é aprovada, quando a contratação é finalizada e quando a demanda é cancelada | Cliente |
+| 73 | Quem abre demanda | Só o Solicitante | Também o Gestor e o Admin; quem abre corrige e anexa como Solicitante daquela demanda, e o Gestor do contrato pode aprovar a demanda que ele mesmo abriu. A Gerenciadora não abre demandas | Cliente |
 | 47 | Custo na correção que muda quantidade ou equipamentos | Só a mudança no QQP recalculava (item 27) | Qualquer correção que mude o item QQP, a quantidade de vagas ou os equipamentos recalcula o custo inteiro com os valores atuais dos catálogos; sem essas mudanças, ficam os valores do envio | Cliente |
 
 ## 1–3. Objetivo e escopo
@@ -121,7 +122,7 @@ A hierarquia de cadastro da v3.0 se mantém. A mudança é que o vínculo com o 
 1. O Admin cadastra e gerencia os Gestores e os vincula aos contratos por que respondem. É o único perfil que faz isso. Um Gestor pode ter vários contratos, e um contrato pode ter vários Gestores (Cliente).
 2. O Usuário Solicitante se cadastra sozinho (UC13), com um e-mail @ucl.br. Qualquer pessoa com e-mail do domínio pode se cadastrar; o perfil Solicitante é atribuído automaticamente (Cliente). O Solicitante não tem Gestor responsável (GestorResponsavelId nulo); o Admin e qualquer Gestor ativo podem desativá-lo e reativá-lo (Cliente).
 3. Cada Gestor cadastra e gerencia os Funcionários da Gerenciadora da sua equipe e vincula cada um a um contrato (UC14). Esses usuários ficam vinculados ao Gestor responsável (GestorResponsavelId). O Admin também cadastra e gerencia Funcionários da Gerenciadora, na equipe de qualquer Gestor ativo e em qualquer contrato (Cliente, item 65).
-3a. Em vez de criar conta nova, o Gestor (na própria equipe) e o Admin podem vincular uma conta já cadastrada de Solicitante como Funcionário da Gerenciadora, e o Admin, como Gestor: o perfil da conta muda, com o mesmo e-mail e senha (Cliente, item 66). Conta com demandas em andamento não muda de perfil (Recomendação, item 67).
+3a. Em vez de criar conta nova, o Gestor (na própria equipe) e o Admin podem vincular uma conta já cadastrada de Solicitante como Funcionário da Gerenciadora, e o Admin, como Gestor: o perfil da conta muda, com o mesmo e-mail e senha (Cliente, item 66). Conta com demandas em andamento não muda de perfil (Cliente, item 67).
 4. Um Gestor não edita, desativa nem reativa usuários de outro Gestor.
 5. Todo Gestor ativo visualiza todas as demandas, de qualquer Solicitante. A demanda chega aos Gestores do seu contrato (definido pelo corredor, RN13), e só eles a validam, devolvem e cancelam (Cliente). O Gestor não edita campos da demanda: se algo estiver errado, devolve ao Solicitante (Cliente).
 6. Usuários nunca são excluídos, apenas desativados.
@@ -479,9 +480,9 @@ O acesso combina perfil e vínculo: o perfil define o que cada um faz; o víncul
 | Vincular conta já cadastrada como Funcionário da Gerenciadora ou Gestor | Não | Sim, como Gerenciadora da própria equipe | Não | Sim (Cliente) |
 | Transferir vínculo de usuário | Não | Não | Não | Sim (suposição) |
 | Gerenciar contratadas, perfis e parâmetros | Não | Não | Não | Sim |
-| Criar, enviar e corrigir demanda | Sim | Não | Não | Não |
-| Descartar rascunho próprio | Sim | Não | Não | Não |
-| Anexar documento | Sim | Não | Não | Não |
+| Criar, enviar e corrigir demanda | Sim | Sim, as que abriu (Cliente) | Não | Sim, as que abriu (Cliente) |
+| Descartar rascunho próprio | Sim | Sim (Cliente) | Não | Sim (Cliente) |
+| Anexar documento | Sim | Sim, nas que abriu (Cliente) | Não | Sim, nas que abriu (Cliente) |
 | Validar e aprovar demanda | Não | Sim, dos seus contratos | Não | Não |
 | Solicitar correção | Não | Sim, dos seus contratos | Sim, do seu contrato | Não |
 | Corrigir informações contratuais | Sim (Cliente) | Não | Não | Não |

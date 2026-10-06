@@ -61,7 +61,7 @@ internal sealed class Anexo
     internal static Anexo NoEnvio(
         Demanda demanda, Ator solicitante, ArquivoConferido arquivo, string identificador, CategoriaAnexo categoria, DateTime agoraUtc)
     {
-        if (!solicitante.Eh(Perfil.Solicitante) || solicitante.Id != demanda.UsuarioSolicitanteId)
+        if (!Demanda.PodeAbrirDemanda(solicitante) || solicitante.Id != demanda.UsuarioSolicitanteId)
         {
             throw new RegraNegocioException("Só o Solicitante da demanda anexa documentos.");
         }

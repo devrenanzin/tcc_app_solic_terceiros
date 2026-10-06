@@ -13,15 +13,17 @@ public sealed class QuadrosTests
 {
     private readonly Cenario _c = new();
 
-    private static PosicaoDemanda Em(Etapa etapa, StatusDemanda status, Farol farol = Farol.Verde, Contratacao.Web.Domain.Contratos.Contrato? contrato = null)
-        => new(etapa, status, farol, (contrato ?? Cenario.ContratoNorte).Id);
+    private static PosicaoDemanda Em(
+        Etapa etapa, StatusDemanda status, Farol farol = Farol.Verde, Contratacao.Web.Domain.Contratos.Contrato? contrato = null, Guid? solicitante = null)
+        => new(etapa, status, farol, (contrato ?? Cenario.ContratoNorte).Id, solicitante ?? Guid.NewGuid());
 
     [Fact]
     public void Cada_perfil_tem_os_quadros_da_secao_21()
     {
         Assert.Equal(5, Quadros.DoPerfil(Perfil.Solicitante).Count);
         Assert.Equal(
-            [Quadro.AguardandoValidacao, Quadro.CorrecoesPendentes, Quadro.Aprovadas, Quadro.EmProcessoSesi, Quadro.ProximasDoVencimento, Quadro.Atrasadas],
+            [Quadro.DevolvidasParaMim, Quadro.AguardandoValidacao, Quadro.CorrecoesPendentes, Quadro.Aprovadas, Quadro.EmProcessoSesi,
+             Quadro.ProximasDoVencimento, Quadro.Atrasadas],
             Quadros.DoPerfil(Perfil.Gestor));
         Assert.Equal(7, Quadros.DoPerfil(Perfil.FuncionarioSesi).Count);
     }
@@ -38,6 +40,17 @@ public sealed class QuadrosTests
         // Cliente: só "Aguardando validação" se limita aos contratos do Gestor.
         Assert.True(Quadros.Inclui(Quadro.Atrasadas, Em(Etapa.Entrevistas, StatusDemanda.EmAndamento, Farol.Vermelho, Cenario.ContratoSudeste), _c.GestorNorte));
         Assert.True(Quadros.Inclui(Quadro.CorrecoesPendentes, Em(Etapa.ValidacaoGestor, StatusDemanda.AguardandoCorrecao, contrato: Cenario.ContratoSudeste), _c.GestorNorte));
+    }
+
+    [Fact]
+    public void Devolvidas_para_mim_sao_as_que_o_proprio_usuario_abriu()
+    {
+        var minha = Em(Etapa.ValidacaoGestor, StatusDemanda.AguardandoCorrecao, solicitante: _c.GestorNorte.Id);
+        var deOutro = Em(Etapa.ValidacaoGestor, StatusDemanda.AguardandoCorrecao);
+
+        Assert.True(Quadros.Inclui(Quadro.DevolvidasParaMim, minha, _c.GestorNorte));
+        Assert.False(Quadros.Inclui(Quadro.DevolvidasParaMim, deOutro, _c.GestorNorte));
+        Assert.False(Quadros.Inclui(Quadro.DevolvidasParaMim, minha with { Status = StatusDemanda.EmAnalise }, _c.GestorNorte));
     }
 
     [Fact]

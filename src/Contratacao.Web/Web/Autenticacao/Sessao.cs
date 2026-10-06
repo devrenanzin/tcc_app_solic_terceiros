@@ -13,7 +13,8 @@ internal static class Politicas
     internal const string Admin = nameof(Admin);
     internal const string Gestor = nameof(Gestor);
     internal const string AdminOuGestor = nameof(AdminOuGestor);
-    internal const string Solicitante = nameof(Solicitante);
+    /// <summary>Abrir e corrigir demanda: Solicitante, Gestor e Admin (Cliente, revisão de 06/10/2026).</summary>
+    internal const string AbreDemanda = nameof(AbreDemanda);
 }
 
 /// <summary>Cookie de sessão: guarda só id, nome, e-mail e perfil. Perfil e contratos são relidos do banco a cada ação.</summary>

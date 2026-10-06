@@ -113,11 +113,13 @@ public sealed partial class TelasDemandaTests(BancoFixture banco) : IClassFixtur
         Assert.Equal(HttpStatusCode.NotFound, negado.StatusCode);
         Assert.DoesNotContain(caminho, await sesi.HtmlAsync("/Demandas"), StringComparison.Ordinal);
 
+        // A Gerenciadora não abre demandas; Gestor e Admin abrem (Cliente).
         await using var gestor = new Navegador(banco);
         await gestor.EntrarPelaPrimeiraVezAsync(gestorEmail, Senha, NovaSenha);
+        Assert.Contains("id=\"itens-qqp\"", await gestor.HtmlAsync("/Demandas/Nova"), StringComparison.Ordinal);
         foreach (var pagina in new[] { "/Demandas/Nova", "/Demandas/Custo" })
         {
-            using var proibida = await gestor.AbrirAsync(pagina);
+            using var proibida = await sesi.AbrirAsync(pagina);
             Assert.StartsWith("http://localhost/AcessoNegado", proibida.Headers.Location?.ToString(), StringComparison.Ordinal);
         }
     }

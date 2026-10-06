@@ -143,7 +143,7 @@ internal sealed class Demanda
         bool possuiDeAcordoVp2,
         IRelogio relogio)
     {
-        Exigir(solicitante.Eh(Perfil.Solicitante), "Só um Solicitante ativo envia demanda.");
+        Exigir(PodeAbrirDemanda(solicitante), "Só um Solicitante, Gestor ou Admin ativo abre demanda.");
         Exigir(NumeroDemanda.EhValido(numero), "Número da demanda fora do formato AAAA-NNNNNN.");
         var conferidos = dados.Validar();
         ExigirReferencias(conferidos, referencias);
@@ -604,7 +604,14 @@ internal sealed class Demanda
 
     private bool Em(Etapa etapa, StatusDemanda status) => Etapa == etapa && Status == status;
 
-    private bool EhSolicitanteDaDemanda(Ator ator) => ator.Eh(Perfil.Solicitante) && ator.Id == UsuarioSolicitanteId;
+    /// <summary>
+    /// Quem abre demandas: o Solicitante e também o Gestor e o Admin (Cliente, revisão de 06/10/2026). Quem abriu é o
+    /// Solicitante daquela demanda: corrige e anexa como ele.
+    /// </summary>
+    internal static bool PodeAbrirDemanda(Ator ator)
+        => ator.Eh(Perfil.Solicitante) || ator.Eh(Perfil.Gestor) || ator.Eh(Perfil.Admin);
+
+    private bool EhSolicitanteDaDemanda(Ator ator) => PodeAbrirDemanda(ator) && ator.Id == UsuarioSolicitanteId;
 
     private bool EhGestorDoContrato(Ator ator) => ator.Eh(Perfil.Gestor) && ator.AtuaNoContrato(ContratoId);
 

@@ -58,7 +58,7 @@
 
             <div class="titulo-grupo">Demandas</div>
             <ul class="nav flex-column">
-                @if (perfil == Perfil.Solicitante)
+                @if (perfil is Perfil.Solicitante or Perfil.Gestor or Perfil.Admin)
                 {
                     <li><a class="nav-link @Ativo("/Demandas/Nova")" href="/Demandas/Nova"><i class="bi bi-file-earmark-plus"></i> Nova demanda</a></li>
                 }

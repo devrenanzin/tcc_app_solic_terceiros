@@ -20,7 +20,7 @@
             })
         </p>
     </div>
-    @if (solicitante)
+    @if (Model.Perfil is Perfil.Solicitante or Perfil.Gestor or Perfil.Admin)
     {
         <a href="/Demandas/Nova" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nova demanda</a>
     }

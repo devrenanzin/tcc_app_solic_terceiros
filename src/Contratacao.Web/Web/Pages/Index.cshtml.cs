@@ -13,6 +13,9 @@ internal sealed class IndexModel(ConsultarDemandas consultar, AtorAtual atorAtua
     internal Perfil? Perfil { get; private set; }
     internal IReadOnlyList<(Quadro Quadro, int Quantidade)> Painel { get; private set; } = [];
 
+    /// <summary>Solicitante, Gestor e Admin abrem demandas (Cliente, revisão de 06/10/2026).</summary>
+    internal bool AbreDemanda => Perfil is Domain.Usuarios.Perfil.Solicitante or Domain.Usuarios.Perfil.Gestor or Domain.Usuarios.Perfil.Admin;
+
     /// <summary>Chave do rascunho deste usuário no navegador (quadro "Rascunho" do Solicitante).</summary>
     internal string ChaveRascunho => $"contratacao.rascunho.{User.FindFirstValue(ClaimTypes.NameIdentifier)}";
 

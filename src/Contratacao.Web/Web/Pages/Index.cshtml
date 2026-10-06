@@ -9,7 +9,7 @@
     {
         Quadro.Atrasadas => "quadro-alerta",
         Quadro.ProximasDoVencimento => "quadro-atencao",
-        Quadro.AguardandoValidacao or Quadro.AguardandoAceite or Quadro.AguardandoCorrecao => "quadro-acao",
+        Quadro.AguardandoValidacao or Quadro.AguardandoAceite or Quadro.AguardandoCorrecao or Quadro.DevolvidasParaMim => "quadro-acao",
         _ => string.Empty,
     };
 }
@@ -19,14 +19,14 @@
         <h1>Olá, @primeiroNome</h1>
         <p>@(Model.Perfil is { } perfil ? Formatacao.Perfil(perfil) : string.Empty) · Seu painel de demandas</p>
     </div>
-    @if (Model.Perfil == Perfil.Solicitante)
+    @if (Model.AbreDemanda)
     {
         <a href="/Demandas/Nova" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nova demanda</a>
     }
 </div>
 
 <div class="painel-quadros">
-    @if (Model.Perfil == Perfil.Solicitante)
+    @if (Model.AbreDemanda)
     {
         @* Quadro "Rascunho (deste navegador)": o rascunho existe só no navegador (UC02), por isso é lido aqui pelo script. *@
         <a class="cartao quadro quadro-acao" href="/Demandas/Nova" data-quadro-rascunho="@Model.ChaveRascunho" hidden>
@@ -100,7 +100,7 @@
     }
 </div>
 
-@if (Model.Perfil == Perfil.Solicitante)
+@if (Model.AbreDemanda)
 {
     <script>
         (() => {

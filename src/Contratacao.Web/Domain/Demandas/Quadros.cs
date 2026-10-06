@@ -21,6 +21,9 @@ internal enum Quadro
     Recrutamento = 13,
     Entrevistas = 14,
     ExamesMedicos = 15,
+
+    /// <summary>Demandas abertas pelo próprio usuário (Gestor ou Admin) e devolvidas a ele para correção.</summary>
+    DevolvidasParaMim = 16,
 }
 
 /// <summary>Situação geral usada no filtro das listas: o padrão é ver só as que estão em andamento (Cliente).</summary>
@@ -33,7 +36,7 @@ internal enum Situacao
 }
 
 /// <summary>O que os quadros e o filtro de situação precisam saber de uma demanda.</summary>
-internal sealed record PosicaoDemanda(Etapa Etapa, StatusDemanda Status, Farol Farol, Guid ContratoId);
+internal sealed record PosicaoDemanda(Etapa Etapa, StatusDemanda Status, Farol Farol, Guid ContratoId, Guid SolicitanteId);
 
 /// <summary>
 /// Regras dos quadros (seções 21–22): quais quadros cada perfil vê e quais demandas entram em cada um.
@@ -46,7 +49,7 @@ internal static class Quadros
         Perfil.Solicitante => [Quadro.MinhasDemandas, Quadro.EmAndamento, Quadro.AguardandoCorrecao, Quadro.Finalizadas, Quadro.Canceladas],
         Perfil.Gestor =>
         [
-            Quadro.AguardandoValidacao, Quadro.CorrecoesPendentes, Quadro.Aprovadas, Quadro.EmProcessoSesi,
+            Quadro.DevolvidasParaMim, Quadro.AguardandoValidacao, Quadro.CorrecoesPendentes, Quadro.Aprovadas, Quadro.EmProcessoSesi,
             Quadro.ProximasDoVencimento, Quadro.Atrasadas,
         ],
         Perfil.FuncionarioSesi =>
@@ -55,7 +58,7 @@ internal static class Quadros
             Quadro.ProximasDoVencimento, Quadro.Atrasadas,
         ],
         // Admin: visão geral de todas as demandas.
-        _ => [Quadro.EmAndamento, Quadro.ProximasDoVencimento, Quadro.Atrasadas, Quadro.Finalizadas, Quadro.Canceladas],
+        _ => [Quadro.DevolvidasParaMim, Quadro.EmAndamento, Quadro.ProximasDoVencimento, Quadro.Atrasadas, Quadro.Finalizadas, Quadro.Canceladas],
     };
 
     /// <summary>
@@ -65,6 +68,7 @@ internal static class Quadros
     internal static bool Inclui(Quadro quadro, PosicaoDemanda d, Ator ator) => quadro switch
     {
         Quadro.MinhasDemandas => true,
+        Quadro.DevolvidasParaMim => d.Status == StatusDemanda.AguardandoCorrecao && d.SolicitanteId == ator.Id,
         Quadro.EmAndamento => Ativa(d) && d.Status != StatusDemanda.AguardandoCorrecao,
         Quadro.AguardandoCorrecao or Quadro.CorrecoesPendentes => d.Status == StatusDemanda.AguardandoCorrecao,
         Quadro.Finalizadas => d.Status == StatusDemanda.Concluido,

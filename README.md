@@ -83,10 +83,10 @@ Na tela da demanda (`/Demandas/Detalhe/{id}`), depois do aceite, o Funcionário 
 
 | Tela | Quem acessa | O que faz |
 | --- | --- | --- |
-| `/Demandas/Nova` | Solicitante | UC02: formulário da seção 8.1 em 7 grupos, cargo pelas listas em cascata do QQP, contrato mostrado pelo corredor (RN13), custo mensal calculado pelo servidor a cada mudança (RN12) e anexos (De acordo VP-2 obrigatório). O rascunho fica só neste navegador por 3 dias desde o último salvamento; o botão "Descartar rascunho" pede confirmação (UC17). |
+| `/Demandas/Nova` | Solicitante, Gestor e Admin | UC02: formulário da seção 8.1 em 7 grupos, cargo pelas listas em cascata do QQP, contrato mostrado pelo corredor (RN13), custo mensal calculado pelo servidor a cada mudança (RN12) e anexos (De acordo VP-2 obrigatório). O rascunho fica só neste navegador por 3 dias desde o último salvamento; o botão "Descartar rascunho" pede confirmação (UC17). |
 | `/Demandas` | Todos | UC03: as demandas que o perfil vê (seção 4), com etapa, status, farol e custo. Os painéis por perfil ficam para a Etapa 7. |
 | `/Demandas/Detalhe/{id}` | Quem vê a demanda | Dados, anexos (download), linha do tempo, alterações das correções, SLA, custo. O Gestor do contrato aprova ou devolve (UC04, UC05); a Gerenciadora do contrato aceita ou devolve com o tipo da inconsistência (UC05, UC07). Só aparecem os botões que o domínio permite. |
-| `/Demandas/Corrigir/{id}` | Solicitante da demanda | UC06: o formulário preenchido, com o motivo da devolução. Cada campo alterado vai para o HistoricoAlteracao com usuário, perfil e IP. |
+| `/Demandas/Corrigir/{id}` | Quem abriu a demanda | UC06: o formulário preenchido, com o motivo da devolução. Cada campo alterado vai para o HistoricoAlteracao com usuário, perfil e IP. |
 | `/Admin/GerentesExecutivos` | Admin | Cadastra, desativa e reativa os gerentes executivos e define os corredores que cada um atende; o formulário mostra só os gerentes do corredor escolhido. O catálogo começa vazio, porque são nomes reais e não vão para o repositório. |
 | `/Admin/OrdensServico` | Admin | Cadastra, desativa e reativa as OS de cada contrato. O formulário mostra só as OS do contrato do corredor; o coletor de custo continua livre, porque a mesma OS pode ter coletores diferentes. |
 
@@ -95,6 +95,7 @@ Na tela da demanda (`/Demandas/Detalhe/{id}`), depois do aceite, o Funcionário 
 - **Anexos.** Gravados na pasta `Anexos:Pasta` (padrão `src/Contratacao.Web/App_Data/anexos`, fora do Git) com nome gerado pelo sistema; o banco guarda nome original, tipo, tamanho, etapa e o caminho. Nada é apagado. Cada upload gera registro no LogAuditoria.
 - **Riscos.** A tabela `DemandaRac` é editada direto na correção (seção 8.1): o risco desmarcado sai da tabela de ligação, e a mudança fica no HistoricoAlteracao. No banco a chave continua sem exclusão em cascata.
 - **Concorrência.** Se duas pessoas agem sobre a mesma demanda, a segunda recebe "Esta demanda foi alterada por outra pessoa... Recarregue a página" (RNF10).
+- **Quem abre demanda.** Solicitante, Gestor e Admin (Cliente). Quem abriu corrige e anexa como Solicitante daquela demanda; o Gestor do contrato pode aprovar a que ele mesmo abriu. Gestor e Admin têm o quadro "Devolvidas para mim" no painel.
 - **Antes de testar:** o Admin precisa cadastrar ao menos um gerente executivo em `/Admin/GerentesExecutivos`, porque o campo é obrigatório. As OS 01 a 10 (contrato Norte) e 11 a 20 (Sudeste) já vêm na carga inicial.
 
 ## Usuários e acesso (Etapa 3)

@@ -25,9 +25,9 @@ internal sealed class EnviarDemanda(
         IReadOnlyList<ArquivoRecebido> outrosAnexos,
         CancellationToken cancelamento)
     {
-        if (!solicitante.Eh(Perfil.Solicitante))
+        if (!Demanda.PodeAbrirDemanda(solicitante))
         {
-            throw new RegraNegocioException("Só um Solicitante ativo envia demanda.");
+            throw new RegraNegocioException("Só um Solicitante, Gestor ou Admin ativo abre demanda.");
         }
 
         var (conferidos, referencias) = await Formulario.ConferirAsync(catalogos, dados, cancelamento);
