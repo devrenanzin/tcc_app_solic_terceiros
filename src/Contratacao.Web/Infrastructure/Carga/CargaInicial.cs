@@ -45,7 +45,16 @@ internal sealed class CargaInicial(
             return;
         }
 
-        var linhas = LeitorCsv.Ler(Path.Combine(pastaDados, ArquivoQqp), colunasEsperadas: 8);
+        // O arquivo não vai para o Git (valores confidenciais do cliente): quem instala o coloca em dados/.
+        var arquivo = Path.Combine(pastaDados, ArquivoQqp);
+        if (!File.Exists(arquivo))
+        {
+            throw new InvalidOperationException(
+                $"Arquivo {ArquivoQqp} não encontrado em {pastaDados}. Ele não fica no repositório: peça ao cliente e " +
+                $"copie para a pasta dados/ na raiz do projeto antes de preparar o banco ou rodar os testes.");
+        }
+
+        var linhas = LeitorCsv.Ler(arquivo, colunasEsperadas: 8);
         var regioes = await contexto.QqpRegioes.ToDictionaryAsync(r => r.Nome, r => r.Id, cancelamento);
 
         var funcoes = new Dictionary<string, QqpFuncao>();

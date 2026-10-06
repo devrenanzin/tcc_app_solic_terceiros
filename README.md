@@ -121,6 +121,8 @@ A prova de migrations usa um modelo descartável no projeto de testes (`tests/Co
 
 Pré-requisitos: SDK do .NET 10, SQL Server (LocalDB, Developer Edition ou container Docker) e a ferramenta do EF Core.
 
+**Catálogo QQP.** O arquivo `dados/tb_qqp_SESI.csv` não está no repositório, porque os valores são confidenciais (decisão do cliente). Peça o arquivo ao cliente e copie para `dados/` antes de preparar o banco ou rodar os testes de integração; sem ele, a carga inicial para com uma mensagem dizendo isso.
+
 A connection string e o Admin inicial ficam fora do código, nos user-secrets (use um e-mail fictício @ucl.br):
 
 ```bash

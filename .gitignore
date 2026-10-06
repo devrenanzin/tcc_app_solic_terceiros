@@ -483,3 +483,6 @@ $RECYCLE.BIN/
 
 # Anexos gravados pela aplicação em desenvolvimento (seção 18)
 src/Contratacao.Web/App_Data/
+
+# Valores do QQP: fornecidos pelo cliente, não vão para o Git (revisão de 06/10/2026)
+dados/tb_qqp_SESI.csv

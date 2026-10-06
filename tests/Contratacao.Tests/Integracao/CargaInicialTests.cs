@@ -135,7 +135,8 @@ public sealed class CargaInicialTests(BancoFixture banco) : IClassFixture<BancoF
         Assert.Equal(Enumerable.Range(1, 8),
             (await contexto.QqpNiveis.OrderBy(n => n.Ordem).Select(n => n.Ordem).ToListAsync(Cancelamento)).Select(o => (int)o));
 
-        // Código 1: QQP SUDESTE, Médico, Especialista, I, 44 h, R$ 12.345,67 e R$ 12.345,67.
+        // O item de código 1 gravado igual à linha do CSV; os valores do QQP não ficam no código (Cliente).
+        var linha = LeitorCsv.Ler(Path.Combine(PreparacaoBanco.PastaDados, CargaInicial.ArquivoQqp), 8).Single(c => c[0].Trim() == "1");
         var item = await (
             from i in contexto.ItensQqp
             join regiao in contexto.QqpRegioes on i.RegiaoId equals regiao.Id
@@ -147,9 +148,10 @@ public sealed class CargaInicialTests(BancoFixture banco) : IClassFixture<BancoF
             select new { Regiao = regiao.Nome, Funcao = funcao.Nome, Classificacao = classificacao.Nome, Nivel = nivel.Nome, carga.HorasSemanais, i.PisoSalarial, i.PrecoUnitario })
             .SingleAsync(Cancelamento);
 
-        Assert.Equal(("QQP SUDESTE", "Médico", "Especialista", "I", (short)44), (item.Regiao, item.Funcao, item.Classificacao, item.Nivel, item.HorasSemanais));
-        Assert.Equal(12345.67m, item.PisoSalarial);
-        Assert.Equal(12345.67m, item.PrecoUnitario);
+        Assert.Equal((linha[1].Trim(), linha[2].Trim(), linha[3].Trim(), linha[4].Trim(), short.Parse(linha[5], System.Globalization.CultureInfo.InvariantCulture)),
+            (item.Regiao, item.Funcao, item.Classificacao, item.Nivel, item.HorasSemanais));
+        Assert.Equal(ConversorValores.Reais(linha[6]), item.PisoSalarial);
+        Assert.Equal(ConversorValores.Reais(linha[7]), item.PrecoUnitario);
     }
 
     [Fact]
