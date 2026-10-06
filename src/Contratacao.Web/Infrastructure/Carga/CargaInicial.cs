@@ -79,7 +79,7 @@ internal sealed class CargaInicial(
                 throw new InvalidDataException($"Região QQP desconhecida: {regiao}");
             }
 
-            // SUPOSIÇÃO (S9): a classificação "-" significa "sem classificação".
+            // A classificação "-" é de funções que não têm classificação (Cliente).
             var classificacao = campos[3].Trim();
             Guid? classificacaoId = classificacao == SemClassificacao ? null : classificacoes[classificacao].Id;
 

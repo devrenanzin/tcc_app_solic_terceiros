@@ -478,7 +478,7 @@ internal sealed class Demanda
 
     private bool EhGestorDoContrato(Ator ator) => ator.Eh(Perfil.Gestor) && ator.AtuaNoContrato(ContratoId);
 
-    // SUPOSIÇÃO (S4): qualquer Funcionário SESI ativo do contrato executa as ações do SESI;
+    // Qualquer Funcionário SESI ativo do contrato executa as ações do SESI (Cliente);
     // o responsável SESI é a referência, não o único autorizado.
     private bool EhSesiDoContrato(Ator ator) => ator.Eh(Perfil.FuncionarioSesi) && ator.AtuaNoContrato(ContratoId);
 

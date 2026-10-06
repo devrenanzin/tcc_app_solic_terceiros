@@ -63,6 +63,9 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 44 | Senha inicial (S22) | Definida por quem cadastra, sem troca prevista | Gestor e Funcionário SESI trocam a senha inicial no primeiro acesso, antes de usar o sistema | Cliente |
 | 45 | Contrato do Funcionário SESI (S23) | Qualquer contrato ativo | O Gestor só usa os seus contratos; para outro contrato, o Admin faz a troca | Cliente |
 | 46 | Senha, equipe do Gestor desativado e campos obrigatórios (S21, S2, S12) | Suposições | Confirmadas: senha de 8 a 128 caracteres; a equipe de Gestor desativado continua ativa; obrigatórios conforme a seção 8.1 | Cliente |
+| 48 | SESI que trata a demanda (S4) | Suposição | Confirmado: depois do aceite, qualquer Funcionário SESI ativo do contrato registra vaga, entrevistas, exames e finalização; o responsável SESI é a referência | Cliente |
+| 49 | Tipos de anexo (S8) | Suposição | Confirmado: imagens = .jpg, .jpeg e .png; e-mail = .eml e .msg | Cliente |
+| 50 | Classificação "-" no QQP (S9) | Suposição | Confirmado: são funções que não têm classificação | Cliente |
 | 47 | Custo na correção que muda quantidade ou equipamentos | Só a mudança no QQP recalculava (item 27) | Qualquer correção que mude o item QQP, a quantidade de vagas ou os equipamentos recalcula o custo inteiro com os valores atuais dos catálogos; sem essas mudanças, ficam os valores do envio | Cliente |
 
 ## 1–3. Objetivo e escopo
@@ -435,7 +438,7 @@ O Solicitante anexa documentos à demanda; cada arquivo registra nome, tipo, tam
 
 **Regras de arquivo (Cliente).** Aceitos: imagens, PDF e e-mail, até 10 MB por arquivo. Os arquivos ficam numa pasta do servidor e nunca são apagados. O banco guarda só os metadados e o caminho (coluna Identificador); o nome do arquivo no disco é gerado pelo sistema, nunca o nome original.
 
-**SUPOSIÇÃO — confirmar (S8):** imagens = .jpg, .jpeg e .png; e-mail = .eml e .msg. O sistema confere a extensão e o conteúdo do arquivo, não só o nome.
+**Tipos aceitos (Cliente, item 49):** imagens = .jpg, .jpeg e .png; e-mail = .eml e .msg. O sistema confere a extensão e o conteúdo do arquivo, não só o nome.
 
 ## 19–20. Permissões
 
@@ -1079,7 +1082,7 @@ Regras de importação:
 
 - O arquivo tb\_qqp\_SESI.csv acompanha este documento e vai para o repositório; a seed lê o arquivo, não valores copiados para o código.
 - Valores em reais são convertidos removendo o símbolo da moeda e o ponto de milhar e trocando a vírgula decimal por ponto: `R$ 12.345,67` vira `12345.67`.
-- **SUPOSIÇÃO — confirmar (S9):** a classificação "-" significa "sem classificação" e vira ClassificacaoId nulo.
+- **Classificação "-" (Cliente, item 50):** são funções que não têm classificação; vira ClassificacaoId nulo.
 - **Inconsistência na planilha:** os códigos 466 e 467 têm a mesma combinação (QQP SUDESTE, Médico, Pleno, II, 24 h) com valores diferentes. Pela sequência das linhas vizinhas, o 467 provavelmente seria nível III. A combinação não é única no banco até o cliente corrigir; o Código é a chave.
 
 **Confirmado pelo cliente:** o Solicitante escolhe o item do catálogo QQP por listas em cascata (região, função, classificação, nível e carga horária), e a junção mostra o valor. A demanda guarda o item escolhido e cópias do piso e do preço vigentes no envio (seção 8.1).
@@ -1173,7 +1176,7 @@ Só as transições abaixo são aceitas pelo backend; qualquer outra, como pular
 | Exames Médicos / Em andamento | Contratação / Concluído | SESI | Finalização; encerra o SLA |
 | Qualquer etapa enviada, não concluída | Mesma etapa / Cancelado | Gestor do contrato ou Admin | Justificativa obrigatória |
 
-**SUPOSIÇÃO — confirmar:** depois do aceite, qualquer Funcionário SESI ativo vinculado ao contrato da demanda pode registrar vaga, entrevistas, exames e finalização; o responsável SESI é a referência, não o único autorizado.
+**Confirmado pelo cliente (item 48):** depois do aceite, qualquer Funcionário SESI ativo vinculado ao contrato da demanda pode registrar vaga, entrevistas, exames e finalização; o responsável SESI é a referência, não o único autorizado.
 
 ## 25–26. Requisitos funcionais e não funcionais
 
@@ -1431,20 +1434,17 @@ O README do repositório deve repetir esses passos, ajustados ao que for de fato
 
 ## Suposições e pendências
 
-Seis suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; duas decisões continuam abertas e serão necessárias em etapas específicas da implementação.
+Três suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; duas decisões continuam abertas e serão necessárias em etapas específicas da implementação.
 
 ### Suposições a confirmar
 
 | # | Suposição adotada | Seção |
 | --- | --- | --- |
 | S3 | O sequencial do número da demanda reinicia a cada ano | UC02 |
-| S4 | Depois do aceite, qualquer Funcionário SESI ativo pode registrar as etapas seguintes | 24 |
 | S7 | 45 dias corridos; dia limite em laranja; demanda cancelada em cinza | 9–11 |
-| S8 | Imagens = .jpg, .jpeg e .png; e-mail = .eml e .msg | 18 |
-| S9 | Classificação "-" na planilha QQP significa "sem classificação" | 23 |
 | S11 | Informações contratuais = OS e coletor de custo (o contrato vem do corredor) | 8.1 |
 
-S1, S2, S5, S6, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22 e S23 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32, 34, 36 e 41 a 46).
+S1, S2, S4, S5, S6, S8, S9, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22 e S23 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32, 34, 36, 41 a 46 e 48 a 50).
 
 A antiga S10 (escolha do item QQP na demanda) foi confirmada pelo cliente.
 

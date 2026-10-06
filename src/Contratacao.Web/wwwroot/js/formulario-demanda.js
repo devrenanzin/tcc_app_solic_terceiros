@@ -14,7 +14,7 @@
 
     // ---------- Listas em cascata do QQP ----------
 
-    // SUPOSIÇÃO (S9): o item sem classificação ("-" na planilha) aparece como "Sem classificação".
+    // Funções sem classificação ("-" na planilha; Cliente) aparecem como "Sem classificação".
     const SEM_CLASSIFICACAO = "__sem__";
     const niveis = ["regiao", "funcao", "classificacao", "nivel", "carga"];
     const valorDe = {

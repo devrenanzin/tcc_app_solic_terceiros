@@ -148,10 +148,7 @@ Cada suposição usada no código (as abertas na seção "Suposições e pendên
 | # | Suposição | Onde |
 | --- | --- | --- |
 | S3 | O sequencial do número da demanda reinicia a cada ano (o ano do envio, no horário de Brasília) | `EnviarDemanda` |
-| S4 | Qualquer Funcionário SESI ativo do contrato executa as ações do SESI (aceite, devolução e etapas seguintes); o responsável SESI é a referência | `Demanda.EhSesiDoContrato` |
 | S7 | 45 dias corridos; dia limite em laranja; demanda cancelada em cinza | `Sla.Iniciar`, `RegraFarol` |
-| S8 | Imagens = .jpg, .jpeg e .png; e-mail = .eml e .msg | `RegraArquivo` |
-| S9 | Classificação "-" na planilha QQP significa "sem classificação" (ClassificacaoId nulo; "Sem classificação" na lista) | `CargaInicial.CarregarQqpAsync`, `formulario-demanda.js` |
 | S11 | Informações contratuais = OS e coletor de custo (o contrato vem do corredor) | `_Formulario.cshtml` |
 
 ## Pendências

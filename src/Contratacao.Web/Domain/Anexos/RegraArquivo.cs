@@ -24,7 +24,7 @@ internal static class RegraArquivo
     // Arquivo .msg do Outlook: formato Compound File Binary.
     private static readonly byte[] AssinaturaMsg = [0xD0, 0xCF, 0x11, 0xE0, 0xA1, 0xB1, 0x1A, 0xE1];
 
-    // SUPOSIÇÃO (S8): imagens = .jpg, .jpeg e .png; e-mail = .eml e .msg.
+    // Imagens = .jpg, .jpeg e .png; e-mail = .eml e .msg (Cliente).
     private static readonly Dictionary<string, (string Tipo, Func<byte[], bool> Confere)> Aceitos = new(StringComparer.OrdinalIgnoreCase)
     {
         [".jpg"] = ("image/jpeg", inicio => Comeca(inicio, AssinaturaJpeg)),

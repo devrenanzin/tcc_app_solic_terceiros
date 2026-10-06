@@ -58,7 +58,7 @@ public sealed class PermissoesTests
     [Fact]
     public void Qualquer_sesi_do_contrato_registra_as_etapas_seguintes_ao_aceite()
     {
-        // SUPOSIÇÃO (S4)
+        // Confirmado pelo cliente (S4)
         var demanda = _c.EmRecrutamento();
 
         demanda.RegistrarVaga(_c.OutroSesiNorte, "https://vagas.exemplo.ucl.br/1", _c.Relogio);
