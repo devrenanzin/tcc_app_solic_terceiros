@@ -16,4 +16,7 @@ internal sealed class Vaga
     internal string LinkExterno { get; private set; } = string.Empty;
     internal DateTime DataAbertura { get; private set; }
     internal Guid UsuarioResponsavelId { get; private set; }
+
+    /// <summary>Só pela operação excepcional do Admin (UC20), chamada pela Demanda.</summary>
+    internal void CorrigirDataAbertura(DateTime dataUtc) => DataAbertura = dataUtc;
 }

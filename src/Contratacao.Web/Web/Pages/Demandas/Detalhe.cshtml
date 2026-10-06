@@ -32,6 +32,17 @@
     }
 </ol>
 
+@if (d.Cancelada)
+{
+    <div class="cartao aviso-cancelada">
+        <i class="bi bi-x-circle-fill"></i>
+        <div>
+            <h2>Demanda cancelada</h2>
+            <blockquote class="mb-0">@d.MotivoCancelamento</blockquote>
+        </div>
+    </div>
+}
+
 @if (pendente is not null)
 {
     <div class="cartao aviso-devolucao">
@@ -223,10 +234,10 @@
         @if (d.Alteracoes.Count > 0)
         {
             <section class="cartao bloco">
-                <h2>Alterações nas correções</h2>
+                <h2>Alterações de campos e datas</h2>
                 <div class="table-responsive">
                     <table class="table tabela-cartao">
-                        <thead><tr><th>Quando</th><th>Campo</th><th>Antes</th><th>Depois</th><th>Quem</th></tr></thead>
+                        <thead><tr><th>Quando</th><th>Campo</th><th>Antes</th><th>Depois</th><th>Quem</th><th>Justificativa</th></tr></thead>
                         <tbody>
                             @foreach (var alteracao in d.Alteracoes.OrderByDescending(a => a.DataHora).ThenBy(a => a.Campo))
                             {
@@ -236,6 +247,7 @@
                                     <td class="valor-antigo">@RotulosDemanda.Valor(alteracao.Campo, alteracao.ValorAnterior, nomes)</td>
                                     <td>@RotulosDemanda.Valor(alteracao.Campo, alteracao.NovoValor, nomes)</td>
                                     <td class="small">@Nome(nomes.Usuarios, alteracao.UsuarioId)</td>
+                                    <td class="small">@(alteracao.Justificativa ?? "—")</td>
                                 </tr>
                             }
                         </tbody>
@@ -318,6 +330,91 @@
                         <label class="form-label" for="motivo">Motivo</label>
                         <textarea id="motivo" name="Motivo" rows="3" maxlength="1000" class="form-control" required>@Model.Motivo</textarea>
                         <button type="submit" class="btn btn-outline-warning w-100 mt-2"><i class="bi bi-arrow-return-left"></i> Devolver para correção</button>
+                    </form>
+                </details>
+            </section>
+        }
+
+        @if (acoes.Contains(AcaoDemanda.Cancelar))
+        {
+            <section class="cartao bloco">
+                <h2>Cancelar demanda</h2>
+                <details open="@(Model.Justificativa is not null)">
+                    <summary class="text-danger">Cancelar esta demanda</summary>
+                    <form method="post" asp-page-handler="Cancelar" asp-route-id="@d.Id" class="mt-2"
+                          onsubmit="return confirm('Cancelar a demanda @d.Numero? Ela fica Cancelado na etapa em que está e nada é excluído.')">
+                        <label class="form-label" for="justificativa-cancelamento">Justificativa</label>
+                        <textarea id="justificativa-cancelamento" name="Justificativa" rows="3" maxlength="1000" class="form-control" required>@Model.Justificativa</textarea>
+                        <button type="submit" class="btn btn-outline-danger w-100 mt-2"><i class="bi bi-x-circle"></i> Cancelar demanda</button>
+                    </form>
+                </details>
+            </section>
+        }
+
+        @if (Model.OperacoesExcepcionais)
+        {
+            <section class="cartao bloco painel-excepcional">
+                <h2><i class="bi bi-shield-exclamation"></i> Operações excepcionais</h2>
+                <p class="ajuda">Só o Admin. Justificativa obrigatória; tudo vai para o log de auditoria com valor anterior e novo.</p>
+
+                @if (!d.Concluida && !d.Cancelada)
+                {
+                    <details>
+                        <summary>Cancelar</summary>
+                        <form method="post" asp-page-handler="Cancelar" asp-route-id="@d.Id" class="mt-2"
+                              onsubmit="return confirm('Cancelar a demanda @d.Numero por operação excepcional?')">
+                            <textarea name="Justificativa" rows="2" maxlength="1000" class="form-control" placeholder="Justificativa" required></textarea>
+                            <button type="submit" class="btn btn-sm btn-outline-danger mt-2">Cancelar demanda</button>
+                        </form>
+                    </details>
+                }
+
+                @if (d.Status == StatusDemanda.EmAndamento && Demanda.EtapasDeTransicaoForcada.Contains(d.Etapa))
+                {
+                    <details>
+                        <summary>Mudar a etapa</summary>
+                        <form method="post" asp-page-handler="ForcarTransicao" asp-route-id="@d.Id" class="mt-2"
+                              onsubmit="return confirm('Mudar a etapa da demanda @d.Numero fora da sequência?')">
+                            <select name="EtapaDestino" class="form-select form-select-sm" required>
+                                <option value="">Etapa de destino</option>
+                                @foreach (var etapa in Demanda.EtapasDeTransicaoForcada.Where(e => e != d.Etapa))
+                                {
+                                    <option value="@etapa">@Formatacao.Etapa(etapa) (@(etapa < d.Etapa ? "voltar" : "avançar"))</option>
+                                }
+                            </select>
+                            <textarea name="Justificativa" rows="2" maxlength="1000" class="form-control mt-2" placeholder="Justificativa" required></textarea>
+                            <button type="submit" class="btn btn-sm btn-outline-warning mt-2">Mudar etapa</button>
+                        </form>
+                    </details>
+                }
+
+                <details>
+                    <summary>Alterar uma data</summary>
+                    <form method="post" asp-page-handler="AlterarData" asp-route-id="@d.Id" class="mt-2"
+                          onsubmit="return confirm('Alterar esta data por operação excepcional?')">
+                        <select name="DataAlvo" class="form-select form-select-sm" required>
+                            <option value="">Data a alterar</option>
+                            @foreach (var passagem in d.Etapas.OrderBy(e => e.DataInicio).ThenBy(e => e.Etapa))
+                            {
+                                <option value="InicioEtapa:@passagem.Id">Início · @Formatacao.Etapa(passagem.Etapa) (@Formatacao.DataHora(passagem.DataInicio))</option>
+                                if (passagem.DataConclusao is { } conclusao)
+                                {
+                                    <option value="ConclusaoEtapa:@passagem.Id">Conclusão · @Formatacao.Etapa(passagem.Etapa) (@Formatacao.DataHora(conclusao))</option>
+                                }
+                            }
+                            @if (d.Vaga is { } vagaRegistrada)
+                            {
+                                <option value="AberturaVaga">Abertura da vaga (@Formatacao.DataHora(vagaRegistrada.DataAbertura))</option>
+                            }
+                            @if (d.Sla is { } slaIniciado)
+                            {
+                                <option value="InicioSla">Início do SLA (@Formatacao.DataHora(slaIniciado.InicioUtc)) · recalcula a data limite</option>
+                            }
+                        </select>
+                        <label class="form-label small mt-2 mb-1" for="nova-data">Nova data e hora (Brasília)</label>
+                        <input id="nova-data" name="NovaData" type="datetime-local" class="form-control form-control-sm" max="@Formatacao.ParaCampo(Model.Agora)" required />
+                        <textarea name="Justificativa" rows="2" maxlength="1000" class="form-control mt-2" placeholder="Justificativa" required></textarea>
+                        <button type="submit" class="btn btn-sm btn-outline-warning mt-2">Alterar data</button>
                     </form>
                 </details>
             </section>

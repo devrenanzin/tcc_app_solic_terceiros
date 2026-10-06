@@ -22,12 +22,16 @@ internal sealed class DetalheModel(
     IniciarEntrevistas iniciarEntrevistas,
     IniciarExames iniciarExames,
     FinalizarContratacao finalizar,
+    CancelarDemanda cancelar,
+    ForcarTransicao forcarTransicao,
+    AlterarDataExcepcional alterarData,
     AtorAtual atorAtual,
     IRelogio relogio,
     ICalendarioSla calendario) : PaginaBase
 {
     internal DetalheDemanda Detalhe { get; private set; } = null!;
     internal DateOnly Hoje { get; private set; }
+    internal DateTime Agora { get; private set; }
 
     /// <summary>Chave do rascunho deste usuário, para apagá-lo logo depois do envio.</summary>
     internal string? RascunhoParaLimpar { get; private set; }
@@ -40,6 +44,23 @@ internal sealed class DetalheModel(
 
     [BindProperty]
     public string? LinkVaga { get; set; }
+
+    [BindProperty]
+    public string? Justificativa { get; set; }
+
+    [BindProperty]
+    public Etapa? EtapaDestino { get; set; }
+
+    /// <summary>Data escolhida para a operação excepcional: "InicioEtapa:{id}", "ConclusaoEtapa:{id}", "AberturaVaga" ou "InicioSla".</summary>
+    [BindProperty]
+    public string? DataAlvo { get; set; }
+
+    /// <summary>Nova data e hora, digitada no horário de Brasília.</summary>
+    [BindProperty]
+    public DateTime? NovaData { get; set; }
+
+    /// <summary>O Admin vê o painel de operações excepcionais (UC20).</summary>
+    internal bool OperacoesExcepcionais { get; private set; }
 
     internal Demanda Demanda => Detalhe.Demanda;
 
@@ -97,6 +118,35 @@ internal sealed class DetalheModel(
         => ExecutarAsync(async ator => await finalizar.ExecutarAsync(ator, id, Cancelamento),
             "Contratação finalizada. O prazo de SLA foi encerrado.");
 
+    /// <summary>UC18 pelo Gestor do contrato; pelo Admin é operação excepcional (UC20).</summary>
+    public Task<IActionResult> OnPostCancelarAsync(Guid id)
+        => ExecutarAsync(async ator => await cancelar.ExecutarAsync(ator, id, Justificativa ?? string.Empty, Cancelamento),
+            "Demanda cancelada. O histórico continua disponível; nada foi excluído.");
+
+    public Task<IActionResult> OnPostForcarTransicaoAsync(Guid id)
+        => ExecutarAsync(async ator =>
+        {
+            if (EtapaDestino is not { } destino)
+            {
+                throw new RegraNegocioException("Escolha a etapa de destino.");
+            }
+
+            await forcarTransicao.ExecutarAsync(ator, id, destino, Justificativa ?? string.Empty, Cancelamento);
+        }, "Etapa alterada por operação excepcional, com registro na auditoria.");
+
+    public Task<IActionResult> OnPostAlterarDataAsync(Guid id)
+        => ExecutarAsync(async ator =>
+        {
+            var partes = (DataAlvo ?? string.Empty).Split(':');
+            if (!Enum.TryParse<DataAlteravel>(partes[0], out var data) || NovaData is not { } nova)
+            {
+                throw new RegraNegocioException("Escolha a data a alterar e informe a nova data e hora.");
+            }
+
+            Guid? passagem = partes.Length > 1 && Guid.TryParse(partes[1], out var passagemId) ? passagemId : null;
+            await alterarData.ExecutarAsync(ator, id, data, passagem, Formatacao.ParaUtc(nova), Justificativa ?? string.Empty, Cancelamento);
+        }, "Data alterada por operação excepcional, com registro na auditoria.");
+
     /// <summary>Download de um anexo, para quem pode ver a demanda.</summary>
     public async Task<IActionResult> OnGetAnexoAsync(Guid anexoId)
     {
@@ -117,14 +167,17 @@ internal sealed class DetalheModel(
 
     private async Task<bool> CarregarAsync(Guid id)
     {
-        var detalhe = await consultar.DetalharAsync(await atorAtual.ObterAsync(), id, Cancelamento);
+        var ator = await atorAtual.ObterAsync();
+        var detalhe = await consultar.DetalharAsync(ator, id, Cancelamento);
         if (detalhe is null)
         {
             return false;
         }
 
         Detalhe = detalhe;
-        Hoje = calendario.DataLocal(relogio.AgoraUtc);
+        OperacoesExcepcionais = ator.Eh(Domain.Usuarios.Perfil.Admin);
+        Agora = relogio.AgoraUtc;
+        Hoje = calendario.DataLocal(Agora);
         return true;
     }
 }

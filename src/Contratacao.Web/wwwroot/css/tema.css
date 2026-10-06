@@ -852,3 +852,22 @@ a.cartao-atalho:hover {
     grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 0.5rem 1rem;
 }
+
+/* Demanda cancelada e operações excepcionais do Admin (UC18, UC20) */
+.aviso-cancelada {
+    display: flex;
+    gap: 1rem;
+    padding: 1.1rem 1.25rem;
+    margin-bottom: 1.5rem;
+    border-color: #f1b5b5;
+    background: #fdf3f3;
+}
+
+.aviso-cancelada > i { font-size: 1.5rem; color: var(--farol-vermelho); }
+.aviso-cancelada h2 { font-size: 1rem; font-weight: 700; margin: 0 0 0.25rem; }
+.aviso-cancelada blockquote { border-left: 3px solid #f1b5b5; padding-left: 0.75rem; white-space: pre-line; }
+
+.painel-excepcional { border-color: #f3c97a; }
+.painel-excepcional h2 { color: #9a5b00; }
+.painel-excepcional details + details { margin-top: 0.75rem; }
+.painel-excepcional summary { cursor: pointer; font-weight: 600; }

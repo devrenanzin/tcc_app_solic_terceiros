@@ -69,4 +69,20 @@ internal sealed class Anexo
         return new Anexo(demanda.Id, Etapa.Solicitacao, solicitante.Id, arquivo.NomeArquivo, arquivo.TipoArquivo,
             arquivo.Tamanho, identificador, categoria, agoraUtc);
     }
+
+    /// <summary>
+    /// Arquivo anexado depois do envio: só pelo Solicitante da demanda e só enquanto ela está devolvida a ele
+    /// para correção (Cliente, revisão de 06/10/2026). Fica registrado na etapa em que a demanda está.
+    /// </summary>
+    internal static Anexo NaCorrecao(
+        Demanda demanda, Ator solicitante, ArquivoConferido arquivo, string identificador, CategoriaAnexo categoria, DateTime agoraUtc)
+    {
+        if (!demanda.AceitaAnexoDe(solicitante))
+        {
+            throw new RegraNegocioException("Depois do envio, só o Solicitante anexa documentos, e só quando a demanda está devolvida a ele.");
+        }
+
+        return new Anexo(demanda.Id, demanda.Etapa, solicitante.Id, arquivo.NomeArquivo, arquivo.TipoArquivo,
+            arquivo.Tamanho, identificador, categoria, agoraUtc);
+    }
 }

@@ -78,8 +78,8 @@ public sealed class AlteracoesTests
     public void Acoes_disponiveis_seguem_perfil_contrato_e_situacao()
     {
         var enviada = _c.Enviada();
-        Assert.Equal([AcaoDemanda.Aprovar, AcaoDemanda.DevolverPeloGestor], enviada.AcoesDisponiveis(_c.GestorNorte).Order());
-        Assert.Equal([AcaoDemanda.Aprovar, AcaoDemanda.DevolverPeloGestor], enviada.AcoesDisponiveis(_c.GestorDosDois).Order());
+        Assert.Equal([AcaoDemanda.Aprovar, AcaoDemanda.DevolverPeloGestor, AcaoDemanda.Cancelar], enviada.AcoesDisponiveis(_c.GestorNorte).Order());
+        Assert.Equal([AcaoDemanda.Aprovar, AcaoDemanda.DevolverPeloGestor, AcaoDemanda.Cancelar], enviada.AcoesDisponiveis(_c.GestorDosDois).Order());
         Assert.Empty(enviada.AcoesDisponiveis(_c.GestorSudeste));
         Assert.Empty(enviada.AcoesDisponiveis(_c.GestorInativo));
         Assert.Empty(enviada.AcoesDisponiveis(_c.SesiNorte));
@@ -89,7 +89,7 @@ public sealed class AlteracoesTests
         var aprovada = _c.Aprovada();
         Assert.Equal([AcaoDemanda.Aceitar, AcaoDemanda.DevolverPeloSesi], aprovada.AcoesDisponiveis(_c.SesiNorte).Order());
         Assert.Empty(aprovada.AcoesDisponiveis(_c.SesiSudeste));
-        Assert.Empty(aprovada.AcoesDisponiveis(_c.GestorNorte));
+        Assert.Equal([AcaoDemanda.Cancelar], aprovada.AcoesDisponiveis(_c.GestorNorte));
 
         aprovada.DevolverPeloSesi(_c.SesiNorte, TipoInconsistencia.Contratual, "Coletor.", _c.Relogio);
         Assert.Equal([AcaoDemanda.Corrigir], aprovada.AcoesDisponiveis(_c.Solicitante));

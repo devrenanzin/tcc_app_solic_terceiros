@@ -9,6 +9,8 @@ internal sealed class EtapaDemanda
 
     private EtapaDemanda(Etapa etapa, StatusDemanda status, DateTime inicioUtc)
     {
+        // Id gerado no domínio: a passagem é escolhida pelo id nas operações excepcionais (UC20).
+        Id = Guid.CreateVersion7();
         Etapa = etapa;
         Status = status;
         DataInicio = inicioUtc;
@@ -43,6 +45,26 @@ internal sealed class EtapaDemanda
     {
         GarantirAberta();
         Status = statusFinal;
+        DataConclusao = conclusaoUtc;
+    }
+
+    /// <summary>
+    /// Alteração excepcional de data pelo Admin (UC20), chamada só pela Demanda: única forma de mudar uma data
+    /// congelada. A conclusão nunca fica antes do início.
+    /// </summary>
+    internal void CorrigirDatas(DateTime inicioUtc, DateTime? conclusaoUtc)
+    {
+        if (conclusaoUtc < inicioUtc)
+        {
+            throw new RegraNegocioException("A conclusão da etapa não pode ser anterior ao início.");
+        }
+
+        if (conclusaoUtc is null && !Aberta)
+        {
+            throw new RegraNegocioException("Etapa concluída precisa de data de conclusão.");
+        }
+
+        DataInicio = inicioUtc;
         DataConclusao = conclusaoUtc;
     }
 

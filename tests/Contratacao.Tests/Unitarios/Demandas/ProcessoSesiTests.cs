@@ -22,10 +22,12 @@ public sealed class ProcessoSesiTests
 
         // Qualquer SESI ativo do contrato conduz (Cliente, S4); o de outro contrato e os demais perfis, não.
         Assert.Equal([AcaoDemanda.RegistrarVaga], _c.EmRecrutamento().AcoesDisponiveis(_c.OutroSesiNorte));
-        foreach (var ator in new[] { _c.SesiSudeste, _c.GestorNorte, _c.Solicitante, _c.Admin, _c.SesiNorte with { Ativo = false } })
+        foreach (var ator in new[] { _c.SesiSudeste, _c.Solicitante, _c.Admin, _c.SesiNorte with { Ativo = false } })
         {
             Assert.Empty(_c.EmEntrevistas().AcoesDisponiveis(ator));
         }
+
+        Assert.Equal([AcaoDemanda.Cancelar], _c.EmEntrevistas().AcoesDisponiveis(_c.GestorNorte)); // o Gestor só cancela
     }
 
     [Fact]

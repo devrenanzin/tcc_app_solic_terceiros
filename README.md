@@ -16,7 +16,20 @@ Os requisitos estão em [docs/REQUISITOS_v3.1.md](docs/REQUISITOS_v3.1.md), a ú
 | 3 — Usuários e acesso | Login, autocadastro do Solicitante, cadastro de Gestores e Funcionários SESI, contratos, desativação, transferência de vínculo, telas | Concluída |
 | 4 — Solicitação e validação | Formulário com QQP em cascata e custo, rascunho no navegador, envio com número AAAA-NNNNNN e anexos, validação do Gestor e do SESI, devoluções e correção | Concluída |
 | 5 — Processo SESI | Vaga com link, entrevistas, exames médicos e finalização, na sequência obrigatória; datas das etapas congeladas | Concluída |
-| 6 a 8 | Ver o Guia de implementação no documento de requisitos | Pendentes |
+| 6 — Cancelamento e anexos | Cancelamento pelo Gestor, operações excepcionais do Admin (cancelar, mudar etapa, alterar data congelada) e anexos na correção | Concluída |
+| 7 e 8 | Ver o Guia de implementação no documento de requisitos | Pendentes |
+
+## Cancelamento, operações excepcionais e anexos (Etapa 6)
+
+| Quem | O quê | Onde |
+| --- | --- | --- |
+| Gestor do contrato | UC18: cancela a demanda ainda não concluída, com justificativa. Ela fica Cancelado na etapa em que estava; nada é excluído | Tela da demanda, quadro "Cancelar demanda" |
+| Admin | UC20: cancela em caráter excepcional; muda a etapa para trás ou para frente entre Recrutamento, Entrevistas e Exames Médicos (o SLA não reinicia); altera uma data congelada (início ou conclusão de etapa, abertura da vaga, início do SLA, que recalcula a data limite) | Tela da demanda, quadro "Operações excepcionais" |
+| Solicitante | Anexa documentos depois do envio só ao corrigir uma demanda devolvida, inclusive um novo De acordo VP-2; os anteriores continuam | `/Demandas/Corrigir/{id}` |
+
+- **Auditoria.** Todo cancelamento e toda operação excepcional exigem justificativa e vão para o LogAuditoria com valor anterior e novo, usuário, perfil e IP. Datas alteradas também aparecem na tabela "Alterações de campos e datas" da demanda, com a justificativa; a transição forçada aparece na linha do tempo.
+- **Datas.** O Admin digita a nova data e hora no horário de Brasília; o sistema grava em UTC. Não aceita data no futuro, anterior ao envio nem conclusão antes do início da etapa.
+- **Sair.** O botão Sair do menu encerra a sessão; `/Sair` mostra a confirmação, e `/Entrar` mostra quem está conectado e oferece trocar de conta.
 
 ## Processo SESI (Etapa 5)
 

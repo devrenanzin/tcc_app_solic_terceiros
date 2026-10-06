@@ -33,12 +33,26 @@
     </div>
 </div>
 
-<form method="post" novalidate data-formulario-demanda>
+<form method="post" enctype="multipart/form-data" novalidate data-formulario-demanda>
     <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
     <div class="layout-formulario">
         <div class="campos">
             <partial name="_Formulario" model="Model.Formulario" />
+
+            <section class="cartao secao-formulario">
+                <header><span class="numero-secao">8</span><div><h2>Anexos</h2><p>Opcional. Os anexos já enviados continuam na demanda; nada é apagado. Imagem, PDF ou e-mail, até 10 MB cada.</p></div></header>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label" for="novo-vp2">Novo De acordo VP-2 <span class="opcional">opcional</span></label>
+                        <input id="novo-vp2" name="NovoDeAcordoVp2" type="file" class="form-control" accept="@NovaModel.ExtensoesAceitas" />
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label" for="outros">Outros anexos <span class="opcional">opcional</span></label>
+                        <input id="outros" name="OutrosAnexos" type="file" class="form-control" accept="@NovaModel.ExtensoesAceitas" multiple />
+                    </div>
+                </div>
+            </section>
         </div>
 
         <aside class="lateral-formulario">

@@ -30,6 +30,9 @@ internal static class ConfiguracaoAplicacao
         services.AddScoped<IniciarEntrevistas>();
         services.AddScoped<IniciarExames>();
         services.AddScoped<FinalizarContratacao>();
+        services.AddScoped<CancelarDemanda>();
+        services.AddScoped<ForcarTransicao>();
+        services.AddScoped<AlterarDataExcepcional>();
         services.AddScoped<ConsultarDemandas>();
         services.AddScoped<ManterGerentesExecutivos>();
         services.AddScoped<ManterOrdensServico>();

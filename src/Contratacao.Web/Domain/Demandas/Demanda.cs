@@ -366,6 +366,106 @@ internal sealed class Demanda
     }
 
     /// <summary>
+    /// Anexos depois do envio: só o Solicitante da demanda, e só enquanto ela está devolvida a ele para correção
+    /// (Cliente, revisão de 06/10/2026).
+    /// </summary>
+    internal bool AceitaAnexoDe(Ator ator) => EhSolicitanteDaDemanda(ator) && AguardandoCorrecao;
+
+    /// <summary>Etapas para onde o Admin pode levar a demanda numa transição forçada (UC20).</summary>
+    internal static readonly IReadOnlyList<Etapa> EtapasDeTransicaoForcada = [Etapa.Recrutamento, Etapa.Entrevistas, Etapa.ExamesMedicos];
+
+    /// <summary>
+    /// UC20 — Transição forçada pelo Admin: leva a demanda, para trás ou para frente, a outra etapa entre
+    /// Recrutamento e Exames Médicos (Cliente, revisão de 06/10/2026). Só depois do aceite e antes da conclusão;
+    /// o SLA não muda. A passagem atual termina Concluído ao avançar e Em andamento ao voltar (foi interrompida).
+    /// </summary>
+    internal void ForcarTransicao(Ator admin, Etapa destino, string justificativa, IRelogio relogio)
+    {
+        Exigir(admin.Eh(Perfil.Admin), "Só o Admin executa operações excepcionais.");
+        ExigirTexto(justificativa, "A justificativa da operação excepcional é obrigatória.");
+        Exigir(Status == StatusDemanda.EmAndamento && EtapasDeTransicaoForcada.Contains(Etapa),
+            "A transição forçada só vale para demandas em andamento entre Recrutamento e Exames Médicos.");
+        Exigir(EtapasDeTransicaoForcada.Contains(destino), "Escolha uma etapa entre Recrutamento e Exames Médicos.");
+        Exigir(destino != Etapa, "A demanda já está nessa etapa.");
+
+        var statusFinal = destino > Etapa ? StatusDemanda.Concluido : StatusDemanda.EmAndamento;
+        MudarPara(destino, StatusDemanda.EmAndamento, statusFinal, EventoDemanda.TransicaoForcada, admin, relogio.AgoraUtc,
+            justificativa.Trim());
+    }
+
+    /// <summary>
+    /// UC20 — Alteração excepcional de data pelo Admin, a única forma de mudar uma data congelada. Datas
+    /// alteráveis (Cliente, revisão de 06/10/2026): início e conclusão de cada etapa, abertura da vaga e início do
+    /// SLA, que recalcula a data limite com o mesmo prazo. Cada mudança vai para o histórico de alterações com a
+    /// justificativa; devolve o campo e os valores anterior e novo, para o log de auditoria.
+    /// </summary>
+    internal (string Campo, string? Anterior, string Novo) AlterarDataExcepcional(
+        Ator admin,
+        DataAlteravel data,
+        Guid? passagemId,
+        DateTime novaUtc,
+        string justificativa,
+        IRelogio relogio,
+        ICalendarioSla calendario)
+    {
+        Exigir(admin.Eh(Perfil.Admin), "Só o Admin executa operações excepcionais.");
+        ExigirTexto(justificativa, "A justificativa da operação excepcional é obrigatória.");
+        Exigir(novaUtc.Kind == DateTimeKind.Utc, "A data precisa estar em UTC.");
+
+        var agora = relogio.AgoraUtc;
+        Exigir(novaUtc <= agora, "A nova data não pode estar no futuro.");
+        Exigir(novaUtc >= DataCriacao, "A nova data não pode ser anterior ao envio da demanda.");
+
+        string campo;
+        DateTime? anterior;
+        switch (data)
+        {
+            case DataAlteravel.InicioEtapa or DataAlteravel.ConclusaoEtapa:
+                var passagem = _etapas.SingleOrDefault(e => e.Id == passagemId)
+                    ?? throw new RegraNegocioException("Escolha uma etapa desta demanda.");
+                if (data == DataAlteravel.InicioEtapa)
+                {
+                    (campo, anterior) = ($"{passagem.Etapa}.DataInicio", passagem.DataInicio);
+                    passagem.CorrigirDatas(novaUtc, passagem.DataConclusao);
+                }
+                else
+                {
+                    Exigir(!passagem.Aberta, "A etapa ainda está em curso e não tem data de conclusão.");
+                    (campo, anterior) = ($"{passagem.Etapa}.DataConclusao", passagem.DataConclusao);
+                    passagem.CorrigirDatas(passagem.DataInicio, novaUtc);
+                    if (passagem.Etapa == Etapa.Contratacao)
+                    {
+                        DataFinalizacao = novaUtc;
+                    }
+                }
+
+                break;
+
+            case DataAlteravel.AberturaVaga:
+                Exigir(Vaga is not null, "A demanda ainda não tem vaga registrada.");
+                (campo, anterior) = ("Vaga.DataAbertura", Vaga!.DataAbertura);
+                Vaga.CorrigirDataAbertura(novaUtc);
+                break;
+
+            case DataAlteravel.InicioSla:
+                Exigir(Sla is not null, "O SLA desta demanda ainda não começou.");
+                (campo, anterior) = ("Sla.Inicio", Sla!.InicioUtc);
+                var limiteAnterior = Sla.DataLimite;
+                Sla = Sla.Iniciar(novaUtc, Sla.PrazoDias, calendario);
+                RegistrarAlteracao(admin, "Sla.DataLimite", limiteAnterior.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture),
+                    Sla.DataLimite.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture), agora, justificativa.Trim());
+                break;
+
+            default:
+                throw new RegraNegocioException("Escolha a data a alterar.");
+        }
+
+        var (textoAnterior, textoNovo) = (anterior is { } a ? DataUtc(a) : null, DataUtc(novaUtc));
+        RegistrarAlteracao(admin, campo, textoAnterior, textoNovo, agora, justificativa.Trim());
+        return (campo, textoAnterior, textoNovo);
+    }
+
+    /// <summary>
     /// As ações de validação, correção e do processo SESI que este ator pode executar agora, para a tela mostrar
     /// só os botões permitidos. Os métodos de cada ação exigem as mesmas condições.
     /// </summary>
@@ -387,6 +487,12 @@ internal sealed class Demanda
         if (EhSolicitanteDaDemanda(ator) && AguardandoCorrecao)
         {
             acoes.Add(AcaoDemanda.Corrigir);
+        }
+
+        // UC18: o Gestor do contrato cancela qualquer demanda ainda não concluída nem cancelada.
+        if (EhGestorDoContrato(ator) && !Concluida && !Cancelada)
+        {
+            acoes.Add(AcaoDemanda.Cancelar);
         }
 
         // Processo SESI (UC08–11): sempre a próxima da sequência, sem pular nem voltar.
@@ -486,13 +592,15 @@ internal sealed class Demanda
         CustoTotal = CustoDemanda.Total(QuantidadeSolicitada, PrecoUnitarioQqp, ValorEquipamentosPorPessoa);
     }
 
-    private void RegistrarAlteracao(Ator ator, string campo, string? anterior, string? novo, DateTime agora)
+    private void RegistrarAlteracao(Ator ator, string campo, string? anterior, string? novo, DateTime agora, string? justificativa = null)
     {
         if (anterior != novo)
         {
-            _alteracoes.Add(new HistoricoAlteracao(Id, ator, campo, anterior, novo, null, agora));
+            _alteracoes.Add(new HistoricoAlteracao(Id, ator, campo, anterior, novo, justificativa, agora));
         }
     }
+
+    private static string DataUtc(DateTime utc) => utc.ToString("yyyy-MM-ddTHH:mm:ssZ", System.Globalization.CultureInfo.InvariantCulture);
 
     private bool Em(Etapa etapa, StatusDemanda status) => Etapa == etapa && Status == status;
 
@@ -563,4 +671,14 @@ internal enum AcaoDemanda
     IniciarEntrevistas = 7,
     IniciarExames = 8,
     Finalizar = 9,
+    Cancelar = 10,
+}
+
+/// <summary>Datas que o Admin altera por operação excepcional (UC20; Cliente, revisão de 06/10/2026).</summary>
+internal enum DataAlteravel
+{
+    InicioEtapa = 1,
+    ConclusaoEtapa = 2,
+    AberturaVaga = 3,
+    InicioSla = 4,
 }

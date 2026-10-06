@@ -74,14 +74,57 @@ internal sealed class EnviarDemanda(
     }
 }
 
-/// <summary>UC06 — Corrigir a demanda devolvida, pelo Solicitante que a criou.</summary>
-internal sealed class CorrigirDemanda(IDemandas demandas, ICatalogosDemanda catalogos, IUnidadeDeTrabalho unidade, IRelogio relogio)
+/// <summary>
+/// UC06 — Corrigir a demanda devolvida, pelo Solicitante que a criou. Na correção ele também pode anexar
+/// documentos, inclusive um novo De acordo VP-2 (Cliente, revisão de 06/10/2026); os anteriores ficam.
+/// </summary>
+internal sealed class CorrigirDemanda(
+    IDemandas demandas,
+    ICatalogosDemanda catalogos,
+    IAnexos anexos,
+    IArmazenamentoArquivos armazenamento,
+    IAuditoria auditoria,
+    IUnidadeDeTrabalho unidade,
+    IRelogio relogio)
 {
-    internal async Task ExecutarAsync(Ator solicitante, Guid demandaId, DadosSolicitacao dados, CancellationToken cancelamento)
+    internal async Task ExecutarAsync(
+        Ator solicitante,
+        Guid demandaId,
+        DadosSolicitacao dados,
+        IReadOnlyList<(ArquivoRecebido Arquivo, CategoriaAnexo Categoria)> novosAnexos,
+        CancellationToken cancelamento)
     {
         var demanda = await demandas.ObterAsync(demandaId, cancelamento)
             ?? throw new RegraNegocioException("Demanda não encontrada.");
         var (conferidos, referencias) = await Formulario.ConferirAsync(catalogos, dados, cancelamento);
+
+        var arquivos = new List<(ArquivoRecebido Arquivo, ArquivoConferido Conferido, CategoriaAnexo Categoria)>();
+        foreach (var (arquivo, categoria) in novosAnexos)
+        {
+            arquivos.Add((arquivo, await Formulario.ConferirArquivoAsync(arquivo, cancelamento), categoria));
+        }
+
+        // Confere antes de gravar qualquer arquivo no disco (que nunca é apagado).
+        if (arquivos.Count > 0 && !demanda.AceitaAnexoDe(solicitante))
+        {
+            throw new RegraNegocioException("Depois do envio, só o Solicitante anexa documentos, e só quando a demanda está devolvida a ele.");
+        }
+
+        // Os anexos entram antes da correção, enquanto a demanda ainda está devolvida ao Solicitante.
+        var agora = relogio.AgoraUtc;
+        foreach (var (arquivo, conferido, categoria) in arquivos)
+        {
+            string identificador;
+            await using (var conteudo = arquivo.Abrir())
+            {
+                identificador = await armazenamento.GuardarAsync(conteudo, conferido.Extensao, cancelamento);
+            }
+
+            var anexo = Anexo.NaCorrecao(demanda, solicitante, conferido, identificador, categoria, agora);
+            anexos.Adicionar(anexo);
+            auditoria.Registrar(LogAuditoria.De(solicitante, nameof(Anexo), anexo.Id, "Upload", null,
+                $"{demanda.Numero}; {categoria}; {conferido.NomeArquivo}; {conferido.Tamanho} bytes", null, agora));
+        }
 
         demanda.Corrigir(solicitante, conferidos, referencias, relogio);
         await unidade.SalvarAsync(cancelamento);

@@ -23,6 +23,16 @@ internal static class Formatacao
 
     internal static string Data(DateOnly? data) => data?.ToString("dd/MM/yyyy", PtBr) ?? "—";
 
+    /// <summary>Valor para o campo datetime-local, no horário de Brasília.</summary>
+    internal static string ParaCampo(DateTime? utc)
+        => utc is { } valor
+            ? TimeZoneInfo.ConvertTimeFromUtc(DateTime.SpecifyKind(valor, DateTimeKind.Utc), Brasilia).ToString("yyyy-MM-ddTHH:mm", CultureInfo.InvariantCulture)
+            : string.Empty;
+
+    /// <summary>Data e hora digitadas no horário de Brasília, convertidas para UTC (RNF09).</summary>
+    internal static DateTime ParaUtc(DateTime brasilia)
+        => TimeZoneInfo.ConvertTimeToUtc(DateTime.SpecifyKind(brasilia, DateTimeKind.Unspecified), Brasilia);
+
     internal static string Reais(decimal? valor) => valor?.ToString("C2", PtBr) ?? "—";
 
     internal static string Numero(int valor) => valor.ToString("N0", PtBr);
@@ -85,6 +95,7 @@ internal static class Formatacao
         EventoDemanda.ExamesIniciados => "Exames iniciados",
         EventoDemanda.ContratacaoFinalizada => "Contratação finalizada",
         EventoDemanda.Cancelada => "Cancelada",
+        EventoDemanda.TransicaoForcada => "Etapa alterada pelo Admin (operação excepcional)",
         _ => evento.ToString(),
     };
 
@@ -97,6 +108,7 @@ internal static class Formatacao
         EventoDemanda.AceitaPeloSesi => "bi-person-check",
         EventoDemanda.VagaAberta => "bi-link-45deg",
         EventoDemanda.Cancelada => "bi-x-circle",
+        EventoDemanda.TransicaoForcada => "bi-shield-exclamation",
         _ => "bi-circle",
     };
 

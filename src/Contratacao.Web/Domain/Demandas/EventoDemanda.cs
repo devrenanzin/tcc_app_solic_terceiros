@@ -13,4 +13,7 @@ internal enum EventoDemanda
     ExamesIniciados = 8,
     ContratacaoFinalizada = 9,
     Cancelada = 10,
+
+    /// <summary>Operação excepcional do Admin (UC20): etapa mudada fora da sequência.</summary>
+    TransicaoForcada = 11,
 }

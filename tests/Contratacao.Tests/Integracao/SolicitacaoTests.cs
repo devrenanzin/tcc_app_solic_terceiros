@@ -94,7 +94,7 @@ public sealed class SolicitacaoTests(BancoFixture banco) : IClassFixture<BancoFi
         var sla = (await DemandaAsync(id)).Sla!;
         banco.Relogio.Avancar(TimeSpan.FromDays(2));
         await banco.ExecutarAsync<DevolverDemandaPeloSesi>(d => d.ExecutarAsync(sesi, id, TipoInconsistencia.Contratual, "Coletor errado.", Cancelamento));
-        await banco.ExecutarAsync<CorrigirDemanda>(c => c.ExecutarAsync(solicitante, id, dados with { ColetorCusto = "CC-9999" }, Cancelamento));
+        await banco.ExecutarAsync<CorrigirDemanda>(c => c.ExecutarAsync(solicitante, id, dados with { ColetorCusto = "CC-9999" }, [], Cancelamento));
 
         var corrigida = await DemandaAsync(id);
         Assert.Equal((Etapa.ValidacaoGestor, StatusDemanda.EmAnalise), (corrigida.Etapa, corrigida.Status));
@@ -117,7 +117,7 @@ public sealed class SolicitacaoTests(BancoFixture banco) : IClassFixture<BancoFi
         await banco.ExecutarAsync<AprovarDemanda>(a => a.ExecutarAsync(gestor, id, Cancelamento));
         await banco.ExecutarAsync<DevolverDemandaPeloSesi>(d => d.ExecutarAsync(sesi, id, TipoInconsistencia.Solicitante, "Descrição vaga.", Cancelamento));
         await banco.ExecutarAsync<CorrigirDemanda>(c => c.ExecutarAsync(
-            solicitante, id, dados with { DescricaoAtividades = "Inspeção de correias transportadoras." }, Cancelamento));
+            solicitante, id, dados with { DescricaoAtividades = "Inspeção de correias transportadoras." }, [], Cancelamento));
 
         var corrigida = await DemandaAsync(id);
         Assert.Equal((Etapa.ValidacaoSesi, StatusDemanda.AguardandoResponsavel), (corrigida.Etapa, corrigida.Status));
@@ -145,7 +145,7 @@ public sealed class SolicitacaoTests(BancoFixture banco) : IClassFixture<BancoFi
         }
 
         await banco.ExecutarAsync<CorrigirDemanda>(c => c.ExecutarAsync(
-            solicitante, id, dados with { CorredorId = IdsFixos.CorredorSul, OrdemServicoId = BancoFixture.OsSudesteId, ItemQqpId = outroItem }, Cancelamento));
+            solicitante, id, dados with { CorredorId = IdsFixos.CorredorSul, OrdemServicoId = BancoFixture.OsSudesteId, ItemQqpId = outroItem }, [], Cancelamento));
 
         var corrigida = await DemandaAsync(id);
         Assert.Equal(IdsFixos.ContratoSudeste, corrigida.ContratoId);

@@ -73,6 +73,9 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 55 | OS da carga inicial | Vazia | 01 a 10 no contrato Norte e 11 a 20 no contrato Sudeste | Cliente |
 | 56 | Valores do QQP | O arquivo tb\_qqp\_SESI.csv ia para o repositório com os valores reais | Os valores reais não vão para o GitHub: o repositório traz o arquivo com piso e preço alterados pelo cliente, e nada no código, nos testes ou nos documentos repete valores reais | Cliente |
 | 57 | Gerente executivo por corredor | Lista única de gerentes | Cada gerente atende um ou mais corredores (tabela GerenteExecutivoCorredor); o formulário mostra só os gerentes do corredor escolhido, e o sistema recusa gerente que não atende o corredor. Nomes reais não vão para o repositório: o Admin os cadastra pela tela | Cliente |
+| 58 | Datas que o Admin altera (UC20) | "Data congelada", sem lista | Início e conclusão de cada etapa, abertura da vaga e início do SLA; o novo início do SLA recalcula a data limite com o mesmo prazo | Cliente |
+| 59 | Transição forçada pelo Admin (UC20) | Sem definição | Para trás ou para frente, entre Recrutamento, Entrevistas e Exames Médicos, com a demanda em andamento; o SLA não reinicia | Cliente |
+| 60 | Anexos depois do envio | Sem definição | Só pelo Solicitante e só quando a demanda está devolvida a ele para correção (inclusive um novo De acordo VP-2); os anexos anteriores ficam | Cliente |
 | 47 | Custo na correção que muda quantidade ou equipamentos | Só a mudança no QQP recalculava (item 27) | Qualquer correção que mude o item QQP, a quantidade de vagas ou os equipamentos recalcula o custo inteiro com os valores atuais dos catálogos; sem essas mudanças, ficam os valores do envio | Cliente |
 
 ## 1–3. Objetivo e escopo
@@ -249,7 +252,7 @@ Removido na revisão de 05/10/2026: o Gestor não edita campos. Erros nas inform
 
 ### UC20 — Executar Operação Excepcional
 
-1. O Admin escolhe a operação: cancelar demanda, alterar data congelada ou forçar uma transição fora da sequência.
+1. O Admin escolhe a operação: cancelar demanda, alterar data congelada (início e conclusão de cada etapa, abertura da vaga ou início do SLA, que recalcula a data limite; Cliente, item 58) ou forçar uma transição fora da sequência (para trás ou para frente entre Recrutamento, Entrevistas e Exames Médicos, sem reiniciar o SLA; Cliente, item 59).
 2. Informa a justificativa, obrigatória.
 3. O sistema executa e registra valor anterior, novo valor, usuário, perfil, IP e justificativa no log de auditoria.
 
@@ -441,7 +444,7 @@ O "Gestor autorizado" da v3.0 passa a ser qualquer Gestor ativo vinculado ao con
 
 ## 18. Anexos
 
-O Solicitante anexa documentos à demanda; cada arquivo registra nome, tipo, tamanho, usuário, data/hora, demanda e a etapa em que foi enviado (campo EtapaId, que faltava no modelo da v3.0). Todo upload gera auditoria, e anexos não são excluídos depois do envio da demanda.
+O Solicitante anexa documentos à demanda no envio e, depois dele, só quando a demanda é devolvida a ele para correção, inclusive um novo De acordo VP-2 (Cliente, item 60); cada arquivo registra nome, tipo, tamanho, usuário, data/hora, demanda e a etapa em que foi enviado (campo EtapaId, que faltava no modelo da v3.0). Todo upload gera auditoria, e anexos não são excluídos depois do envio da demanda.
 
 **Regras de arquivo (Cliente).** Aceitos: imagens, PDF e e-mail, até 10 MB por arquivo. Os arquivos ficam numa pasta do servidor e nunca são apagados. O banco guarda só os metadados e o caminho (coluna Identificador); o nome do arquivo no disco é gerado pelo sistema, nunca o nome original.
 

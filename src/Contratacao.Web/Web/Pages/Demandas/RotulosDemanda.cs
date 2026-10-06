@@ -41,7 +41,25 @@ internal static class RotulosDemanda
         [nameof(Demanda.CustoTotal)] = "Custo total mensal",
     };
 
-    internal static string Rotulo(string campo) => Rotulos.GetValueOrDefault(campo, campo);
+    internal static string Rotulo(string campo)
+    {
+        if (Rotulos.TryGetValue(campo, out var rotulo))
+        {
+            return rotulo;
+        }
+
+        // Datas alteradas pelo Admin (UC20): "Recrutamento.DataConclusao", "Sla.Inicio" etc.
+        var partes = campo.Split('.');
+        return partes switch
+        {
+            ["Sla", "Inicio"] => "Início do SLA",
+            ["Sla", "DataLimite"] => "Data limite do SLA",
+            ["Vaga", "DataAbertura"] => "Abertura da vaga",
+            [var etapa, "DataInicio"] when Enum.TryParse<Etapa>(etapa, out var e) => $"Início da etapa {Formatacao.Etapa(e)}",
+            [var etapa, "DataConclusao"] when Enum.TryParse<Etapa>(etapa, out var e) => $"Conclusão da etapa {Formatacao.Etapa(e)}",
+            _ => campo,
+        };
+    }
 
     internal static string Valor(string campo, string? valor, DescricoesDemanda nomes)
     {
@@ -62,6 +80,12 @@ internal static class RotulosDemanda
             nameof(DadosSolicitacao.Racs) => string.Join(", ", valor.Split(';').Select(v => Nome(nomes.Racs, v))),
             nameof(Demanda.PisoSalarialQqp) or nameof(Demanda.PrecoUnitarioQqp) or nameof(Demanda.ValorEquipamentosPorPessoa) or nameof(Demanda.CustoTotal)
                 => decimal.TryParse(valor, NumberStyles.Number, CultureInfo.InvariantCulture, out var reais) ? Formatacao.Reais(reais) : valor,
+            "Sla.DataLimite" => DateOnly.TryParseExact(valor, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var limite)
+                ? Formatacao.Data(limite) : valor,
+            _ when campo.EndsWith(".DataInicio", StringComparison.Ordinal) || campo.EndsWith(".DataConclusao", StringComparison.Ordinal)
+                || campo is "Sla.Inicio" or "Vaga.DataAbertura"
+                => DateTime.TryParse(valor, CultureInfo.InvariantCulture, DateTimeStyles.AdjustToUniversal | DateTimeStyles.AssumeUniversal, out var data)
+                    ? Formatacao.DataHora(data) : valor,
             _ => valor,
         };
     }

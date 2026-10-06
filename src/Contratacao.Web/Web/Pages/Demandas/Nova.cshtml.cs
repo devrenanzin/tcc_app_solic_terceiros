@@ -14,7 +14,7 @@ namespace Contratacao.Web.Web.Pages.Demandas;
 internal sealed class NovaModel(ConsultarFormulario consulta, EnviarDemanda enviar, AtorAtual atorAtual) : PaginaBase
 {
     /// <summary>Folga para o VP-2 e alguns anexos de até 10 MB cada; o limite por arquivo é conferido no domínio.</summary>
-    private const long LimiteEnvio = 100 * 1024 * 1024;
+    internal const long LimiteEnvio = 100 * 1024 * 1024;
 
     /// <summary>Avisa a tela da demanda para apagar o rascunho do navegador depois do envio.</summary>
     internal const string ChaveLimparRascunho = "LimparRascunho";

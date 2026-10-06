@@ -141,6 +141,7 @@ internal sealed class ConfiguracaoEtapaDemanda : IEntityTypeConfiguration<EtapaD
             t.HasCheckConstraint("CK_EtapaDemanda_Datas", "DataConclusao IS NULL OR DataConclusao >= DataInicio"));
 
         b.HasKey(e => e.Id);
+        b.Property(e => e.Id).ValueGeneratedNever(); // gerado no domínio
         b.Property(e => e.Etapa).HasColumnName("EtapaId");
         b.Property(e => e.Status).HasColumnName("StatusId");
         b.Property(e => e.UsuarioResponsavelId);
