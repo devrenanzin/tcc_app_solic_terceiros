@@ -32,7 +32,12 @@ internal sealed class EtapaDemanda
         Status = status;
     }
 
-    internal void DefinirResponsavel(Guid usuarioId) => UsuarioResponsavelId = usuarioId;
+    /// <summary>Só na passagem aberta: etapa concluída não muda (congelamento, seção 12–15).</summary>
+    internal void DefinirResponsavel(Guid usuarioId)
+    {
+        GarantirAberta();
+        UsuarioResponsavelId = usuarioId;
+    }
 
     internal void Encerrar(StatusDemanda statusFinal, DateTime conclusaoUtc)
     {

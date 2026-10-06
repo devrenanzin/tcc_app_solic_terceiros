@@ -9,7 +9,8 @@ namespace Contratacao.Web.Web.Pages.Demandas;
 
 /// <summary>
 /// UC03 e UC15 — Consultar a demanda; daqui o Gestor do contrato aprova ou devolve (UC04, UC05) e o SESI do
-/// contrato aceita ou devolve (UC05, UC07). Só aparecem as ações que o domínio permite ao usuário.
+/// contrato aceita ou devolve (UC05, UC07) e conduz o processo até a contratação (UC08–11). Só aparecem as
+/// ações que o domínio permite ao usuário.
 /// </summary>
 internal sealed class DetalheModel(
     ConsultarDemandas consultar,
@@ -17,6 +18,10 @@ internal sealed class DetalheModel(
     DevolverDemandaPeloGestor devolverPeloGestor,
     DevolverDemandaPeloSesi devolverPeloSesi,
     AceitarDemanda aceitar,
+    RegistrarVaga registrarVaga,
+    IniciarEntrevistas iniciarEntrevistas,
+    IniciarExames iniciarExames,
+    FinalizarContratacao finalizar,
     AtorAtual atorAtual,
     IRelogio relogio,
     ICalendarioSla calendario) : PaginaBase
@@ -32,6 +37,9 @@ internal sealed class DetalheModel(
 
     [BindProperty]
     public TipoInconsistencia? Tipo { get; set; }
+
+    [BindProperty]
+    public string? LinkVaga { get; set; }
 
     internal Demanda Demanda => Detalhe.Demanda;
 
@@ -72,6 +80,22 @@ internal sealed class DetalheModel(
 
             await devolverPeloSesi.ExecutarAsync(ator, id, tipo, Motivo ?? string.Empty, Cancelamento);
         }, "Demanda devolvida ao Solicitante para correção.");
+
+    public Task<IActionResult> OnPostRegistrarVagaAsync(Guid id)
+        => ExecutarAsync(async ator => await registrarVaga.ExecutarAsync(ator, id, LinkVaga ?? string.Empty, Cancelamento),
+            "Vaga registrada com o link da plataforma externa.");
+
+    public Task<IActionResult> OnPostIniciarEntrevistasAsync(Guid id)
+        => ExecutarAsync(async ator => await iniciarEntrevistas.ExecutarAsync(ator, id, Cancelamento),
+            "Entrevistas iniciadas. A etapa Recrutamento foi concluída.");
+
+    public Task<IActionResult> OnPostIniciarExamesAsync(Guid id)
+        => ExecutarAsync(async ator => await iniciarExames.ExecutarAsync(ator, id, Cancelamento),
+            "Exames médicos iniciados. A etapa Entrevistas foi concluída.");
+
+    public Task<IActionResult> OnPostFinalizarAsync(Guid id)
+        => ExecutarAsync(async ator => await finalizar.ExecutarAsync(ator, id, Cancelamento),
+            "Contratação finalizada. O prazo de SLA foi encerrado.");
 
     /// <summary>Download de um anexo, para quem pode ver a demanda.</summary>
     public async Task<IActionResult> OnGetAnexoAsync(Guid anexoId)

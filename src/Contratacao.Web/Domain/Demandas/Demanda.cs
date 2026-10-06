@@ -312,6 +312,8 @@ internal sealed class Demanda
         ExigirSituacao(Etapa.Recrutamento, StatusDemanda.EmAndamento);
         Exigir(Vaga is not null, "Registre a vaga com o link antes de iniciar as entrevistas.");
 
+        // Quem conclui a etapa fica como responsável por ela (registrar responsáveis e datas de cada etapa).
+        PassagemAtual.DefinirResponsavel(sesi.Id);
         MudarPara(Etapa.Entrevistas, StatusDemanda.EmAndamento, StatusDemanda.Concluido,
             EventoDemanda.EntrevistasIniciadas, sesi, relogio.AgoraUtc, null);
     }
@@ -322,6 +324,7 @@ internal sealed class Demanda
         ExigirSesiDoContrato(sesi);
         ExigirSituacao(Etapa.Entrevistas, StatusDemanda.EmAndamento);
 
+        PassagemAtual.DefinirResponsavel(sesi.Id);
         MudarPara(Etapa.ExamesMedicos, StatusDemanda.EmAndamento, StatusDemanda.Concluido,
             EventoDemanda.ExamesIniciados, sesi, relogio.AgoraUtc, null);
     }
@@ -334,8 +337,10 @@ internal sealed class Demanda
 
         var agora = relogio.AgoraUtc;
         DataFinalizacao = agora;
+        PassagemAtual.DefinirResponsavel(sesi.Id);
         MudarPara(Etapa.Contratacao, StatusDemanda.Concluido, StatusDemanda.Concluido,
             EventoDemanda.ContratacaoFinalizada, sesi, agora, null);
+        PassagemAtual.DefinirResponsavel(sesi.Id);
         PassagemAtual.Encerrar(StatusDemanda.Concluido, agora);
     }
 
@@ -361,8 +366,8 @@ internal sealed class Demanda
     }
 
     /// <summary>
-    /// As ações de validação e correção que este ator pode executar agora, para a tela mostrar só os botões
-    /// permitidos. Os métodos de cada ação exigem as mesmas condições.
+    /// As ações de validação, correção e do processo SESI que este ator pode executar agora, para a tela mostrar
+    /// só os botões permitidos. Os métodos de cada ação exigem as mesmas condições.
     /// </summary>
     internal IReadOnlySet<AcaoDemanda> AcoesDisponiveis(Ator ator)
     {
@@ -382,6 +387,23 @@ internal sealed class Demanda
         if (EhSolicitanteDaDemanda(ator) && AguardandoCorrecao)
         {
             acoes.Add(AcaoDemanda.Corrigir);
+        }
+
+        // Processo SESI (UC08–11): sempre a próxima da sequência, sem pular nem voltar.
+        if (EhSesiDoContrato(ator) && Status == StatusDemanda.EmAndamento)
+        {
+            var proxima = Etapa switch
+            {
+                Etapa.Recrutamento when Vaga is null => AcaoDemanda.RegistrarVaga,
+                Etapa.Recrutamento => AcaoDemanda.IniciarEntrevistas,
+                Etapa.Entrevistas => AcaoDemanda.IniciarExames,
+                Etapa.ExamesMedicos => AcaoDemanda.Finalizar,
+                _ => (AcaoDemanda?)null,
+            };
+            if (proxima is { } acao)
+            {
+                acoes.Add(acao);
+            }
         }
 
         return acoes;
@@ -529,7 +551,7 @@ internal sealed class Demanda
     }
 }
 
-/// <summary>Ações de validação e correção oferecidas na tela da demanda.</summary>
+/// <summary>Ações oferecidas na tela da demanda.</summary>
 internal enum AcaoDemanda
 {
     Aprovar = 1,
@@ -537,4 +559,8 @@ internal enum AcaoDemanda
     Aceitar = 3,
     DevolverPeloSesi = 4,
     Corrigir = 5,
+    RegistrarVaga = 6,
+    IniciarEntrevistas = 7,
+    IniciarExames = 8,
+    Finalizar = 9,
 }

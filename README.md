@@ -15,7 +15,22 @@ Os requisitos estão em [docs/REQUISITOS_v3.1.md](docs/REQUISITOS_v3.1.md), a ú
 | 2 — Persistência | DbContext, mapeamento do modelo físico, migration inicial, carga inicial (catálogos, QQP, RACs, Admin) | Concluída |
 | 3 — Usuários e acesso | Login, autocadastro do Solicitante, cadastro de Gestores e Funcionários SESI, contratos, desativação, transferência de vínculo, telas | Concluída |
 | 4 — Solicitação e validação | Formulário com QQP em cascata e custo, rascunho no navegador, envio com número AAAA-NNNNNN e anexos, validação do Gestor e do SESI, devoluções e correção | Concluída |
-| 5 a 8 | Ver o Guia de implementação no documento de requisitos | Pendentes |
+| 5 — Processo SESI | Vaga com link, entrevistas, exames médicos e finalização, na sequência obrigatória; datas das etapas congeladas | Concluída |
+| 6 a 8 | Ver o Guia de implementação no documento de requisitos | Pendentes |
+
+## Processo SESI (Etapa 5)
+
+Na tela da demanda (`/Demandas/Detalhe/{id}`), depois do aceite, o Funcionário SESI do contrato vê só o próximo passo:
+
+| Etapa / situação | Ação | Caso de uso |
+| --- | --- | --- |
+| Recrutamento, sem vaga | Registrar vaga com o link da plataforma externa (http ou https); é um evento, a etapa não muda | UC08 |
+| Recrutamento, com vaga | Iniciar entrevistas | UC09 |
+| Entrevistas | Iniciar exames médicos | UC10 |
+| Exames Médicos | Finalizar contratação (encerra o SLA; farol verde se dentro do prazo, vermelho se depois) | UC11 |
+
+- **Regras no domínio.** `Demanda.RegistrarVaga`, `IniciarEntrevistas`, `IniciarExames` e `Finalizar` exigem a etapa certa e um SESI ativo do contrato (qualquer um do grupo; o responsável SESI é quem aceitou). `Demanda.AcoesDisponiveis` oferece só o próximo passo. Os casos de uso ficam em `Application/Demandas/ProcessoSesi.cs`.
+- **Congelamento de datas (seção 12–15).** Concluída a passagem por uma etapa, `EtapaDemanda` recusa qualquer mudança de data, status ou responsável. A tela mostra o quadro "Etapas e datas", com início, conclusão (cadeado) e quem concluiu cada etapa. A alteração excepcional pelo Admin (UC20) entra na Etapa 6.
 
 ## Solicitação e validação (Etapa 4)
 

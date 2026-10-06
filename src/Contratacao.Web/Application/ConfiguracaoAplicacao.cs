@@ -26,6 +26,10 @@ internal static class ConfiguracaoAplicacao
         services.AddScoped<DevolverDemandaPeloGestor>();
         services.AddScoped<DevolverDemandaPeloSesi>();
         services.AddScoped<AceitarDemanda>();
+        services.AddScoped<RegistrarVaga>();
+        services.AddScoped<IniciarEntrevistas>();
+        services.AddScoped<IniciarExames>();
+        services.AddScoped<FinalizarContratacao>();
         services.AddScoped<ConsultarDemandas>();
         services.AddScoped<ManterGerentesExecutivos>();
         services.AddScoped<ManterOrdensServico>();

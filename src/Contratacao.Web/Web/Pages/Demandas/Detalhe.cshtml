@@ -118,6 +118,49 @@
             }
         </section>
 
+        @if (d.Vaga is { } vaga)
+        {
+            <section class="cartao bloco">
+                <h2>Vaga</h2>
+                <dl class="lista-simples">
+                    <div><dt>Link na plataforma externa</dt><dd class="text-break"><a href="@vaga.LinkExterno" target="_blank" rel="noopener noreferrer">@vaga.LinkExterno <i class="bi bi-box-arrow-up-right"></i></a></dd></div>
+                    <div><dt>Registrada em</dt><dd>@Formatacao.DataHora(vaga.DataAbertura)</dd></div>
+                    <div><dt>Por</dt><dd>@Nome(nomes.Usuarios, vaga.UsuarioResponsavelId)</dd></div>
+                </dl>
+            </section>
+        }
+
+        <section class="cartao bloco">
+            <h2>Etapas e datas</h2>
+            <p class="ajuda">Data de conclusão gravada não muda (congelamento de datas); só o Admin, em caráter excepcional e com justificativa.</p>
+            <div class="table-responsive">
+                <table class="table tabela-cartao">
+                    <thead><tr><th>Etapa</th><th>Status</th><th>Início</th><th>Conclusão</th><th>Responsável</th></tr></thead>
+                    <tbody>
+                        @foreach (var passagem in d.Etapas.OrderBy(e => e.DataInicio).ThenBy(e => e.Etapa))
+                        {
+                            <tr>
+                                <td class="fw-semibold">@Formatacao.Etapa(passagem.Etapa)</td>
+                                <td><span class="selo-status @Formatacao.ClasseStatus(passagem.Status)">@Formatacao.Status(passagem.Status)</span></td>
+                                <td class="small text-nowrap">@Formatacao.DataHora(passagem.DataInicio)</td>
+                                <td class="small text-nowrap">
+                                    @if (passagem.DataConclusao is { } conclusao)
+                                    {
+                                        <i class="bi bi-lock-fill text-body-secondary" title="Data congelada"></i> @Formatacao.DataHora(conclusao)
+                                    }
+                                    else
+                                    {
+                                        <span class="text-body-secondary">Em curso</span>
+                                    }
+                                </td>
+                                <td class="small">@(passagem.UsuarioResponsavelId is { } r ? Nome(nomes.Usuarios, r) : "—")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
         <section class="cartao bloco">
             <h2>Anexos</h2>
             @if (Model.Detalhe.Anexos.Count == 0)
@@ -203,6 +246,40 @@
     </div>
 
     <div class="col-xl-4">
+        @if (acoes.Overlaps([AcaoDemanda.RegistrarVaga, AcaoDemanda.IniciarEntrevistas, AcaoDemanda.IniciarExames, AcaoDemanda.Finalizar]))
+        {
+            <section class="cartao bloco painel-acoes">
+                <h2>Processo SESI · próximo passo</h2>
+                @if (acoes.Contains(AcaoDemanda.RegistrarVaga))
+                {
+                    <form method="post" asp-page-handler="RegistrarVaga" asp-route-id="@d.Id">
+                        <label class="form-label" for="link-vaga">Link da vaga na plataforma externa</label>
+                        <input id="link-vaga" name="LinkVaga" type="url" maxlength="2048" class="form-control" placeholder="https://" value="@Model.LinkVaga" required />
+                        <button type="submit" class="btn btn-primary w-100 mt-2"><i class="bi bi-link-45deg"></i> Registrar vaga</button>
+                    </form>
+                    <p class="ajuda mt-2 mb-0">Com a vaga registrada, as entrevistas podem começar.</p>
+                }
+                @if (acoes.Contains(AcaoDemanda.IniciarEntrevistas))
+                {
+                    <form method="post" asp-page-handler="IniciarEntrevistas" asp-route-id="@d.Id" onsubmit="return confirm('Iniciar as entrevistas? A etapa Recrutamento será concluída e sua data não poderá ser alterada.')">
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-people"></i> Iniciar entrevistas</button>
+                    </form>
+                }
+                @if (acoes.Contains(AcaoDemanda.IniciarExames))
+                {
+                    <form method="post" asp-page-handler="IniciarExames" asp-route-id="@d.Id" onsubmit="return confirm('Iniciar os exames médicos? A etapa Entrevistas será concluída e sua data não poderá ser alterada.')">
+                        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-heart-pulse"></i> Iniciar exames médicos</button>
+                    </form>
+                }
+                @if (acoes.Contains(AcaoDemanda.Finalizar))
+                {
+                    <form method="post" asp-page-handler="Finalizar" asp-route-id="@d.Id" onsubmit="return confirm('Finalizar a contratação da demanda @d.Numero? O prazo de SLA será encerrado.')">
+                        <button type="submit" class="btn btn-success w-100"><i class="bi bi-check2-all"></i> Finalizar contratação</button>
+                    </form>
+                }
+            </section>
+        }
+
         @if (acoes.Overlaps([AcaoDemanda.Aprovar, AcaoDemanda.DevolverPeloGestor, AcaoDemanda.Aceitar, AcaoDemanda.DevolverPeloSesi]))
         {
             <section class="cartao bloco painel-acoes">

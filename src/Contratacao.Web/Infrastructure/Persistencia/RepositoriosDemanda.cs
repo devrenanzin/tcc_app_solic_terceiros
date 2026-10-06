@@ -182,7 +182,8 @@ internal sealed class CatalogosDemanda(ContratacaoDbContext contexto) : ICatalog
             .Where(id => id != Guid.Empty);
 
         var usuarios = new[] { demanda.UsuarioSolicitanteId }
-            .Concat(new[] { demanda.GestorId, demanda.ResponsavelSesiId }.OfType<Guid>())
+            .Concat(new[] { demanda.GestorId, demanda.ResponsavelSesiId, demanda.Vaga?.UsuarioResponsavelId }.OfType<Guid>())
+            .Concat(demanda.Etapas.Select(e => e.UsuarioResponsavelId).OfType<Guid>())
             .Concat(demanda.Historico.Select(h => h.UsuarioId))
             .Concat(demanda.Correcoes.Select(c => c.SolicitadoPorId))
             .Concat(alteracoes.Select(a => a.UsuarioId))
