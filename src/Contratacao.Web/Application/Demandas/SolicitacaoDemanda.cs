@@ -136,8 +136,8 @@ internal static class Formulario
         var preco = await catalogos.PrecoQqpAsync(conferidos.ItemQqpId, cancelamento)
             ?? throw new RegraNegocioException("O item QQP escolhido não existe ou está inativo.");
         var equipamentos = await catalogos.EquipamentosAsync(cancelamento);
-        var referencias = await catalogos.ReferenciasAsync(conferidos.CorredorId, conferidos.OrdemServicoId, preco, equipamentos, cancelamento)
-            ?? throw new RegraNegocioException("O corredor ou a OS escolhida não existe.");
+        var referencias = await catalogos.ReferenciasAsync(conferidos, preco, equipamentos, cancelamento)
+            ?? throw new RegraNegocioException("O corredor, a OS ou o gerente executivo escolhido não existe.");
 
         return (conferidos, referencias);
     }

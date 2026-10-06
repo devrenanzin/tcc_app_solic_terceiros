@@ -72,6 +72,7 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 54 | Farol da demanda cancelada (S7) | Cinza com o rótulo Cancelado (suposição) | X vermelho com o rótulo Cancelado; o restante da S7 confirmado: 45 dias corridos e dia limite em laranja | Cliente |
 | 55 | OS da carga inicial | Vazia | 01 a 10 no contrato Norte e 11 a 20 no contrato Sudeste | Cliente |
 | 56 | Valores do QQP | O arquivo tb\_qqp\_SESI.csv ia para o repositório com os valores reais | Os valores reais não vão para o GitHub: o repositório traz o arquivo com piso e preço alterados pelo cliente, e nada no código, nos testes ou nos documentos repete valores reais | Cliente |
+| 57 | Gerente executivo por corredor | Lista única de gerentes | Cada gerente atende um ou mais corredores (tabela GerenteExecutivoCorredor); o formulário mostra só os gerentes do corredor escolhido, e o sistema recusa gerente que não atende o corredor. Nomes reais não vão para o repositório: o Admin os cadastra pela tela | Cliente |
 | 47 | Custo na correção que muda quantidade ou equipamentos | Só a mudança no QQP recalculava (item 27) | Qualquer correção que mude o item QQP, a quantidade de vagas ou os equipamentos recalcula o custo inteiro com os valores atuais dos catálogos; sem essas mudanças, ficam os valores do envio | Cliente |
 
 ## 1–3. Objetivo e escopo
@@ -265,7 +266,7 @@ Obrigatório = campo preenchido em todos os registros analisados (confirmado pel
 | Identificação | Solicitante | Usuário logado | Sim | Preenchido pelo sistema |
 | Identificação | Área do solicitante | Texto | Não | Livre |
 | Identificação | Tipo de demanda | Lista | Sim | TipoDemanda: por enquanto só Nova contratação |
-| Identificação | Gerente executivo | Lista | Sim | GerenteExecutivo: gerente responsável pela área |
+| Identificação | Gerente executivo | Lista | Sim | GerenteExecutivo: só os gerentes que atendem o corredor escolhido (Cliente, item 57) |
 | Vaga | Localidade da vaga | Texto | Sim | Livre |
 | Vaga | Corredor | Lista | Sim | Corredor: 7 combinações de corredor e região (RN13) |
 | Vaga | Modelo de trabalho | Lista | Sim | Presencial, Híbrido ou Remoto |
@@ -538,7 +539,7 @@ Notação UML: cada classe tem nome, atributos e operações, com visibilidade p
 
 ### Modelo lógico
 
-O modelo lógico mostra 26 entidades (o físico tem 31 tabelas, contando as cinco listas do catálogo QQP); Demanda é o centro e todas as tabelas filhas apontam para ela sem exclusão em cascata. Notação de entidade-relacionamento: || = exatamente um, |o = zero ou um, o{ = zero ou muitos, |{ = um ou muitos.
+O modelo lógico mostra 27 entidades (o físico tem 32 tabelas, contando as cinco listas do catálogo QQP); Demanda é o centro e todas as tabelas filhas apontam para ela sem exclusão em cascata. Notação de entidade-relacionamento: || = exatamente um, |o = zero ou um, o{ = zero ou muitos, |{ = um ou muitos.
 
 ```mermaid
 erDiagram
@@ -572,6 +573,8 @@ erDiagram
   CONTRATO ||--o{ CORREDOR : "atende"
   CONTRATO ||--o{ ORDEM_SERVICO : "tem"
   ORDEM_SERVICO ||--o{ DEMANDA : "referencia"
+  GERENTE_EXECUTIVO ||--|{ GERENTE_EXECUTIVO_CORREDOR : "atende"
+  CORREDOR ||--o{ GERENTE_EXECUTIVO_CORREDOR : "atendido por"
   CONTRATADA ||--o{ CONTRATO : "detem"
   CONTRATO |o--o{ USUARIO : "vincula SESI"
   USUARIO ||--o{ GESTOR_CONTRATO : "gestor"
@@ -801,6 +804,10 @@ erDiagram
   GESTOR_CONTRATO {
     guid GestorId PK
     guid ContratoId PK
+  }
+  GERENTE_EXECUTIVO_CORREDOR {
+    guid GerenteExecutivoId PK
+    guid CorredorId PK
   }
   ORDEM_SERVICO {
     guid Id PK
@@ -1146,6 +1153,11 @@ CREATE TABLE Contrato (
   Ativo bit NOT NULL,
   CONSTRAINT CK_Contrato_Numero CHECK (Numero LIKE '59%' AND Numero NOT LIKE '%[^0-9]%')
 );
+CREATE TABLE GerenteExecutivoCorredor (
+  GerenteExecutivoId uniqueidentifier NOT NULL CONSTRAINT FK_GerenteCorredor_Gerente REFERENCES GerenteExecutivo(Id),
+  CorredorId uniqueidentifier NOT NULL CONSTRAINT FK_GerenteCorredor_Corredor REFERENCES Corredor(Id),
+  CONSTRAINT PK_GerenteExecutivoCorredor PRIMARY KEY (GerenteExecutivoId, CorredorId)
+);
 CREATE TABLE OrdemServico (
   Id uniqueidentifier NOT NULL CONSTRAINT PK_OrdemServico PRIMARY KEY,
   ContratoId uniqueidentifier NOT NULL CONSTRAINT FK_OrdemServico_Contrato REFERENCES Contrato(Id),
@@ -1176,7 +1188,7 @@ O CNPJ da Contratada é opcional (Cliente); quando informado, não pode se repet
 | Contrato | 5900125082 (Norte) e 5900118506 (Sudeste), ambos da Contratada SESI | Completo (cliente) |
 | Corredor | As 7 combinações da RN13, cada uma com região e contrato | Completo (cliente) |
 | ItemEquipamento | Notebook, Segunda tela e Celular, com os valores da RN12 | Completo (cliente) |
-| GerenteExecutivo | Vazio na seed; o Admin cadastra pela tela (são nomes de pessoas) | Completo |
+| GerenteExecutivo | Vazio na seed; o Admin cadastra pela tela, com os corredores de cada um (são nomes de pessoas e não vão para o repositório) | Completo |
 | OrdemServico | 01 a 10 no contrato 5900125082 (Norte) e 11 a 20 no 5900118506 (Sudeste); o Admin mantém pela tela (Cliente) | Completo (cliente) |
 
 ## 24. Transições permitidas

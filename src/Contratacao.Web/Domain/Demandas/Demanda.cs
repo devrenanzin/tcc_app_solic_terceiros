@@ -493,8 +493,8 @@ internal sealed class Demanda
 
     /// <summary>
     /// Os catálogos lidos correspondem aos campos escolhidos: o corredor é o do formulário e está ativo,
-    /// o contrato é o desse corredor (RN13) e está ativo, a OS é desse contrato e está ativa, e o preço é o do item
-    /// QQP escolhido.
+    /// o contrato é o desse corredor (RN13) e está ativo, a OS é desse contrato e está ativa, o gerente executivo
+    /// está ativo e atende o corredor (Cliente), e o preço é o do item QQP escolhido.
     /// </summary>
     private static void ExigirReferencias(DadosSolicitacao dados, ReferenciasSolicitacao referencias)
     {
@@ -503,6 +503,8 @@ internal sealed class Demanda
             "O corredor escolhido não tem contrato ativo.");
         Exigir(referencias.Os.Id == dados.OrdemServicoId && referencias.Os.Ativo, "Escolha uma OS ativa.");
         Exigir(referencias.Os.ContratoId == referencias.Contrato.Id, "A OS escolhida não é do contrato do corredor.");
+        Exigir(referencias.Gerente.Id == dados.GerenteExecutivoId && referencias.Gerente.Ativo, "Escolha um gerente executivo ativo.");
+        Exigir(referencias.Gerente.AtendeCorredor(referencias.Corredor.Id), "O gerente executivo escolhido não atende o corredor.");
         Exigir(referencias.Qqp.ItemQqpId == dados.ItemQqpId, "O preço não corresponde ao item QQP escolhido.");
     }
 

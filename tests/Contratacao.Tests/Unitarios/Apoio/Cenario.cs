@@ -1,3 +1,4 @@
+using Contratacao.Web.Domain.Catalogos;
 using Contratacao.Web.Domain.Comum;
 using Contratacao.Web.Domain.Contratos;
 using Contratacao.Web.Domain.Demandas;
@@ -20,6 +21,8 @@ internal sealed class Cenario
     internal static readonly Corredor CorredorNorte = Corredor.Criar(Guid.Parse("00000000-0000-0000-0000-00000000b001"), "Norte", RegiaoNorte, ContratoNorte.Id);
     internal static readonly Corredor CorredorSudeste = Corredor.Criar(Guid.Parse("00000000-0000-0000-0000-00000000b002"), "Sudeste", RegiaoSudeste, ContratoSudeste.Id);
     internal static readonly OrdemServico OsNorte = OrdemServico.Criar(Guid.Parse("00000000-0000-0000-0000-00000000a501"), ContratoNorte.Id, "15");
+    internal static readonly GerenteExecutivo Gerente = GerenteExecutivo.Criar(
+        Guid.Parse("00000000-0000-0000-0000-000000000a02"), "Gerência Fictícia", CorredorNorte.Id, CorredorSudeste.Id);
     internal static readonly OrdemServico OsSudeste = OrdemServico.Criar(Guid.Parse("00000000-0000-0000-0000-00000000a502"), ContratoSudeste.Id, "31");
 
     // Valores confirmados pelo cliente (RN12) e dois itens QQP fictícios.
@@ -53,7 +56,7 @@ internal sealed class Cenario
     {
         AreaSolicitante = "Engenharia de Manutenção",
         TipoDemandaId = Guid.Parse("00000000-0000-0000-0000-000000000a01"),
-        GerenteExecutivoId = Guid.Parse("00000000-0000-0000-0000-000000000a02"),
+        GerenteExecutivoId = Gerente.Id,
         LocalidadeVaga = "Vitória",
         CorredorId = CorredorNorte.Id,
         ModeloTrabalhoId = Guid.Parse("00000000-0000-0000-0000-000000000a03"),
@@ -73,8 +76,8 @@ internal sealed class Cenario
 
     internal static ReferenciasSolicitacao Referencias(Corredor corredor, PrecoQqp? item = null, ValoresEquipamentos? equipamentos = null)
         => corredor == CorredorSudeste
-            ? new(corredor, ContratoSudeste, OsSudeste, item ?? ItemAnalista, equipamentos ?? Equipamentos)
-            : new(corredor, ContratoNorte, OsNorte, item ?? ItemAnalista, equipamentos ?? Equipamentos);
+            ? new(corredor, ContratoSudeste, OsSudeste, Gerente, item ?? ItemAnalista, equipamentos ?? Equipamentos)
+            : new(corredor, ContratoNorte, OsNorte, Gerente, item ?? ItemAnalista, equipamentos ?? Equipamentos);
 
     internal Demanda Enviar(string numero, Ator? solicitante = null)
         => Demanda.Enviar(numero, solicitante ?? Solicitante, Dados(), Referencias(CorredorNorte), true, Relogio);

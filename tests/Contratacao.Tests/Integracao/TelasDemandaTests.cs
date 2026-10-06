@@ -148,17 +148,29 @@ public sealed partial class TelasDemandaTests(BancoFixture banco) : IClassFixtur
         await admin.EntrarAsync(BancoFixture.Admin.Email!.Trim().ToLowerInvariant(), BancoFixture.Admin.Senha!);
         var nome = $"Gerência {Guid.NewGuid():N}";
 
-        using var cadastro = await admin.EnviarAsync("/Admin/GerentesExecutivos", ("Nome", nome));
+        using var semCorredor = await admin.EnviarAsync("/Admin/GerentesExecutivos", ("Nome", nome));
+        Assert.Contains("Escolha ao menos um corredor", await semCorredor.Content.ReadAsStringAsync(Cancelamento), StringComparison.Ordinal);
+
+        using var cadastro = await admin.EnviarAsync("/Admin/GerentesExecutivos",
+            ("Nome", nome), ("Corredores", IdsFixos.CorredorSul.ToString()), ("Corredores", IdsFixos.CorredorPelotizacaoNorte.ToString()));
         Assert.Equal(HttpStatusCode.Redirect, cadastro.StatusCode);
         Assert.Contains(nome, await admin.HtmlAsync("/Admin/GerentesExecutivos"), StringComparison.Ordinal);
 
         await using var contexto = banco.NovoContexto();
-        var gerente = await contexto.GerentesExecutivos.SingleAsync(g => g.Nome == nome, Cancelamento);
+        var gerente = await contexto.GerentesExecutivos.Include(g => g.Corredores).SingleAsync(g => g.Nome == nome, Cancelamento);
+        Assert.Equal([IdsFixos.CorredorPelotizacaoNorte, IdsFixos.CorredorSul], gerente.Corredores.Select(c => c.CorredorId).Order());
+
+        using var troca = await admin.EnviarDeAsync("/Admin/GerentesExecutivos", $"/Admin/GerentesExecutivos?handler=Corredores&id={gerente.Id}",
+            ("Corredores", IdsFixos.CorredorNorte.ToString()));
+        Assert.Equal(HttpStatusCode.Redirect, troca.StatusCode);
         using var desativacao = await admin.EnviarDeAsync("/Admin/GerentesExecutivos", "/Admin/GerentesExecutivos?handler=Situacao", ("id", gerente.Id.ToString()), ("ativo", "false"));
         Assert.Equal(HttpStatusCode.Redirect, desativacao.StatusCode);
 
         await using var releitura = banco.NovoContexto();
-        Assert.False((await releitura.GerentesExecutivos.SingleAsync(g => g.Id == gerente.Id, Cancelamento)).Ativo);
+        var relido = await releitura.GerentesExecutivos.Include(g => g.Corredores).SingleAsync(g => g.Id == gerente.Id, Cancelamento);
+        Assert.False(relido.Ativo);
+        Assert.Equal(IdsFixos.CorredorNorte, Assert.Single(relido.Corredores).CorredorId);
+        Assert.True(await releitura.LogsAuditoria.AnyAsync(l => l.EntidadeId == gerente.Id && l.Acao == "Corredores", Cancelamento));
         Assert.True(await releitura.LogsAuditoria.AnyAsync(l => l.EntidadeId == gerente.Id && l.Acao == "Desativacao", Cancelamento));
     }
 

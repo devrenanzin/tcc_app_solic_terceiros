@@ -74,6 +74,21 @@ internal sealed class ConfiguracaoGerenteExecutivo : IEntityTypeConfiguration<Ge
         b.HasKey(g => g.Id);
         b.Property(g => g.Nome).HasMaxLength(150).IsRequired();
         b.Property(g => g.Ativo);
+
+        // Corredores atendidos (Cliente, revisão de 06/10/2026), editados direto pelo Admin.
+        b.HasMany(g => g.Corredores).WithOne().HasForeignKey("GerenteExecutivoId").HasConstraintName("FK_GerenteCorredor_Gerente");
+        b.Navigation(g => g.Corredores).HasField("_corredores").UsePropertyAccessMode(PropertyAccessMode.Field);
+    }
+}
+
+internal sealed class ConfiguracaoGerenteExecutivoCorredor : IEntityTypeConfiguration<GerenteExecutivoCorredor>
+{
+    public void Configure(EntityTypeBuilder<GerenteExecutivoCorredor> b)
+    {
+        b.ToTable("GerenteExecutivoCorredor");
+        b.Property(g => g.CorredorId);
+        b.HasKey("GerenteExecutivoId", nameof(GerenteExecutivoCorredor.CorredorId)).HasName("PK_GerenteExecutivoCorredor");
+        b.HasOne<Contratacao.Web.Domain.Contratos.Corredor>().WithMany().HasForeignKey(g => g.CorredorId).HasConstraintName("FK_GerenteCorredor_Corredor");
     }
 }
 

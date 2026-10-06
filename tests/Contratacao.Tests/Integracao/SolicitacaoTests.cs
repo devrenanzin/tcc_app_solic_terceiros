@@ -71,16 +71,15 @@ public sealed class SolicitacaoTests(BancoFixture banco) : IClassFixture<BancoFi
     public async Task Envio_recusa_gerente_executivo_inexistente_e_rac_desconhecida()
     {
         var solicitante = await banco.InserirUsuarioAsync(Perfil.Solicitante);
-        var dados = await banco.DadosAsync() with
-        {
-            GerenteExecutivoId = Guid.NewGuid(),
-            Racs = new HashSet<Guid> { Guid.NewGuid() },
-        };
+        var dados = await banco.DadosAsync();
 
-        var erro = await Assert.ThrowsAsync<RegraNegocioException>(() => EnviarAsync(solicitante, dados, Vp2(), []));
+        var semGerente = await Assert.ThrowsAsync<RegraNegocioException>(
+            () => EnviarAsync(solicitante, dados with { GerenteExecutivoId = Guid.NewGuid() }, Vp2(), []));
+        var semRac = await Assert.ThrowsAsync<RegraNegocioException>(
+            () => EnviarAsync(solicitante, dados with { Racs = new HashSet<Guid> { Guid.NewGuid() } }, Vp2(), []));
 
-        Assert.Contains("gerente executivo", erro.Message, StringComparison.Ordinal);
-        Assert.Contains("RAC", erro.Message, StringComparison.Ordinal);
+        Assert.Contains("gerente executivo", semGerente.Message, StringComparison.Ordinal);
+        Assert.Contains("RAC", semRac.Message, StringComparison.Ordinal);
     }
 
     [Fact]

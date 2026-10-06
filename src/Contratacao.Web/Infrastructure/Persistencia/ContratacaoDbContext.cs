@@ -60,5 +60,8 @@ internal sealed class ContratacaoDbContext(DbContextOptions<ContratacaoDbContext
         // mudança no HistoricoAlteracao. ClientCascade deixa o EF remover essa linha; no banco a chave continua
         // ON DELETE NO ACTION, e a Demanda nunca é excluída.
         modelBuilder.Entity<Demanda>().HasMany(d => d.Racs).WithOne().OnDelete(DeleteBehavior.ClientCascade);
+
+        // Mesma ideia para os corredores do gerente executivo, editados pelo Admin; a mudança vai para o LogAuditoria.
+        modelBuilder.Entity<GerenteExecutivo>().HasMany(g => g.Corredores).WithOne().OnDelete(DeleteBehavior.ClientCascade);
     }
 }

@@ -159,7 +159,7 @@ public sealed class BancoFixture : IAsyncLifetime
         var catalogos = new CatalogosDemanda(contexto);
         var preco = await catalogos.PrecoQqpAsync(dados.ItemQqpId, CancellationToken.None);
         var equipamentos = await catalogos.EquipamentosAsync(CancellationToken.None);
-        return (await catalogos.ReferenciasAsync(dados.CorredorId, dados.OrdemServicoId, preco!, equipamentos, CancellationToken.None))!;
+        return (await catalogos.ReferenciasAsync(dados, preco!, equipamentos, CancellationToken.None))!;
     }
 
     public async ValueTask InitializeAsync()
@@ -169,6 +169,8 @@ public sealed class BancoFixture : IAsyncLifetime
         await NovaCarga(contexto).ExecutarAsync(CancellationToken.None);
         await contexto.Database.ExecuteSqlAsync(
             $"INSERT INTO GerenteExecutivo (Id, Nome, Ativo) VALUES ({GerenteExecutivoId}, {"Gerência Fictícia de Testes"}, 1)");
+        await contexto.Database.ExecuteSqlAsync(
+            $"INSERT INTO GerenteExecutivoCorredor (GerenteExecutivoId, CorredorId) SELECT {GerenteExecutivoId}, Id FROM Corredor");
 
     }
 

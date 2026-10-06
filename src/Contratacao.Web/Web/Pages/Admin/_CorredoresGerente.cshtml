@@ -1,0 +1,18 @@
+@model Contratacao.Web.Web.Pages.Shared.EscolhaCorredores
+@* Corredores agrupados por região, para marcar os que o gerente atende. *@
+<div class="lista-corredores">
+    @foreach (var grupo in Model.Corredores.GroupBy(c => c.Regiao))
+    {
+        <div>
+            <div class="small fw-semibold text-body-secondary mb-1">@grupo.Key.Replace("QQP ", string.Empty, StringComparison.Ordinal)</div>
+            @foreach (var corredor in grupo)
+            {
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="Corredores" value="@corredor.Id" id="@Model.Prefixo-@corredor.Id"
+                           checked="@Model.Marcados.Contains(corredor.Id)" />
+                    <label class="form-check-label" for="@Model.Prefixo-@corredor.Id">@corredor.Nome</label>
+                </div>
+            }
+        </div>
+    }
+</div>

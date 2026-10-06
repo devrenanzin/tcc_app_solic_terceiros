@@ -1,3 +1,4 @@
+using Contratacao.Web.Domain.Catalogos;
 using Contratacao.Web.Domain.Contratos;
 
 namespace Contratacao.Web.Domain.Demandas;
@@ -10,10 +11,11 @@ internal sealed record ValoresEquipamentos(decimal Notebook, decimal SegundaTela
 
 /// <summary>
 /// O que o envio e a correção leem dos catálogos para os campos escolhidos: o corredor e o seu contrato
-/// (RN13), a OS escolhida, o preço do item QQP e os valores dos equipamentos (RN12), todos com os valores atuais.
+/// (RN13), a OS e o gerente executivo escolhidos, o preço do item QQP e os valores dos equipamentos (RN12), todos
+/// com os valores atuais.
 /// </summary>
 internal sealed record ReferenciasSolicitacao(
-    Corredor Corredor, Contrato Contrato, OrdemServico Os, PrecoQqp Qqp, ValoresEquipamentos Equipamentos);
+    Corredor Corredor, Contrato Contrato, OrdemServico Os, GerenteExecutivo Gerente, PrecoQqp Qqp, ValoresEquipamentos Equipamentos);
 
 /// <summary>RN12 — Custo total mensal = Quantidade × (Preço unitário QQP + Equipamentos por pessoa).</summary>
 internal static class CustoDemanda

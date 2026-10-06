@@ -13,12 +13,39 @@ internal sealed class ManterGerentesExecutivos(ICatalogosDemanda catalogos, IAud
 {
     internal Task<IReadOnlyList<GerenteExecutivo>> ListarAsync(CancellationToken cancelamento) => catalogos.GerentesExecutivosAsync(cancelamento);
 
-    internal async Task CadastrarAsync(Ator admin, string nome, CancellationToken cancelamento)
+    /// <summary>Cadastra o gerente com os corredores que ele atende (Cliente, revisão de 06/10/2026).</summary>
+    internal async Task CadastrarAsync(Ator admin, string nome, IReadOnlyCollection<Guid> corredores, CancellationToken cancelamento)
     {
-        var gerente = GerenteExecutivo.Cadastrar(admin, nome);
+        var nomes = await NomesCorredoresAsync(corredores, cancelamento);
+        var gerente = GerenteExecutivo.Cadastrar(admin, nome, corredores);
         catalogos.Adicionar(gerente);
-        auditoria.Registrar(LogAuditoria.De(admin, nameof(GerenteExecutivo), gerente.Id, "Cadastro", null, gerente.Nome, null, relogio.AgoraUtc));
+        auditoria.Registrar(LogAuditoria.De(admin, nameof(GerenteExecutivo), gerente.Id, "Cadastro", null,
+            $"{gerente.Nome}; corredores: {nomes}", null, relogio.AgoraUtc));
         await unidade.SalvarAsync(cancelamento);
+    }
+
+    internal async Task DefinirCorredoresAsync(Ator admin, Guid id, IReadOnlyCollection<Guid> corredores, CancellationToken cancelamento)
+    {
+        var gerente = await catalogos.GerenteExecutivoAsync(id, cancelamento)
+            ?? throw new RegraNegocioException("Gerente executivo não encontrado.");
+        var anteriores = await NomesCorredoresAsync([.. gerente.Corredores.Select(c => c.CorredorId)], cancelamento, exigirAtivos: false);
+        var novos = await NomesCorredoresAsync(corredores, cancelamento);
+
+        gerente.DefinirCorredores(admin, corredores);
+        auditoria.Registrar(LogAuditoria.De(admin, nameof(GerenteExecutivo), gerente.Id, "Corredores", anteriores, novos, null, relogio.AgoraUtc));
+        await unidade.SalvarAsync(cancelamento);
+    }
+
+    /// <summary>Nomes dos corredores escolhidos; recusa corredor inexistente ou inativo nos corredores novos.</summary>
+    private async Task<string> NomesCorredoresAsync(IReadOnlyCollection<Guid> ids, CancellationToken cancelamento, bool exigirAtivos = true)
+    {
+        var corredores = (await catalogos.FormularioAsync(cancelamento)).Corredores;
+        if (exigirAtivos && ids.Any(id => corredores.All(c => c.Id != id)))
+        {
+            throw new RegraNegocioException("Escolha só corredores ativos.");
+        }
+
+        return string.Join(", ", corredores.Where(c => ids.Contains(c.Id)).Select(c => $"{c.Nome} ({c.Regiao})"));
     }
 
     internal async Task AlterarSituacaoAsync(Ator admin, Guid id, bool ativo, CancellationToken cancelamento)

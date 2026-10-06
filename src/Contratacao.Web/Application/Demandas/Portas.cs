@@ -37,16 +37,17 @@ internal interface ICatalogosDemanda
 
     Task<ValoresEquipamentos> EquipamentosAsync(CancellationToken cancelamento);
 
-    /// <summary>Corredor e o seu contrato (RN13) e a OS escolhida, como estão hoje; nulo se algum não existir.</summary>
+    /// <summary>Corredor e o seu contrato (RN13), a OS e o gerente escolhidos, como estão hoje; nulo se algum não existir.</summary>
     Task<ReferenciasSolicitacao?> ReferenciasAsync(
-        Guid corredorId, Guid ordemServicoId, PrecoQqp qqp, ValoresEquipamentos equipamentos, CancellationToken cancelamento);
+        DadosSolicitacao dados, PrecoQqp qqp, ValoresEquipamentos equipamentos, CancellationToken cancelamento);
 
-    /// <summary>Mensagens para os catálogos escolhidos que não existem ou estão inativos (tipo, gerente, modelo, RACs).</summary>
+    /// <summary>Mensagens para os catálogos escolhidos que não existem ou estão inativos (tipo, modelo, RACs).</summary>
     Task<IReadOnlyList<string>> ConferirEscolhasAsync(DadosSolicitacao dados, CancellationToken cancelamento);
 
     /// <summary>Nomes legíveis dos catálogos e usuários citados pela demanda, para a tela.</summary>
     Task<DescricoesDemanda> DescreverAsync(Demanda demanda, CancellationToken cancelamento);
 
+    /// <summary>Todos os gerentes, com os corredores que atendem.</summary>
     Task<IReadOnlyList<GerenteExecutivo>> GerentesExecutivosAsync(CancellationToken cancelamento);
 
     Task<GerenteExecutivo?> GerenteExecutivoAsync(Guid id, CancellationToken cancelamento);
@@ -96,11 +97,13 @@ internal sealed record OpcaoCorredor(Guid Id, string Nome, string Regiao, Guid C
 
 internal sealed record OpcaoRac(Guid Id, string Codigo, string Nome);
 
+internal sealed record OpcaoGerente(Guid Id, string Nome, IReadOnlyList<Guid> Corredores);
+
 internal sealed record OpcaoOs(Guid Id, string Numero, Guid ContratoId, string Contrato, bool Ativo);
 
 internal sealed record CatalogosFormulario(
     IReadOnlyList<Opcao> TiposDemanda,
-    IReadOnlyList<Opcao> GerentesExecutivos,
+    IReadOnlyList<OpcaoGerente> GerentesExecutivos,
     IReadOnlyList<OpcaoCorredor> Corredores,
     IReadOnlyList<Opcao> ModelosTrabalho,
     IReadOnlyList<OpcaoRac> Racs,

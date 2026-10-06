@@ -132,24 +132,36 @@
         alvo.textContent = contrato ?? "Escolha o corredor";
         alvo.classList.toggle("preenchido", Boolean(contrato));
 
-        // A OS pertence a um contrato (Cliente): só as do contrato do corredor ficam disponíveis.
-        const listaOs = form.querySelector("[data-os-do-contrato]");
+        // A OS pertence a um contrato e o gerente executivo atende corredores (Cliente): só ficam disponíveis
+        // as OS do contrato do corredor e os gerentes do corredor.
         const contratoId = escolhido?.dataset.contratoId;
+        const disponiveisOs = filtrar(form.querySelector("[data-os-do-contrato]"), (o) => o.dataset.contratoId === contratoId, Boolean(contratoId));
+        form.querySelector("[data-sem-os]").hidden = !contratoId || disponiveisOs > 0;
+
+        const corredorId = corredor.value;
+        const disponiveisGerentes = filtrar(form.querySelector("[data-gerente-do-corredor]"),
+            (o) => o.dataset.corredores.split(" ").includes(corredorId), Boolean(corredorId));
+        form.querySelector("[data-escolha-corredor]").hidden = Boolean(corredorId);
+        form.querySelector("[data-sem-gerente]").hidden = !corredorId || disponiveisGerentes > 0;
+    }
+
+    /** Esconde as opções que não valem; limpa a escolha que deixou de valer. Devolve quantas valem. */
+    function filtrar(lista, vale, habilitada) {
         let disponiveis = 0;
-        for (const opcao of listaOs.options) {
+        for (const opcao of lista.options) {
             if (!opcao.value) {
                 continue;
             }
-            const doContrato = opcao.dataset.contratoId === contratoId;
-            opcao.hidden = !doContrato;
-            opcao.disabled = !doContrato;
-            disponiveis += doContrato ? 1 : 0;
+            const ok = habilitada && vale(opcao);
+            opcao.hidden = !ok;
+            opcao.disabled = !ok;
+            disponiveis += ok ? 1 : 0;
         }
-        if (listaOs.selectedOptions[0]?.disabled) {
-            listaOs.value = "";
+        if (lista.selectedOptions[0]?.disabled) {
+            lista.value = "";
         }
-        listaOs.disabled = !contratoId;
-        form.querySelector("[data-sem-os]").hidden = !contratoId || disponiveis > 0;
+        lista.disabled = !habilitada;
+        return disponiveis;
     }
 
     form.addEventListener("change", atualizarCondicionais);

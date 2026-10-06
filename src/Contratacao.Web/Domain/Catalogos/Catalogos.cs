@@ -16,11 +16,14 @@ internal sealed class TipoDemanda
 
 /// <summary>
 /// Gerente responsável pela área; vazio na carga inicial (são nomes de pessoas) e cadastrado pelo Admin
-/// (seção 23). Não é excluído: o desativado sai da lista do formulário e continua nas demandas antigas.
+/// (seção 23). Atende um ou mais corredores, e o formulário só o oferece para esses corredores (Cliente,
+/// revisão de 06/10/2026). Não é excluído: o desativado sai da lista do formulário e continua nas demandas antigas.
 /// </summary>
 internal sealed class GerenteExecutivo
 {
     private const int TamanhoMaximoNome = 150;
+
+    private readonly List<GerenteExecutivoCorredor> _corredores = [];
 
     private GerenteExecutivo() { } // EF Core
 
@@ -28,7 +31,9 @@ internal sealed class GerenteExecutivo
     internal string Nome { get; private set; } = string.Empty;
     internal bool Ativo { get; private set; }
 
-    internal static GerenteExecutivo Cadastrar(Ator admin, string nome)
+    internal IReadOnlyList<GerenteExecutivoCorredor> Corredores => _corredores;
+
+    internal static GerenteExecutivo Cadastrar(Ator admin, string nome, IReadOnlyCollection<Guid> corredores)
     {
         ExigirAdmin(admin);
         var valor = nome?.Trim() ?? string.Empty;
@@ -37,7 +42,33 @@ internal sealed class GerenteExecutivo
             throw new RegraNegocioException($"O nome é obrigatório e tem no máximo {TamanhoMaximoNome} caracteres.");
         }
 
-        return new GerenteExecutivo { Nome = valor, Ativo = true };
+        var gerente = new GerenteExecutivo { Nome = valor, Ativo = true };
+        gerente.DefinirCorredores(admin, corredores);
+        return gerente;
+    }
+
+    /// <summary>Para os testes do domínio; os gerentes reais são cadastrados pelo Admin.</summary>
+    internal static GerenteExecutivo Criar(Guid id, string nome, params Guid[] corredores)
+    {
+        var gerente = new GerenteExecutivo { Id = id, Nome = nome, Ativo = true };
+        gerente._corredores.AddRange(corredores.Select(c => new GerenteExecutivoCorredor(c)));
+        return gerente;
+    }
+
+    internal bool AtendeCorredor(Guid corredorId) => _corredores.Any(c => c.CorredorId == corredorId);
+
+    /// <summary>Troca os corredores atendidos; ao menos um, senão o gerente nunca aparece no formulário.</summary>
+    internal void DefinirCorredores(Ator admin, IReadOnlyCollection<Guid> corredores)
+    {
+        ExigirAdmin(admin);
+        var novos = corredores.Where(c => c != Guid.Empty).ToHashSet();
+        if (novos.Count == 0)
+        {
+            throw new RegraNegocioException("Escolha ao menos um corredor para o gerente executivo.");
+        }
+
+        _corredores.RemoveAll(c => !novos.Contains(c.CorredorId));
+        _corredores.AddRange(novos.Where(id => !AtendeCorredor(id)).Select(id => new GerenteExecutivoCorredor(id)));
     }
 
     internal void AlterarSituacao(Ator admin, bool ativo)
@@ -59,6 +90,16 @@ internal sealed class GerenteExecutivo
             throw new RegraNegocioException("Só o Admin mantém os gerentes executivos.");
         }
     }
+}
+
+/// <summary>Um corredor atendido por um gerente executivo (tabela GerenteExecutivoCorredor).</summary>
+internal sealed class GerenteExecutivoCorredor
+{
+    private GerenteExecutivoCorredor() { } // EF Core
+
+    internal GerenteExecutivoCorredor(Guid corredorId) => CorredorId = corredorId;
+
+    internal Guid CorredorId { get; private set; }
 }
 
 internal sealed class ModeloTrabalho

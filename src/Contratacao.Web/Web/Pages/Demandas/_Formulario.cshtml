@@ -27,17 +27,16 @@
         </div>
         <div class="col-md-6">
             <label class="form-label" for="gerente">Gerente executivo</label>
-            <select id="gerente" name="Entrada.GerenteExecutivoId" class="form-select" required>
+            @* Só os gerentes do corredor escolhido ficam visíveis (formulario-demanda.js); o domínio confere. *@
+            <select id="gerente" name="Entrada.GerenteExecutivoId" class="form-select" required data-gerente-do-corredor>
                 <option value="">Selecione</option>
                 @foreach (var gerente in c.GerentesExecutivos)
                 {
-                    <option value="@gerente.Id" selected="@(e.GerenteExecutivoId == gerente.Id)">@gerente.Nome</option>
+                    <option value="@gerente.Id" data-corredores="@string.Join(' ', gerente.Corredores)" selected="@(e.GerenteExecutivoId == gerente.Id)">@gerente.Nome</option>
                 }
             </select>
-            @if (c.GerentesExecutivos.Count == 0)
-            {
-                <div class="ajuda text-danger mt-1"><i class="bi bi-exclamation-circle"></i> Nenhum gerente executivo cadastrado. Peça ao Admin para cadastrar.</div>
-            }
+            <div class="ajuda mt-1" data-escolha-corredor>Escolha o corredor (em Vaga) para ver os gerentes dele.</div>
+            <div class="ajuda text-danger mt-1" data-sem-gerente hidden><i class="bi bi-exclamation-circle"></i> Nenhum gerente atende este corredor. Peça ao Admin.</div>
         </div>
     </div>
 </section>

@@ -1,4 +1,5 @@
 using Contratacao.Tests.Unitarios.Apoio;
+using Contratacao.Web.Domain.Catalogos;
 using Contratacao.Web.Domain.Comum;
 using Contratacao.Web.Domain.Contratos;
 using Contratacao.Web.Domain.Demandas;
@@ -59,7 +60,7 @@ public sealed class EnvioECustoTests
     public void Contrato_vem_do_corredor_e_nao_pode_ser_outro()
     {
         var corredorNorteNoContratoErrado = new ReferenciasSolicitacao(
-            Cenario.CorredorNorte, Cenario.ContratoSudeste, Cenario.OsSudeste, Cenario.ItemAnalista, Cenario.Equipamentos);
+            Cenario.CorredorNorte, Cenario.ContratoSudeste, Cenario.OsSudeste, Cenario.Gerente, Cenario.ItemAnalista, Cenario.Equipamentos);
 
         Assert.Throws<RegraNegocioException>(() => Demanda.Enviar(
             Cenario.Numero, _c.Solicitante, Cenario.Dados(), corredorNorteNoContratoErrado, true, _c.Relogio));
@@ -77,6 +78,23 @@ public sealed class EnvioECustoTests
         var inativa = OrdemServico.Criar(Guid.NewGuid(), Cenario.ContratoNorte.Id, "99", ativo: false);
         Assert.Throws<RegraNegocioException>(() => Demanda.Enviar(Cenario.Numero, _c.Solicitante,
             Cenario.Dados() with { OrdemServicoId = inativa.Id }, Cenario.Referencias(Cenario.CorredorNorte) with { Os = inativa }, true, _c.Relogio));
+    }
+
+    [Fact]
+    public void Gerente_executivo_precisa_atender_o_corredor_e_estar_ativo()
+    {
+        // Cliente: cada gerente atende seus corredores; o formulário filtra e o domínio confere.
+        var soDoSudeste = GerenteExecutivo.Criar(Guid.NewGuid(), "Gerência do Sudeste", Cenario.CorredorSudeste.Id);
+        var erro = Assert.Throws<RegraNegocioException>(() => Demanda.Enviar(Cenario.Numero, _c.Solicitante,
+            Cenario.Dados() with { GerenteExecutivoId = soDoSudeste.Id },
+            Cenario.Referencias(Cenario.CorredorNorte) with { Gerente = soDoSudeste }, true, _c.Relogio));
+        Assert.Contains("não atende o corredor", erro.Message, StringComparison.Ordinal);
+
+        var inativo = GerenteExecutivo.Criar(Guid.NewGuid(), "Gerência Antiga", Cenario.CorredorNorte.Id);
+        inativo.AlterarSituacao(_c.Admin, false);
+        Assert.Throws<RegraNegocioException>(() => Demanda.Enviar(Cenario.Numero, _c.Solicitante,
+            Cenario.Dados() with { GerenteExecutivoId = inativo.Id },
+            Cenario.Referencias(Cenario.CorredorNorte) with { Gerente = inativo }, true, _c.Relogio));
     }
 
     [Fact]

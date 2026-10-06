@@ -87,8 +87,9 @@ internal sealed class CatalogosDemanda(ContratacaoDbContext contexto) : ICatalog
     {
         var tipos = await contexto.TiposDemanda.AsNoTracking().Where(t => t.Ativo).OrderBy(t => t.Nome)
             .Select(t => new Opcao(t.Id, t.Nome)).ToListAsync(cancelamento);
-        var gerentes = await contexto.GerentesExecutivos.AsNoTracking().Where(g => g.Ativo).OrderBy(g => g.Nome)
-            .Select(g => new Opcao(g.Id, g.Nome)).ToListAsync(cancelamento);
+        var gerentes = (await contexto.GerentesExecutivos.AsNoTracking().Include(g => g.Corredores).Where(g => g.Ativo).OrderBy(g => g.Nome)
+            .ToListAsync(cancelamento))
+            .Select(g => new OpcaoGerente(g.Id, g.Nome, [.. g.Corredores.Select(c => c.CorredorId)])).ToList();
         var corredores = await (
             from c in contexto.Corredores.AsNoTracking()
             join r in contexto.QqpRegioes on c.RegiaoId equals r.Id
@@ -134,17 +135,19 @@ internal sealed class CatalogosDemanda(ContratacaoDbContext contexto) : ICatalog
     }
 
     public async Task<ReferenciasSolicitacao?> ReferenciasAsync(
-        Guid corredorId, Guid ordemServicoId, PrecoQqp qqp, ValoresEquipamentos equipamentos, CancellationToken cancelamento)
+        DadosSolicitacao dados, PrecoQqp qqp, ValoresEquipamentos equipamentos, CancellationToken cancelamento)
     {
-        var corredor = await contexto.Corredores.AsNoTracking().SingleOrDefaultAsync(c => c.Id == corredorId, cancelamento);
-        var os = await contexto.OrdensServico.AsNoTracking().SingleOrDefaultAsync(o => o.Id == ordemServicoId, cancelamento);
-        if (corredor is null || os is null)
+        var corredor = await contexto.Corredores.AsNoTracking().SingleOrDefaultAsync(c => c.Id == dados.CorredorId, cancelamento);
+        var os = await contexto.OrdensServico.AsNoTracking().SingleOrDefaultAsync(o => o.Id == dados.OrdemServicoId, cancelamento);
+        var gerente = await contexto.GerentesExecutivos.AsNoTracking().Include(g => g.Corredores)
+            .SingleOrDefaultAsync(g => g.Id == dados.GerenteExecutivoId, cancelamento);
+        if (corredor is null || os is null || gerente is null)
         {
             return null;
         }
 
         var contrato = await contexto.Contratos.AsNoTracking().SingleAsync(c => c.Id == corredor.ContratoId, cancelamento);
-        return new ReferenciasSolicitacao(corredor, contrato, os, qqp, equipamentos);
+        return new ReferenciasSolicitacao(corredor, contrato, os, gerente, qqp, equipamentos);
     }
 
     public async Task<IReadOnlyList<string>> ConferirEscolhasAsync(DadosSolicitacao dados, CancellationToken cancelamento)
@@ -153,11 +156,6 @@ internal sealed class CatalogosDemanda(ContratacaoDbContext contexto) : ICatalog
         if (!await contexto.TiposDemanda.AnyAsync(t => t.Id == dados.TipoDemandaId && t.Ativo, cancelamento))
         {
             erros.Add("Escolha um tipo de demanda ativo.");
-        }
-
-        if (!await contexto.GerentesExecutivos.AnyAsync(g => g.Id == dados.GerenteExecutivoId && g.Ativo, cancelamento))
-        {
-            erros.Add("Escolha um gerente executivo ativo.");
         }
 
         if (!await contexto.ModelosTrabalho.AnyAsync(m => m.Id == dados.ModeloTrabalhoId, cancelamento))
@@ -223,10 +221,10 @@ internal sealed class CatalogosDemanda(ContratacaoDbContext contexto) : ICatalog
     }
 
     public async Task<IReadOnlyList<GerenteExecutivo>> GerentesExecutivosAsync(CancellationToken cancelamento)
-        => await contexto.GerentesExecutivos.AsNoTracking().OrderBy(g => g.Nome).ToListAsync(cancelamento);
+        => await contexto.GerentesExecutivos.AsNoTracking().Include(g => g.Corredores).OrderBy(g => g.Nome).ToListAsync(cancelamento);
 
     public Task<GerenteExecutivo?> GerenteExecutivoAsync(Guid id, CancellationToken cancelamento)
-        => contexto.GerentesExecutivos.SingleOrDefaultAsync(g => g.Id == id, cancelamento);
+        => contexto.GerentesExecutivos.Include(g => g.Corredores).SingleOrDefaultAsync(g => g.Id == id, cancelamento);
 
     public void Adicionar(GerenteExecutivo gerente) => contexto.GerentesExecutivos.Add(gerente);
 
