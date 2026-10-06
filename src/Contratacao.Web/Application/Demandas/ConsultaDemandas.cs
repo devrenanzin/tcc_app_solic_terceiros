@@ -15,6 +15,7 @@ internal sealed class ConsultarDemandas(
     IRelogio relogio,
     ICalendarioSla calendario)
 {
+    /// <summary>Todas as demandas que o ator vê, com o farol de hoje.</summary>
     internal async Task<IReadOnlyList<ResumoDemanda>> ListarAsync(Ator ator, CancellationToken cancelamento)
     {
         var hoje = calendario.DataLocal(relogio.AgoraUtc);
@@ -28,6 +29,23 @@ internal sealed class ConsultarDemandas(
                 r.DataFinalizacao is { } final ? calendario.DataLocal(final) : null,
                 hoje),
         })];
+    }
+
+    /// <summary>
+    /// Tela de acompanhamento (seções 21–22): as demandas visíveis que passam no quadro escolhido ou nos filtros.
+    /// Sem quadro, a situação padrão é "em andamento" (Cliente); o período é o da data de envio (Cliente).
+    /// </summary>
+    internal async Task<IReadOnlyList<ResumoDemanda>> FiltrarAsync(Ator ator, FiltroDemandas filtro, CancellationToken cancelamento)
+    {
+        var todas = await ListarAsync(ator, cancelamento);
+        return [.. todas.Where(r => filtro.Aceita(r, ator, calendario))];
+    }
+
+    /// <summary>Quantas demandas há em cada quadro do painel do perfil (seções 21–22).</summary>
+    internal async Task<IReadOnlyList<(Quadro Quadro, int Quantidade)>> PainelAsync(Ator ator, CancellationToken cancelamento)
+    {
+        var todas = await ListarAsync(ator, cancelamento);
+        return [.. Quadros.DoPerfil(ator.Perfil).Select(q => (q, todas.Count(r => Quadros.Inclui(q, r.Posicao, ator))))];
     }
 
     /// <summary>A demanda com nomes, anexos, farol e as ações que o ator pode executar; nulo se ele não puder vê-la.</summary>

@@ -132,6 +132,35 @@ internal static class Formatacao
         _ => tipo.ToString(),
     };
 
+    /// <summary>Nome, ícone e explicação de cada quadro dos painéis (seções 21–22).</summary>
+    internal static (string Nome, string Icone, string Ajuda) Quadro(Quadro quadro) => quadro switch
+    {
+        Domain.Demandas.Quadro.MinhasDemandas => ("Minhas demandas", "bi-collection", "Todas as que você enviou"),
+        Domain.Demandas.Quadro.EmAndamento => ("Em andamento", "bi-arrow-repeat", "Em validação ou no processo SESI"),
+        Domain.Demandas.Quadro.AguardandoCorrecao => ("Aguardando correção", "bi-pencil-square", "Devolvidas para você corrigir"),
+        Domain.Demandas.Quadro.Finalizadas => ("Finalizadas", "bi-check2-all", "Contratação concluída"),
+        Domain.Demandas.Quadro.Canceladas => ("Canceladas", "bi-x-circle", "Processo interrompido"),
+        Domain.Demandas.Quadro.AguardandoValidacao => ("Aguardando validação", "bi-hourglass-split", "Dos seus contratos, para aprovar ou devolver"),
+        Domain.Demandas.Quadro.CorrecoesPendentes => ("Correções pendentes", "bi-arrow-return-left", "Devolvidas ao Solicitante"),
+        Domain.Demandas.Quadro.Aprovadas => ("Aprovadas", "bi-check2-circle", "Aguardando o aceite do SESI"),
+        Domain.Demandas.Quadro.EmProcessoSesi => ("Em processo SESI", "bi-people", "Recrutamento, entrevistas e exames"),
+        Domain.Demandas.Quadro.ProximasDoVencimento => ("Próximas do vencimento", "bi-exclamation-triangle", "Farol amarelo ou laranja"),
+        Domain.Demandas.Quadro.Atrasadas => ("Atrasadas", "bi-alarm", "Prazo vencido, não finalizadas"),
+        Domain.Demandas.Quadro.AguardandoAceite => ("Aguardando aceite", "bi-inbox", "Aprovadas pelo Gestor, à espera do SESI"),
+        Domain.Demandas.Quadro.Recrutamento => ("Recrutamento", "bi-megaphone", "Vaga a registrar ou aberta"),
+        Domain.Demandas.Quadro.Entrevistas => ("Entrevistas", "bi-chat-square-text", "Entrevistas em andamento"),
+        Domain.Demandas.Quadro.ExamesMedicos => ("Exames médicos", "bi-heart-pulse", "Exames em andamento"),
+        _ => (quadro.ToString(), "bi-circle", string.Empty),
+    };
+
+    internal static string Situacao(Situacao situacao) => situacao switch
+    {
+        Domain.Demandas.Situacao.EmAndamento => "Em andamento",
+        Domain.Demandas.Situacao.Concluidas => "Concluídas",
+        Domain.Demandas.Situacao.Canceladas => "Canceladas",
+        _ => "Todas",
+    };
+
     internal static string Tamanho(long bytes)
         => bytes >= 1024 * 1024
             ? $"{(bytes / 1024d / 1024d).ToString("0.0", PtBr)} MB"

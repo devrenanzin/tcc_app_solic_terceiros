@@ -17,7 +17,25 @@ Os requisitos estão em [docs/REQUISITOS_v3.1.md](docs/REQUISITOS_v3.1.md), a ú
 | 4 — Solicitação e validação | Formulário com QQP em cascata e custo, rascunho no navegador, envio com número AAAA-NNNNNN e anexos, validação do Gestor e do SESI, devoluções e correção | Concluída |
 | 5 — Processo SESI | Vaga com link, entrevistas, exames médicos e finalização, na sequência obrigatória; datas das etapas congeladas | Concluída |
 | 6 — Cancelamento e anexos | Cancelamento pelo Gestor, operações excepcionais do Admin (cancelar, mudar etapa, alterar data congelada) e anexos na correção | Concluída |
-| 7 e 8 | Ver o Guia de implementação no documento de requisitos | Pendentes |
+| 7 — Telas | Painel de cada perfil, tela de acompanhamento com filtros e consulta da auditoria | Concluída |
+| 8 — Notificações | Só se confirmadas pelo cliente (fora do MVP) | Pendente |
+
+## Painéis, acompanhamento e auditoria (Etapa 7)
+
+| Tela | Quem | O que mostra |
+| --- | --- | --- |
+| `/` (Início) | Todos | Painel do perfil com os quadros da seção 21–22 e a quantidade de cada um; cada quadro abre a lista já filtrada. O Solicitante vê também o quadro "Rascunho" quando há rascunho neste navegador. |
+| `/Demandas` | Todos | Acompanhamento: número, vaga, solicitante, contratada e contrato, Gestor, aprovação, data limite, dias decorridos e restantes, farol, etapa e status, responsável SESI. Filtros: situação, etapa, status, farol, período (data de envio), número, contratada, Gestor, Solicitante e responsável SESI. **Abre só com as em andamento**; a situação troca para concluídas, canceladas ou todas. |
+| `/Admin/Auditoria` | Admin | Log geral de auditoria, do mais recente ao mais antigo, com quem, perfil, IP, valores anteriores e novos e justificativa; filtros por entidade, ação e período, 50 por página. |
+
+| Perfil | Quadros |
+| --- | --- |
+| Solicitante | Rascunho (deste navegador), Minhas demandas, Em andamento, Aguardando correção, Finalizadas, Canceladas |
+| Gestor | Aguardando validação (só dos seus contratos), Correções pendentes, Aprovadas (à espera do SESI), Em processo SESI, Próximas do vencimento, Atrasadas |
+| Funcionário SESI | Aguardando aceite, Recrutamento, Entrevistas, Exames médicos, Finalizadas, Próximas do vencimento, Atrasadas |
+| Admin | Em andamento, Próximas do vencimento, Atrasadas, Finalizadas, Canceladas, e o atalho para a auditoria |
+
+As regras dos quadros ficam em `Domain/Demandas/Quadros.cs`; os filtros, em `Application/Demandas/FiltroDemandas.cs`. "Próximas do vencimento" = farol amarelo ou laranja; "Atrasadas" = vermelho e não finalizada.
 
 ## Cancelamento, operações excepcionais e anexos (Etapa 6)
 

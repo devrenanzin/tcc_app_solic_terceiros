@@ -43,7 +43,7 @@
                 }
                 <li>
                     <a class="nav-link @(caminho.StartsWith("/Demandas", StringComparison.OrdinalIgnoreCase) && !caminho.StartsWith("/Demandas/Nova", StringComparison.OrdinalIgnoreCase) ? "ativo" : string.Empty)" href="/Demandas">
-                        <i class="bi bi-kanban"></i> @(perfil == Perfil.Solicitante ? "Minhas demandas" : "Demandas")
+                        <i class="bi bi-kanban"></i> @(perfil == Perfil.Solicitante ? "Minhas demandas" : "Acompanhamento")
                     </a>
                 </li>
             </ul>
@@ -52,6 +52,7 @@
             {
                 <div class="titulo-grupo">Administração</div>
                 <ul class="nav flex-column">
+                    <li><a class="nav-link @Ativo("/Admin/Auditoria")" href="/Admin/Auditoria"><i class="bi bi-journal-check"></i> Auditoria</a></li>
                     <li><a class="nav-link @Ativo("/Admin/Gestores")" href="/Admin/Gestores"><i class="bi bi-person-badge"></i> Gestores</a></li>
                     <li><a class="nav-link @Ativo("/Admin/GerentesExecutivos")" href="/Admin/GerentesExecutivos"><i class="bi bi-person-lines-fill"></i> Gerentes executivos</a></li>
                     <li><a class="nav-link @Ativo("/Admin/OrdensServico")" href="/Admin/OrdensServico"><i class="bi bi-journal-text"></i> OS dos contratos</a></li>

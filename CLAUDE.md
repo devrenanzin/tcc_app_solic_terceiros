@@ -85,7 +85,7 @@ A regra de dependência (Domain não depende de nada; Application só de Domain)
 | Códigos 466 e 467 do QQP repetem a mesma combinação | Nada: importados assim mesmo, com o código como chave |
 | LGPD: classificação dos dados pessoais, retenção e perfis autorizados | Antes da produção |
 
-As etapas 0 a 6 estão concluídas. Pergunte sobre o restante quando chegar nele.
+As etapas 0 a 7 estão concluídas; a 8 (notificações) só entra se o cliente confirmar. Pergunte sobre o restante quando chegar nele.
 
 ## Comandos
 

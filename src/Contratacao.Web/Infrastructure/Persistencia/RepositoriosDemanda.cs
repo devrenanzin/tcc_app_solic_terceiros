@@ -50,17 +50,25 @@ internal sealed class RepositorioDemandas(ContratacaoDbContext contexto) : IDema
             from d in consulta
             join u in contexto.Usuarios on d.UsuarioSolicitanteId equals u.Id
             join c in contexto.Contratos on d.ContratoId equals c.Id
+            join cd in contexto.Contratadas on d.ContratadaId equals cd.Id
             join i in contexto.ItensQqp on d.ItemQqpId equals i.Id
             join f in contexto.QqpFuncoes on i.FuncaoId equals f.Id
+            join g in contexto.Usuarios on d.GestorId equals g.Id into gestores
+            from g in gestores.DefaultIfEmpty()
+            join r in contexto.Usuarios on d.ResponsavelSesiId equals r.Id into responsaveis
+            from r in responsaveis.DefaultIfEmpty()
             orderby d.DataEnvio descending
             select new
             {
-                d.Id, d.Numero, d.UsuarioSolicitanteId, Solicitante = u.Nome, Contrato = c.Numero, d.Etapa, d.Status,
+                d.Id, d.Numero, d.UsuarioSolicitanteId, Solicitante = u.Nome, d.ContratoId, Contrato = c.Numero,
+                d.ContratadaId, Contratada = cd.NomeFantasia ?? cd.RazaoSocial, d.GestorId, Gestor = g != null ? g.Nome : null,
+                d.ResponsavelSesiId, ResponsavelSesi = r != null ? r.Nome : null, d.Etapa, d.Status,
                 d.DataEnvio, d.LocalidadeVaga, Funcao = f.Nome, d.QuantidadeSolicitada, d.CustoTotal, d.Sla, d.DataFinalizacao,
             }).ToListAsync(cancelamento);
 
         return [.. linhas.Select(l => new ResumoDemanda(
-            l.Id, l.Numero, l.UsuarioSolicitanteId, l.Solicitante, l.Contrato, l.Etapa, l.Status, l.DataEnvio,
+            l.Id, l.Numero, l.UsuarioSolicitanteId, l.Solicitante, l.ContratoId, l.Contrato, l.ContratadaId, l.Contratada,
+            l.GestorId, l.Gestor, l.ResponsavelSesiId, l.ResponsavelSesi, l.Etapa, l.Status, l.DataEnvio,
             l.LocalidadeVaga, l.Funcao, l.QuantidadeSolicitada, l.CustoTotal, l.Sla, l.DataFinalizacao))];
     }
 

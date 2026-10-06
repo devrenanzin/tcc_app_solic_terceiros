@@ -871,3 +871,45 @@ a.cartao-atalho:hover {
 .painel-excepcional h2 { color: #9a5b00; }
 .painel-excepcional details + details { margin-top: 0.75rem; }
 .painel-excepcional summary { cursor: pointer; font-weight: 600; }
+
+/* Painel do perfil e tela de acompanhamento (seções 21–22) */
+.painel-quadros {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(12rem, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+}
+
+.quadro {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    grid-template-areas: "icone quantidade" "nome nome" "ajuda ajuda";
+    align-items: center;
+    gap: 0.25rem 0.75rem;
+    padding: 1.1rem 1.25rem;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease;
+}
+
+.quadro:hover { border-color: var(--cor-marca); box-shadow: 0 4px 16px rgba(11, 92, 138, 0.1); transform: translateY(-1px); }
+.quadro .icone { grid-area: icone; width: 2.4rem; height: 2.4rem; border-radius: 0.6rem; display: grid; place-items: center; background: var(--cor-marca-suave); color: var(--cor-marca); font-size: 1.15rem; }
+.quadro .quantidade { grid-area: quantidade; justify-self: end; font-size: 1.9rem; font-weight: 700; line-height: 1; }
+.quadro .nome { grid-area: nome; font-weight: 600; margin-top: 0.5rem; }
+.quadro .ajuda { grid-area: ajuda; }
+
+.quadro.quadro-acao { border-color: var(--cor-marca); }
+.quadro.quadro-acao .icone { background: var(--cor-marca); color: #fff; }
+.quadro.quadro-atencao { border-color: #f3c97a; background: #fffaf0; }
+.quadro.quadro-atencao .icone { background: #fdeedf; color: var(--farol-laranja); }
+.quadro.quadro-alerta { border-color: #f1b5b5; background: #fdf3f3; }
+.quadro.quadro-alerta .icone { background: #fbe5e5; color: var(--farol-vermelho); }
+.quadro.quadro-alerta .quantidade { color: var(--farol-vermelho); }
+
+.titulo-secao { font-size: 1rem; font-weight: 700; color: var(--cor-texto-suave); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 1rem; }
+
+.filtros { padding: 1rem 1.25rem; margin-bottom: 1rem; }
+.filtros .form-label { font-size: 0.78rem; font-weight: 600; color: var(--cor-texto-suave); margin-bottom: 0.2rem; }
+.quadro-ativo { margin-bottom: 0.75rem; font-size: 0.9rem; color: var(--cor-marca-escura); }
+.resumo-lista { color: var(--cor-texto-suave); font-size: 0.9rem; margin: 0 0 0.75rem; }
+.valor-log { max-width: 18rem; word-break: break-word; }

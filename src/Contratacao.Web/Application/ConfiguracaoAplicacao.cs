@@ -36,6 +36,7 @@ internal static class ConfiguracaoAplicacao
         services.AddScoped<ConsultarDemandas>();
         services.AddScoped<ManterGerentesExecutivos>();
         services.AddScoped<ManterOrdensServico>();
+        services.AddScoped<Auditoria.ConsultarAuditoria>();
         return services;
     }
 }

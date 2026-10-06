@@ -1,9 +1,11 @@
 @page
+@using Contratacao.Web.Domain.Demandas
+@using Contratacao.Web.Domain.Prazos
 @using Contratacao.Web.Domain.Usuarios
 @model Contratacao.Web.Web.Pages.Demandas.IndexModel
 @{
     var solicitante = Model.Perfil == Perfil.Solicitante;
-    ViewData["Title"] = solicitante ? "Minhas demandas" : "Demandas";
+    ViewData["Title"] = solicitante ? "Minhas demandas" : "Acompanhamento";
 }
 
 <div class="cabecalho-pagina">
@@ -24,12 +26,140 @@
     }
 </div>
 
+<form method="get" class="cartao filtros">
+    @if (Model.Quadro is { } quadro)
+    {
+        <div class="quadro-ativo">
+            <i class="bi @Formatacao.Quadro(quadro).Icone"></i>
+            Quadro do painel: <strong>@Formatacao.Quadro(quadro).Nome</strong>
+            <a href="/Demandas" class="ms-2">limpar</a>
+            <input type="hidden" name="Quadro" value="@quadro" />
+        </div>
+    }
+    <div class="row g-2 align-items-end">
+        <div class="col-6 col-md-3 col-xl-2">
+            <label class="form-label" for="situacao">Situação</label>
+            <select id="situacao" name="Situacao" class="form-select form-select-sm" disabled="@(Model.Quadro is not null)">
+                @foreach (var situacao in Enum.GetValues<Situacao>())
+                {
+                    <option value="@situacao" selected="@(Model.Situacao == situacao)">@Formatacao.Situacao(situacao)</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+            <label class="form-label" for="etapa">Etapa</label>
+            <select id="etapa" name="Etapa" class="form-select form-select-sm">
+                <option value="">Todas</option>
+                @foreach (var etapa in Enum.GetValues<Etapa>().Where(e => e != Etapa.Solicitacao))
+                {
+                    <option value="@etapa" selected="@(Model.Etapa == etapa)">@Formatacao.Etapa(etapa)</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+            <label class="form-label" for="status">Status</label>
+            <select id="status" name="Status" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                @foreach (var status in Enum.GetValues<StatusDemanda>())
+                {
+                    <option value="@status" selected="@(Model.Status == status)">@Formatacao.Status(status)</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+            <label class="form-label" for="farol">Farol</label>
+            <select id="farol" name="Farol" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                @foreach (var farol in Enum.GetValues<Farol>())
+                {
+                    <option value="@farol" selected="@(Model.Farol == farol)">@Formatacao.Farol(farol)</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+            <label class="form-label" for="de">Enviada de</label>
+            <input id="de" name="EnviadaDe" type="date" value="@Model.EnviadaDe?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+            <label class="form-label" for="ate">até</label>
+            <input id="ate" name="EnviadaAte" type="date" value="@Model.EnviadaAte?.ToString("yyyy-MM-dd")" class="form-control form-control-sm" />
+        </div>
+
+        <div class="col-6 col-md-3 col-xl-2">
+            <label class="form-label" for="numero">Número</label>
+            <input id="numero" name="Numero" value="@Model.Numero" class="form-control form-control-sm" placeholder="2026-000123" />
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+            <label class="form-label" for="contratada">Contratada</label>
+            <select id="contratada" name="ContratadaId" class="form-select form-select-sm">
+                <option value="">Todas</option>
+                @foreach (var (id, nome) in Model.Contratadas)
+                {
+                    <option value="@id" selected="@(Model.ContratadaId == id)">@nome</option>
+                }
+            </select>
+        </div>
+        <div class="col-6 col-md-3 col-xl-2">
+            <label class="form-label" for="gestor">Gestor</label>
+            <select id="gestor" name="GestorId" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                @foreach (var (id, nome) in Model.Gestores)
+                {
+                    <option value="@id" selected="@(Model.GestorId == id)">@nome</option>
+                }
+            </select>
+        </div>
+        @if (!solicitante)
+        {
+            <div class="col-6 col-md-3 col-xl-2">
+                <label class="form-label" for="solicitante">Solicitante</label>
+                <select id="solicitante" name="SolicitanteId" class="form-select form-select-sm">
+                    <option value="">Todos</option>
+                    @foreach (var (id, nome) in Model.Solicitantes)
+                    {
+                        <option value="@id" selected="@(Model.SolicitanteId == id)">@nome</option>
+                    }
+                </select>
+            </div>
+        }
+        <div class="col-6 col-md-3 col-xl-2">
+            <label class="form-label" for="responsavel">Responsável SESI</label>
+            <select id="responsavel" name="ResponsavelSesiId" class="form-select form-select-sm">
+                <option value="">Todos</option>
+                @foreach (var (id, nome) in Model.Responsaveis)
+                {
+                    <option value="@id" selected="@(Model.ResponsavelSesiId == id)">@nome</option>
+                }
+            </select>
+        </div>
+        <div class="col-12 col-md-3 col-xl-2 d-flex gap-2">
+            <button type="submit" class="btn btn-sm btn-primary flex-grow-1"><i class="bi bi-funnel"></i> Filtrar</button>
+            @if (Model.Filtrado)
+            {
+                <a href="/Demandas" class="btn btn-sm btn-light" title="Voltar ao padrão: em andamento">Limpar</a>
+            }
+        </div>
+    </div>
+</form>
+
+<p class="resumo-lista">
+    <strong>@Model.Demandas.Count</strong> de @Model.Visiveis demandas
+    @if (Model.Quadro is null)
+    {
+        <span>· situação: @Formatacao.Situacao(Model.Situacao)</span>
+        @if (Model.Situacao == Situacao.EmAndamento)
+        {
+            <span class="text-body-secondary">(para ver concluídas e canceladas, mude a situação)</span>
+        }
+    }
+</p>
+
 <div class="cartao">
     @if (Model.Demandas.Count == 0)
     {
         <div class="vazio">
             <i class="bi bi-inbox"></i>
-            @(solicitante ? "Você ainda não enviou demandas." : "Nenhuma demanda por aqui ainda.")
+            @(Model.Visiveis == 0 ? (solicitante ? "Você ainda não enviou demandas." : "Nenhuma demanda por aqui ainda.") : "Nenhuma demanda com esses filtros.")
         </div>
     }
     else
@@ -41,39 +171,55 @@
                         <th>Número</th>
                         <th>Vaga</th>
                         @if (!solicitante) { <th>Solicitante</th> }
-                        <th>Contrato</th>
-                        <th>Etapa / status</th>
+                        <th>Contratada</th>
+                        <th>Gestor</th>
+                        <th>Aprovação</th>
+                        <th>Prazo</th>
                         <th>Farol</th>
-                        <th>Enviada em</th>
-                        <th class="text-end">Custo mensal</th>
+                        <th>Etapa / status</th>
+                        <th>Responsável SESI</th>
                     </tr>
                 </thead>
                 <tbody>
                     @foreach (var demanda in Model.Demandas)
                     {
                         <tr>
-                            <td><a class="numero-demanda fw-semibold" href="/Demandas/Detalhe/@demanda.Id">@demanda.Numero</a></td>
+                            <td>
+                                <a class="numero-demanda fw-semibold" href="/Demandas/Detalhe/@demanda.Id">@demanda.Numero</a>
+                                <div class="small text-body-secondary">@Formatacao.Data(demanda.DataEnvio)</div>
+                            </td>
                             <td>
                                 <div class="fw-semibold">@demanda.Funcao</div>
                                 <div class="small text-body-secondary">@demanda.Quantidade × · @demanda.LocalidadeVaga</div>
                             </td>
                             @if (!solicitante) { <td class="small">@demanda.Solicitante</td> }
-                            <td><span class="etiqueta-contrato">@demanda.Contrato</span></td>
+                            <td class="small">
+                                @demanda.Contratada
+                                <div><span class="etiqueta-contrato">@demanda.Contrato</span></div>
+                            </td>
+                            <td class="small">@(demanda.Gestor ?? "—")</td>
+                            <td class="small text-nowrap">@(demanda.Sla is { } sla ? Formatacao.DataHora(sla.InicioUtc) : "—")</td>
+                            <td class="small text-nowrap">
+                                @if (demanda.Sla is { } prazo)
+                                {
+                                    <div>até @Formatacao.Data(prazo.DataLimite)</div>
+                                    @if (demanda.Status is not (StatusDemanda.Concluido or StatusDemanda.Cancelado))
+                                    {
+                                        var restantes = prazo.DiasRestantes(Model.Hoje);
+                                        <div class="text-body-secondary">@prazo.DiasDecorridos(Model.Hoje) d decorridos · @(restantes >= 0 ? $"{restantes} d restantes" : $"{-restantes} d de atraso")</div>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-body-secondary">Não iniciado</span>
+                                }
+                            </td>
+                            <td><span class="selo-farol @Formatacao.ClasseFarol(demanda.Farol)">@Formatacao.Farol(demanda.Farol)</span></td>
                             <td>
                                 <span class="selo-status @Formatacao.ClasseStatus(demanda.Status)">@Formatacao.Status(demanda.Status)</span>
                                 <div class="small text-body-secondary mt-1">@Formatacao.Etapa(demanda.Etapa)</div>
                             </td>
-                            <td>
-                                <span class="selo-farol @Formatacao.ClasseFarol(demanda.Farol)">
-                                    @Formatacao.Farol(demanda.Farol)
-                                </span>
-                                @if (demanda.Sla is { } sla)
-                                {
-                                    <div class="small text-body-secondary mt-1">até @Formatacao.Data(sla.DataLimite)</div>
-                                }
-                            </td>
-                            <td class="small text-nowrap">@Formatacao.DataHora(demanda.DataEnvio)</td>
-                            <td class="text-end text-nowrap">@Formatacao.Reais(demanda.CustoTotal)</td>
+                            <td class="small">@(demanda.ResponsavelSesi ?? "—")</td>
                         </tr>
                     }
                 </tbody>

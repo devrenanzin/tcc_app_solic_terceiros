@@ -123,12 +123,20 @@ internal sealed record OpcaoQqp(
     decimal PisoSalarial,
     decimal PrecoUnitario);
 
+/// <summary>Linha das listas e da tela de acompanhamento (seções 21–22).</summary>
 internal sealed record ResumoDemanda(
     Guid Id,
     string Numero,
     Guid SolicitanteId,
     string Solicitante,
+    Guid ContratoId,
     string Contrato,
+    Guid ContratadaId,
+    string Contratada,
+    Guid? GestorId,
+    string? Gestor,
+    Guid? ResponsavelSesiId,
+    string? ResponsavelSesi,
     Etapa Etapa,
     StatusDemanda Status,
     DateTime DataEnvio,
@@ -140,6 +148,8 @@ internal sealed record ResumoDemanda(
     DateTime? DataFinalizacao)
 {
     internal Farol Farol { get; init; }
+
+    internal PosicaoDemanda Posicao => new(Etapa, Status, Farol, ContratoId);
 }
 
 /// <summary>Nomes para mostrar a demanda; os dicionários traduzem os ids gravados no histórico de alterações.</summary>

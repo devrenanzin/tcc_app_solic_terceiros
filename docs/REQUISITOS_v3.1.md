@@ -76,6 +76,10 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 58 | Datas que o Admin altera (UC20) | "Data congelada", sem lista | Início e conclusão de cada etapa, abertura da vaga e início do SLA; o novo início do SLA recalcula a data limite com o mesmo prazo | Cliente |
 | 59 | Transição forçada pelo Admin (UC20) | Sem definição | Para trás ou para frente, entre Recrutamento, Entrevistas e Exames Médicos, com a demanda em andamento; o SLA não reinicia | Cliente |
 | 60 | Anexos depois do envio | Sem definição | Só pelo Solicitante e só quando a demanda está devolvida a ele para correção (inclusive um novo De acordo VP-2); os anexos anteriores ficam | Cliente |
+| 61 | Quadro "Aprovadas" do Gestor | Sem definição | Aprovadas pelo Gestor e ainda à espera do aceite do SESI; depois do aceite, entram em "Em processo SESI" | Cliente |
+| 62 | Escopo do painel do Gestor | Só "Aguardando validação" citava os contratos dele | "Aguardando validação" conta só os contratos do Gestor; os demais quadros contam todas as demandas | Cliente |
+| 63 | Filtro "período" do acompanhamento | Sem definição | Data de envio da demanda, no horário de Brasília | Cliente |
+| 64 | Filtro padrão das listas | Sem definição | A lista abre só com as demandas em andamento; o filtro de situação mostra concluídas, canceladas ou todas | Cliente |
 | 47 | Custo na correção que muda quantidade ou equipamentos | Só a mudança no QQP recalculava (item 27) | Qualquer correção que mude o item QQP, a quantidade de vagas ou os equipamentos recalcula o custo inteiro com os valores atuais dos catálogos; sem essas mudanças, ficam os valores do envio | Cliente |
 
 ## 1–3. Objetivo e escopo
@@ -506,9 +510,9 @@ Cada perfil tem seu dashboard; como Gestores e SESI veem demandas de vários Sol
 | SESI | Aguardando aceite · Recrutamento · Entrevistas · Exames médicos · Finalizadas · Próximas do vencimento · Atrasadas |
 | Admin | Visão geral de todas as demandas e acesso à auditoria |
 
-"Próximas do vencimento" = farol amarelo ou laranja; "Atrasadas" = vermelho, não finalizadas.
+"Próximas do vencimento" = farol amarelo ou laranja; "Atrasadas" = vermelho, não finalizadas. "Aprovadas" (Gestor) = aprovadas e à espera do aceite do SESI; do painel do Gestor, só "Aguardando validação" se limita aos contratos dele (Cliente, itens 61 e 62).
 
-**Tela de acompanhamento do SESI.** Mantém os campos da v3.0: número, contratada, solicitante, Gestor, data de aprovação, data limite, dias decorridos e restantes, farol, etapa, status e responsável SESI. Filtros: status, etapa, contratada, Gestor, período, farol e responsável SESI. A tela lista só as demandas do contrato do funcionário.
+**Tela de acompanhamento do SESI.** Mantém os campos da v3.0: número, contratada, solicitante, Gestor, data de aprovação, data limite, dias decorridos e restantes, farol, etapa, status e responsável SESI. Filtros: status, etapa, contratada, Gestor, período (data de envio; Cliente, item 63), farol e responsável SESI. A tela lista só as demandas do contrato do funcionário. Todas as listas abrem só com as demandas em andamento, e o filtro de situação mostra concluídas, canceladas ou todas (Cliente, item 64).
 
 ## 23. Modelos de dados e diagrama de classes
 

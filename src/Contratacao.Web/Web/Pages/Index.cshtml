@@ -1,21 +1,72 @@
 @page
+@using Contratacao.Web.Domain.Demandas
 @using Contratacao.Web.Domain.Usuarios
 @model IndexModel
 @{
     ViewData["Title"] = "Início";
     var primeiroNome = Model.Nome.Split(' ', StringSplitOptions.RemoveEmptyEntries).FirstOrDefault() ?? string.Empty;
+    string Destaque(Quadro q) => q switch
+    {
+        Quadro.Atrasadas => "quadro-alerta",
+        Quadro.ProximasDoVencimento => "quadro-atencao",
+        Quadro.AguardandoValidacao or Quadro.AguardandoAceite or Quadro.AguardandoCorrecao => "quadro-acao",
+        _ => string.Empty,
+    };
 }
 
 <div class="cabecalho-pagina">
     <div>
         <h1>Olá, @primeiroNome</h1>
-        <p>@(Model.Perfil is { } perfil ? Formatacao.Perfil(perfil) : string.Empty) · O que você quer fazer hoje?</p>
+        <p>@(Model.Perfil is { } perfil ? Formatacao.Perfil(perfil) : string.Empty) · Seu painel de demandas</p>
     </div>
+    @if (Model.Perfil == Perfil.Solicitante)
+    {
+        <a href="/Demandas/Nova" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Nova demanda</a>
+    }
 </div>
 
+<div class="painel-quadros">
+    @if (Model.Perfil == Perfil.Solicitante)
+    {
+        @* Quadro "Rascunho (deste navegador)": o rascunho existe só no navegador (UC02), por isso é lido aqui pelo script. *@
+        <a class="cartao quadro quadro-acao" href="/Demandas/Nova" data-quadro-rascunho="@Model.ChaveRascunho" hidden>
+            <span class="icone"><i class="bi bi-file-earmark-text"></i></span>
+            <span class="quantidade">1</span>
+            <span class="nome">Rascunho</span>
+            <span class="ajuda" data-rascunho-salvo>Neste navegador</span>
+        </a>
+    }
+    @foreach (var (quadro, quantidade) in Model.Painel)
+    {
+        var (nome, icone, ajuda) = Formatacao.Quadro(quadro);
+        <a class="cartao quadro @(quantidade > 0 ? Destaque(quadro) : string.Empty)" href="/Demandas?Quadro=@quadro">
+            <span class="icone"><i class="bi @icone"></i></span>
+            <span class="quantidade">@quantidade</span>
+            <span class="nome">@nome</span>
+            <span class="ajuda">@ajuda</span>
+        </a>
+    }
+</div>
+
+<h2 class="titulo-secao">Atalhos</h2>
 <div class="row g-3">
+    <div class="col-md-6 col-xl-4">
+        <a class="cartao cartao-atalho" href="/Demandas">
+            <span class="icone"><i class="bi bi-kanban"></i></span>
+            <span>
+                <h2>@(Model.Perfil == Perfil.Solicitante ? "Minhas demandas" : "Acompanhamento")</h2>
+                <p>Lista com filtros por situação, etapa, status, farol, Gestor, responsável e período.</p>
+            </span>
+        </a>
+    </div>
     @if (Model.Perfil == Perfil.Admin)
     {
+        <div class="col-md-6 col-xl-4">
+            <a class="cartao cartao-atalho" href="/Admin/Auditoria">
+                <span class="icone"><i class="bi bi-journal-check"></i></span>
+                <span><h2>Auditoria</h2><p>Quem fez o quê, quando e de onde, com valores anteriores e novos.</p></span>
+            </a>
+        </div>
         <div class="col-md-6 col-xl-4">
             <a class="cartao cartao-atalho" href="/Admin/Gestores">
                 <span class="icone"><i class="bi bi-person-badge"></i></span>
@@ -23,15 +74,9 @@
             </a>
         </div>
         <div class="col-md-6 col-xl-4">
-            <a class="cartao cartao-atalho" href="/Admin/Transferencias">
-                <span class="icone"><i class="bi bi-arrow-left-right"></i></span>
-                <span><h2>Transferir vínculo</h2><p>Mova Funcionários SESI de um Gestor para outro.</p></span>
-            </a>
-        </div>
-        <div class="col-md-6 col-xl-4">
-            <a class="cartao cartao-atalho" href="/Solicitantes">
-                <span class="icone"><i class="bi bi-people"></i></span>
-                <span><h2>Solicitantes</h2><p>Consulte, desative e reative Solicitantes.</p></span>
+            <a class="cartao cartao-atalho" href="/Admin/GerentesExecutivos">
+                <span class="icone"><i class="bi bi-person-lines-fill"></i></span>
+                <span><h2>Gerentes executivos</h2><p>Mantenha os gerentes e os corredores de cada um.</p></span>
             </a>
         </div>
     }
@@ -43,6 +88,9 @@
                 <span><h2>Equipe SESI</h2><p>Cadastre Funcionários SESI e defina o contrato de cada um.</p></span>
             </a>
         </div>
+    }
+    @if (Model.Perfil is Perfil.Admin or Perfil.Gestor)
+    {
         <div class="col-md-6 col-xl-4">
             <a class="cartao cartao-atalho" href="/Solicitantes">
                 <span class="icone"><i class="bi bi-people"></i></span>
@@ -50,37 +98,22 @@
             </a>
         </div>
     }
-    @if (Model.Perfil == Perfil.Admin)
-    {
-        <div class="col-md-6 col-xl-4">
-            <a class="cartao cartao-atalho" href="/Admin/GerentesExecutivos">
-                <span class="icone"><i class="bi bi-person-lines-fill"></i></span>
-                <span><h2>Gerentes executivos</h2><p>Mantenha a lista de gerentes do formulário da demanda.</p></span>
-            </a>
-        </div>
-    }
-    @if (Model.Perfil == Perfil.Solicitante)
-    {
-        <div class="col-md-6 col-xl-4">
-            <a class="cartao cartao-atalho" href="/Demandas/Nova">
-                <span class="icone"><i class="bi bi-file-earmark-plus"></i></span>
-                <span><h2>Nova demanda</h2><p>Peça uma contratação. O rascunho fica salvo neste navegador por 3 dias.</p></span>
-            </a>
-        </div>
-    }
-    <div class="col-md-6 col-xl-4">
-        <a class="cartao cartao-atalho" href="/Demandas">
-            <span class="icone"><i class="bi bi-kanban"></i></span>
-            <span>
-                <h2>@(Model.Perfil == Perfil.Solicitante ? "Minhas demandas" : "Demandas")</h2>
-                <p>@(Model.Perfil switch
-                {
-                    Perfil.Gestor => "Valide ou devolva as demandas dos seus contratos.",
-                    Perfil.FuncionarioSesi => "Aceite ou devolva as demandas do seu contrato.",
-                    Perfil.Solicitante => "Acompanhe o andamento e corrija as devolvidas.",
-                    _ => "Todas as demandas enviadas, com etapa, status e farol.",
-                })</p>
-            </span>
-        </a>
-    </div>
 </div>
+
+@if (Model.Perfil == Perfil.Solicitante)
+{
+    <script>
+        (() => {
+            const quadro = document.querySelector("[data-quadro-rascunho]");
+            try {
+                const rascunho = JSON.parse(localStorage.getItem(quadro.dataset.quadroRascunho));
+                // Mesmo prazo do formulário: 3 dias desde o último salvamento (UC02).
+                if (rascunho && Date.now() - rascunho.salvoEm <= 3 * 24 * 60 * 60 * 1000) {
+                    const salvo = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit", hour: "2-digit", minute: "2-digit" });
+                    quadro.querySelector("[data-rascunho-salvo]").textContent = `Salvo em ${salvo.format(new Date(rascunho.salvoEm))}`;
+                    quadro.hidden = false;
+                }
+            } catch { }
+        })();
+    </script>
+}
