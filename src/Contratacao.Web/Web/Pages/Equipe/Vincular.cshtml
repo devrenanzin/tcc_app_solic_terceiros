@@ -1,0 +1,34 @@
+@page
+@using Contratacao.Web.Web.Pages.Shared
+@model Contratacao.Web.Web.Pages.Equipe.VincularModel
+@{
+    ViewData["Title"] = "Vincular conta à equipe";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a href="/Equipe" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Equipe SESI</a>
+        <h1 class="mt-1">Vincular conta existente</h1>
+        <p>Traz para a sua equipe SESI uma pessoa que já tem conta no sistema, num dos seus contratos.</p>
+    </div>
+</div>
+
+<form method="post" class="cartao formulario" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+    <partial name="_AvisoVinculo" model="@("Funcionário SESI")" />
+
+    <div class="mb-3">
+        <label class="form-label" for="email">E-mail da conta</label>
+        <input id="email" name="Email" type="email" value="@Model.Email" class="form-control" placeholder="nome@ucl.br" required autofocus />
+    </div>
+
+    <fieldset class="mb-4">
+        <legend class="form-label fs-6">Contrato</legend>
+        <partial name="_EscolhaContratos" model="new EscolhaContratos(Model.ContratosDisponiveis, Model.Contrato is { } c ? [c] : [], nameof(Model.Contrato), false)" />
+    </fieldset>
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-link-45deg"></i> Vincular conta</button>
+        <a href="/Equipe" class="btn btn-light">Cancelar</a>
+    </div>
+</form>

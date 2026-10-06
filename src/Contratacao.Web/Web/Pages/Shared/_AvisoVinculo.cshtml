@@ -1,0 +1,8 @@
+@model string
+@* Explica o vínculo de conta existente (Cliente, revisão de 06/10/2026). O modelo é o novo perfil. *@
+<div class="alert alert-info small">
+    <i class="bi bi-info-circle"></i>
+    A conta precisa já existir como <strong>Solicitante</strong> (a pessoa se cadastrou sozinha). O perfil dela passa a ser
+    <strong>@Model</strong>, com o mesmo e-mail e senha; ela deixa de ser Solicitante, e as demandas que enviou continuam no histórico.
+    Não é possível vincular uma conta com demandas em andamento.
+</div>

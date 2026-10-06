@@ -1,0 +1,42 @@
+@page
+@using Contratacao.Web.Domain.Usuarios
+@model Contratacao.Web.Web.Pages.Admin.FuncionariosSesi.NovoModel
+@{
+    ViewData["Title"] = "Novo Funcionário SESI";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a href="/Admin/FuncionariosSesi" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Funcionários SESI</a>
+        <h1 class="mt-1">Novo Funcionário SESI</h1>
+        <p>Cria uma conta nova. Se a pessoa já tem conta no sistema, use <a href="/Admin/FuncionariosSesi/Vincular">Vincular conta existente</a>.</p>
+    </div>
+</div>
+
+<form method="post" class="cartao formulario" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+
+    <div class="mb-3">
+        <label asp-for="Entrada.Nome" class="form-label">Nome completo</label>
+        <input asp-for="Entrada.Nome" class="form-control" autofocus />
+        <span asp-validation-for="Entrada.Nome" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Entrada.Email" class="form-label">E-mail</label>
+        <input asp-for="Entrada.Email" type="email" class="form-control" placeholder="nome@ucl.br" />
+        <span asp-validation-for="Entrada.Email" class="text-danger small"></span>
+    </div>
+    <div class="mb-3">
+        <label asp-for="Entrada.SenhaInicial" class="form-label">Senha inicial</label>
+        <input asp-for="Entrada.SenhaInicial" type="password" class="form-control" autocomplete="new-password" />
+        <div class="ajuda mt-1">Mínimo de @Senha.TamanhoMinimo caracteres. O funcionário a troca no primeiro acesso.</div>
+        <span asp-validation-for="Entrada.SenhaInicial" class="text-danger small"></span>
+    </div>
+
+    <partial name="_GestorEContrato" model="(Model.Gestores, Model.Contratos, Model.GestorId, Model.Contrato)" />
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary">Cadastrar funcionário</button>
+        <a href="/Admin/FuncionariosSesi" class="btn btn-light">Cancelar</a>
+    </div>
+</form>

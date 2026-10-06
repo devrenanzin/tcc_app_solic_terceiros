@@ -1,4 +1,5 @@
 @page
+@using Contratacao.Web.Web.Pages.Shared
 @model Contratacao.Web.Web.Pages.Admin.FuncionariosSesi.IndexModel
 @{
     ViewData["Title"] = "Funcionários SESI";
@@ -7,7 +8,11 @@
 <div class="cabecalho-pagina">
     <div>
         <h1>Funcionários SESI</h1>
-        <p>O Gestor cadastra e gerencia a própria equipe; aqui o Admin troca o contrato quando for preciso usar um contrato que não é do Gestor.</p>
+        <p>Todos os Funcionários SESI. O Admin cadastra na equipe de qualquer Gestor e em qualquer contrato, vincula contas já cadastradas, troca o contrato e desativa ou reativa.</p>
+    </div>
+    <div class="d-flex flex-wrap gap-2">
+        <a href="/Admin/FuncionariosSesi/Vincular" class="btn btn-outline-primary"><i class="bi bi-link-45deg"></i> Vincular conta existente</a>
+        <a href="/Admin/FuncionariosSesi/Novo" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Novo Funcionário SESI</a>
     </div>
 </div>
 
@@ -41,6 +46,7 @@
                             <td><partial name="_SituacaoUsuario" model="funcionario.Ativo" /></td>
                             <td class="text-end">
                                 <a href="/Admin/FuncionariosSesi/Contrato?id=@funcionario.Id" class="btn btn-sm btn-outline-primary"><i class="bi bi-diagram-3"></i> Contrato</a>
+                                <partial name="_AcaoSituacao" model="new AcaoSituacao(funcionario.Id, funcionario.Ativo, funcionario.Nome)" />
                             </td>
                         </tr>
                     }

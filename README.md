@@ -87,14 +87,15 @@ Na tela da demanda (`/Demandas/Detalhe/{id}`), depois do aceite, o Funcionário 
 | --- | --- | --- |
 | `/Entrar` | Todos | UC01: e-mail @ucl.br e senha. Usuário desativado não entra. |
 | `/Cadastro` | Público | UC13: autocadastro do Solicitante. |
-| `/Admin/Gestores` | Admin | UC12: cadastra Gestores, define os contratos de cada um, desativa e reativa. |
-| `/Admin/FuncionariosSesi` | Admin | Lista todos os Funcionários SESI e troca o contrato de qualquer um, para qualquer contrato. |
+| `/Admin/Gestores` | Admin | UC12: cadastra Gestores (ou vincula uma conta já cadastrada como Gestor), define os contratos de cada um, desativa e reativa. |
+| `/Admin/FuncionariosSesi` | Admin | Lista todos os Funcionários SESI; cadastra na equipe de qualquer Gestor e em qualquer contrato, vincula conta já cadastrada, troca o contrato e desativa ou reativa qualquer um. |
 | `/Admin/Transferencias` | Admin | UC19: move Funcionários SESI de um Gestor para outro, com justificativa. |
-| `/Equipe` | Gestor | UC14: cadastra Funcionários SESI na sua equipe, troca o contrato (só entre os contratos do Gestor), desativa e reativa. Só a própria equipe. |
+| `/Equipe` | Gestor | UC14: cadastra Funcionários SESI na sua equipe (ou vincula uma conta já cadastrada), troca o contrato (só entre os contratos do Gestor), desativa e reativa. Só a própria equipe. |
 | `/Solicitantes` | Admin e Gestor | Desativa e reativa Solicitantes. |
 | `/TrocarSenha` | Gestor e Funcionário SESI | Troca obrigatória da senha inicial no primeiro acesso; até trocar, toda página leva para cá. |
 
 - **Camadas.** As regras de quem gerencia quem ficam em `Usuario` (Domain). Cada caso de uso é uma classe em `Application/Usuarios`, que usa portas (`IUsuarios`, `IContratos`, `IAuditoria`, `IHashSenha`) implementadas em `Infrastructure/Persistencia/Repositorios.cs`. As páginas só chamam os casos de uso.
+- **Vínculo de conta já cadastrada.** Uma conta de Solicitante pode virar Funcionário SESI (pelo Gestor, na própria equipe; pelo Admin, em qualquer equipe e contrato) ou Gestor (pelo Admin). O perfil muda e o e-mail e a senha continuam; a sessão aberta com o perfil antigo cai e a pessoa entra de novo. Conta com demandas em andamento não muda de perfil.
 - **Sessão.** Cookie com id, nome, e-mail e perfil. A cada requisição o sistema confere se o usuário continua ativo e com o mesmo perfil; quem for desativado perde a sessão na página seguinte. Os contratos do Gestor e do SESI são relidos do banco a cada ação.
 - **Senha inicial.** Quem cadastra o Gestor ou o Funcionário SESI define a senha inicial (coluna `DeveTrocarSenha`); o `FiltroTrocaSenha` leva o usuário à troca antes de qualquer outra página. Solicitante e Admin inicial definem a própria senha e não passam pela troca.
 - **Auditoria.** Cadastros, desativações, reativações, troca de contratos, trocas de senha e transferências vão para `LogAuditoria`, com usuário, perfil e IP.

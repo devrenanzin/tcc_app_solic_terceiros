@@ -172,13 +172,13 @@ public sealed class UsuariosTests(BancoFixture banco) : IClassFixture<BancoFixtu
         await Assert.ThrowsAsync<RegraNegocioException>(() => AlterarSituacaoAsync(gestorB, sesiDeA.Id, false));
         await Assert.ThrowsAsync<RegraNegocioException>(() => banco.ExecutarAsync<AlterarContratoFuncionarioSesi>(a =>
             a.ExecutarAsync(gestorB, sesiDeA.Id, IdsFixos.ContratoSudeste, Cancelamento)));
-        await Assert.ThrowsAsync<RegraNegocioException>(() => AlterarSituacaoAsync(admin, sesiDeA.Id, false));
+        await AlterarSituacaoAsync(admin, sesiDeA.Id, false); // o Admin gerencia qualquer SESI (Cliente)
 
         await AlterarSituacaoAsync(gestorB, solicitante.Id, false);
         await AlterarSituacaoAsync(gestorA, solicitante.Id, true);
 
         await using var contexto = banco.NovoContexto();
-        Assert.True((await contexto.Usuarios.SingleAsync(u => u.Id == sesiDeA.Id, Cancelamento)).Ativo);
+        Assert.False((await contexto.Usuarios.SingleAsync(u => u.Id == sesiDeA.Id, Cancelamento)).Ativo);
         Assert.Equal(2, await contexto.LogsAuditoria.CountAsync(
             l => l.EntidadeId == solicitante.Id && (l.Acao == "Desativacao" || l.Acao == "Reativacao"), Cancelamento));
     }

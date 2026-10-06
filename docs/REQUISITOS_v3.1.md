@@ -80,6 +80,9 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 62 | Escopo do painel do Gestor | Só "Aguardando validação" citava os contratos dele | "Aguardando validação" conta só os contratos do Gestor; os demais quadros contam todas as demandas | Cliente |
 | 63 | Filtro "período" do acompanhamento | Sem definição | Data de envio da demanda, no horário de Brasília | Cliente |
 | 64 | Filtro padrão das listas | Sem definição | A lista abre só com as demandas em andamento; o filtro de situação mostra concluídas, canceladas ou todas | Cliente |
+| 65 | Acessos do Admin | Cadastra Gestores; SESI só pelo Gestor | O Admin faz todos os cadastros: Gestores, Funcionários SESI na equipe de qualquer Gestor ativo e em qualquer contrato, desativação e reativação de qualquer Funcionário SESI, Solicitantes e catálogos. Nas demandas, continua só com as operações excepcionais (UC20) | Cliente |
+| 66 | Vínculo de conta já cadastrada | Só cadastro de conta nova | Uma conta de Solicitante pode ser vinculada como Funcionário SESI (pelo Gestor, na própria equipe e nos seus contratos; pelo Admin, em qualquer equipe e contrato) ou como Gestor (pelo Admin): o perfil muda e o e-mail e a senha continuam | Cliente |
+| 67 | Conta com demandas em andamento | — | Não pode ser vinculada a outro perfil enquanto tiver demandas em andamento como Solicitante, porque só o Solicitante as corrige | Recomendação |
 | 47 | Custo na correção que muda quantidade ou equipamentos | Só a mudança no QQP recalculava (item 27) | Qualquer correção que mude o item QQP, a quantidade de vagas ou os equipamentos recalcula o custo inteiro com os valores atuais dos catálogos; sem essas mudanças, ficam os valores do envio | Cliente |
 
 ## 1–3. Objetivo e escopo
@@ -112,7 +115,8 @@ A hierarquia de cadastro da v3.0 se mantém. A mudança é que o vínculo com o 
 
 1. O Admin cadastra e gerencia os Gestores e os vincula aos contratos por que respondem. É o único perfil que faz isso. Um Gestor pode ter vários contratos, e um contrato pode ter vários Gestores (Cliente).
 2. O Usuário Solicitante se cadastra sozinho (UC13), com um e-mail @ucl.br. Qualquer pessoa com e-mail do domínio pode se cadastrar; o perfil Solicitante é atribuído automaticamente (Cliente). O Solicitante não tem Gestor responsável (GestorResponsavelId nulo); o Admin e qualquer Gestor ativo podem desativá-lo e reativá-lo (Cliente).
-3. Cada Gestor cadastra e gerencia os Funcionários SESI da sua equipe e vincula cada um a um contrato (UC14). Esses usuários ficam vinculados ao Gestor que os cadastrou (GestorResponsavelId).
+3. Cada Gestor cadastra e gerencia os Funcionários SESI da sua equipe e vincula cada um a um contrato (UC14). Esses usuários ficam vinculados ao Gestor responsável (GestorResponsavelId). O Admin também cadastra e gerencia Funcionários SESI, na equipe de qualquer Gestor ativo e em qualquer contrato (Cliente, item 65).
+3a. Em vez de criar conta nova, o Gestor (na própria equipe) e o Admin podem vincular uma conta já cadastrada de Solicitante como Funcionário SESI, e o Admin, como Gestor: o perfil da conta muda, com o mesmo e-mail e senha (Cliente, item 66). Conta com demandas em andamento não muda de perfil (Recomendação, item 67).
 4. Um Gestor não edita, desativa nem reativa usuários de outro Gestor.
 5. Todo Gestor ativo visualiza todas as demandas, de qualquer Solicitante. A demanda chega aos Gestores do seu contrato (definido pelo corredor, RN13), e só eles a validam, devolvem e cancelam (Cliente). O Gestor não edita campos da demanda: se algo estiver errado, devolve ao Solicitante (Cliente).
 6. Usuários nunca são excluídos, apenas desativados.
@@ -466,7 +470,8 @@ O acesso combina perfil e vínculo: o perfil define o que cada um faz; o víncul
 | Cadastrar-se como Solicitante | Sim | Não | Não | Não |
 | Desativar e reativar Solicitante | Não | Sim | Não | Sim |
 | Vincular Gestor a contratos | Não | Não | Não | Sim |
-| Cadastrar e gerenciar Funcionário SESI e vinculá-lo a um contrato | Não | Sim, da própria equipe | Não | Não |
+| Cadastrar e gerenciar Funcionário SESI e vinculá-lo a um contrato | Não | Sim, da própria equipe | Não | Sim, de qualquer equipe (Cliente) |
+| Vincular conta já cadastrada como Funcionário SESI ou Gestor | Não | Sim, como SESI da própria equipe | Não | Sim (Cliente) |
 | Transferir vínculo de usuário | Não | Não | Não | Sim (suposição) |
 | Gerenciar contratadas, perfis e parâmetros | Não | Não | Não | Sim |
 | Criar, enviar e corrigir demanda | Sim | Não | Não | Não |

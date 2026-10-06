@@ -17,6 +17,8 @@ internal static class ConfiguracaoAplicacao
         services.AddScoped<DefinirContratosGestor>();
         services.AddScoped<AlterarContratoFuncionarioSesi>();
         services.AddScoped<TransferirVinculo>();
+        services.AddScoped<VincularContaComoSesi>();
+        services.AddScoped<VincularContaComoGestor>();
 
         services.AddScoped<ConsultarFormulario>();
         services.AddScoped<CalcularPreviaCusto>();

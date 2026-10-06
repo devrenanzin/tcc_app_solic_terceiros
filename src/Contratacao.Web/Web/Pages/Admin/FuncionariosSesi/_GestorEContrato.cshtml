@@ -1,0 +1,23 @@
+@model (IReadOnlyList<Contratacao.Web.Application.ResumoUsuario> Gestores, IReadOnlyList<Contratacao.Web.Application.ResumoContrato> Contratos, Guid? GestorId, Guid? Contrato)
+@* Gestor responsável e contrato, escolhidos pelo Admin (qualquer Gestor ativo, qualquer contrato). *@
+<div class="mb-3">
+    <label class="form-label" for="gestor">Gestor responsável</label>
+    <select id="gestor" name="GestorId" class="form-select" required>
+        <option value="">Selecione</option>
+        @foreach (var gestor in Model.Gestores)
+        {
+            <option value="@gestor.Id" selected="@(Model.GestorId == gestor.Id)">@gestor.Nome</option>
+        }
+    </select>
+</div>
+<div class="mb-4">
+    <label class="form-label" for="contrato">Contrato</label>
+    <select id="contrato" name="Contrato" class="form-select" required>
+        <option value="">Selecione</option>
+        @foreach (var contrato in Model.Contratos)
+        {
+            <option value="@contrato.Id" selected="@(Model.Contrato == contrato.Id)">@contrato.Numero</option>
+        }
+    </select>
+    <div class="ajuda mt-1">O Admin pode usar qualquer contrato, mesmo que não seja do Gestor escolhido.</div>
+</div>

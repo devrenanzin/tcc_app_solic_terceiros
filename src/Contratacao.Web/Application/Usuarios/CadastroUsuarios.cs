@@ -1,5 +1,6 @@
 using Contratacao.Web.Domain.Auditoria;
 using Contratacao.Web.Domain.Comum;
+using Contratacao.Web.Domain.Demandas;
 using Contratacao.Web.Domain.Usuarios;
 
 namespace Contratacao.Web.Application.Usuarios;
@@ -30,16 +31,26 @@ internal sealed class CadastrarGestor(
     }
 }
 
-/// <summary>UC14 — Cadastrar Funcionário SESI, pelo Gestor, na sua equipe e no grupo de um contrato.</summary>
+/// <summary>
+/// UC14 — Cadastrar Funcionário SESI: pelo Gestor, na sua equipe e num dos seus contratos; pelo Admin, na equipe
+/// do Gestor escolhido e em qualquer contrato (Cliente, revisão de 06/10/2026).
+/// </summary>
 internal sealed class CadastrarFuncionarioSesi(
-    IUsuarios usuarios, IContratos contratos, IHashSenha hash, IAuditoria auditoria, IUnidadeDeTrabalho unidade, IRelogio relogio)
+    IUsuarios usuarios, IContratos contratos, IHashSenha hash, IAuditoria auditoria, IUnidadeDeTrabalho unidade, IRelogio relogio,
+    ObterAtor obterAtor)
 {
-    internal async Task<Usuario> ExecutarAsync(
+    internal Task<Usuario> ExecutarAsync(
         Ator gestor, string nome, string email, string senhaInicial, Guid contratoId, CancellationToken cancelamento)
+        => ExecutarAsync(gestor, nome, email, senhaInicial, contratoId, null, cancelamento);
+
+    /// <param name="gestorResponsavelId">Gestor da equipe; o Admin escolhe, e o Gestor é sempre ele mesmo.</param>
+    internal async Task<Usuario> ExecutarAsync(
+        Ator ator, string nome, string email, string senhaInicial, Guid contratoId, Guid? gestorResponsavelId, CancellationToken cancelamento)
     {
         // Quem cadastra define a senha inicial; o usuário a troca no primeiro acesso (Cliente).
         Senha.Validar(senhaInicial);
-        var funcionario = Usuario.CadastrarFuncionarioSesi(gestor, nome, email, contratoId, relogio.AgoraUtc);
+        var gestor = await GestorResponsavel.ObterAsync(obterAtor, ator, gestorResponsavelId, cancelamento);
+        var funcionario = Usuario.CadastrarFuncionarioSesi(ator, nome, email, contratoId, gestor, relogio.AgoraUtc);
         await CadastrarSolicitante.GarantirEmailLivreAsync(usuarios, funcionario.Email, cancelamento);
 
         await ValidacaoContratos.ExigirAtivosAsync(contratos, [contratoId], cancelamento);
@@ -48,11 +59,88 @@ internal sealed class CadastrarFuncionarioSesi(
         usuarios.Adicionar(funcionario);
 
         var numero = await ValidacaoContratos.NumerosAsync(contratos, [contratoId], cancelamento);
-        auditoria.Registrar(LogAuditoria.De(gestor, nameof(Usuario), funcionario.Id, "CadastroFuncionarioSesi",
-            null, $"{funcionario.Email}; contrato: {numero}", null, relogio.AgoraUtc));
+        auditoria.Registrar(LogAuditoria.De(ator, nameof(Usuario), funcionario.Id, "CadastroFuncionarioSesi",
+            null, $"{funcionario.Email}; contrato: {numero}; gestor: {gestor.Id}", null, relogio.AgoraUtc));
 
         await unidade.SalvarAsync(cancelamento);
         return funcionario;
+    }
+}
+
+/// <summary>
+/// Vincula uma conta já cadastrada de Solicitante como Funcionário SESI, mudando o perfil (Cliente, revisão de
+/// 06/10/2026): o Gestor, na própria equipe; o Admin, na equipe de qualquer Gestor. E-mail e senha continuam os mesmos.
+/// </summary>
+internal sealed class VincularContaComoSesi(
+    IUsuarios usuarios, IContratos contratos, IAuditoria auditoria, IUnidadeDeTrabalho unidade, IRelogio relogio, ObterAtor obterAtor,
+    Demandas.IDemandas demandas)
+{
+    internal async Task<Usuario> ExecutarAsync(
+        Ator ator, string email, Guid contratoId, Guid? gestorResponsavelId, CancellationToken cancelamento)
+    {
+        var conta = await ContaExistente.ObterAsync(usuarios, email, cancelamento);
+        var gestor = await GestorResponsavel.ObterAsync(obterAtor, ator, gestorResponsavelId, cancelamento);
+        await ValidacaoContratos.ExigirAtivosAsync(contratos, [contratoId], cancelamento);
+
+        conta.TornarFuncionarioSesi(ator, contratoId, gestor, await ContaExistente.DemandasEmAndamentoAsync(demandas, conta, cancelamento));
+
+        var numero = await ValidacaoContratos.NumerosAsync(contratos, [contratoId], cancelamento);
+        auditoria.Registrar(LogAuditoria.De(ator, nameof(Usuario), conta.Id, "VinculoContaComoSesi",
+            nameof(Perfil.Solicitante), $"{nameof(Perfil.FuncionarioSesi)}; contrato: {numero}; gestor: {gestor.Id}", null, relogio.AgoraUtc));
+        await unidade.SalvarAsync(cancelamento);
+        return conta;
+    }
+}
+
+/// <summary>Vincula uma conta já cadastrada de Solicitante como Gestor, pelo Admin, com os contratos dele (Cliente).</summary>
+internal sealed class VincularContaComoGestor(
+    IUsuarios usuarios, IContratos contratos, IAuditoria auditoria, IUnidadeDeTrabalho unidade, IRelogio relogio, Demandas.IDemandas demandas)
+{
+    internal async Task<Usuario> ExecutarAsync(Ator admin, string email, IReadOnlyCollection<Guid> contratosDoGestor, CancellationToken cancelamento)
+    {
+        var conta = await ContaExistente.ObterAsync(usuarios, email, cancelamento);
+        await ValidacaoContratos.ExigirAtivosAsync(contratos, contratosDoGestor, cancelamento);
+
+        conta.TornarGestor(admin, await ContaExistente.DemandasEmAndamentoAsync(demandas, conta, cancelamento));
+        await usuarios.DefinirContratosDoGestorAsync(conta.Id, contratosDoGestor, cancelamento);
+
+        auditoria.Registrar(LogAuditoria.De(admin, nameof(Usuario), conta.Id, "VinculoContaComoGestor", nameof(Perfil.Solicitante),
+            $"{nameof(Perfil.Gestor)}; contratos: {await ValidacaoContratos.NumerosAsync(contratos, contratosDoGestor, cancelamento)}",
+            null, relogio.AgoraUtc));
+        await unidade.SalvarAsync(cancelamento);
+        return conta;
+    }
+}
+
+internal static class ContaExistente
+{
+    internal static async Task<Usuario> ObterAsync(IUsuarios usuarios, string email, CancellationToken cancelamento)
+        => await usuarios.ObterPorEmailAsync(EmailUcl.Normalizar(email), cancelamento)
+            ?? throw new RegraNegocioException("Nenhuma conta cadastrada com este e-mail.");
+
+    /// <summary>Demandas da conta como Solicitante que ainda não foram concluídas nem canceladas.</summary>
+    internal static async Task<int> DemandasEmAndamentoAsync(Demandas.IDemandas demandas, Usuario conta, CancellationToken cancelamento)
+        => (await demandas.ListarAsync(new FiltroVisibilidade(false, conta.Id, null), cancelamento))
+            .Count(d => d.Status is not (StatusDemanda.Concluido or StatusDemanda.Cancelado));
+}
+
+internal static class GestorResponsavel
+{
+    /// <summary>O Gestor é sempre o responsável pela própria equipe; o Admin escolhe um Gestor ativo.</summary>
+    internal static async Task<Ator> ObterAsync(ObterAtor obterAtor, Ator ator, Guid? gestorId, CancellationToken cancelamento)
+    {
+        if (ator.Eh(Perfil.Gestor))
+        {
+            return ator;
+        }
+
+        if (gestorId is not { } id)
+        {
+            throw new RegraNegocioException("Escolha o Gestor responsável pelo Funcionário SESI.");
+        }
+
+        return await obterAtor.ExecutarAsync(id, null, cancelamento)
+            ?? throw new RegraNegocioException("Escolha um Gestor ativo como responsável.");
     }
 }
 

@@ -1,0 +1,30 @@
+@page
+@model Contratacao.Web.Web.Pages.Admin.FuncionariosSesi.VincularModel
+@{
+    ViewData["Title"] = "Vincular conta como Funcionário SESI";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <a href="/Admin/FuncionariosSesi" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Funcionários SESI</a>
+        <h1 class="mt-1">Vincular conta existente</h1>
+        <p>Transforma uma conta já cadastrada em Funcionário SESI, sem criar conta nova.</p>
+    </div>
+</div>
+
+<form method="post" class="cartao formulario" novalidate>
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+    <partial name="_AvisoVinculo" model="@("Funcionário SESI")" />
+
+    <div class="mb-3">
+        <label class="form-label" for="email">E-mail da conta</label>
+        <input id="email" name="Email" type="email" value="@Model.Email" class="form-control" placeholder="nome@ucl.br" required autofocus />
+    </div>
+
+    <partial name="_GestorEContrato" model="(Model.Gestores, Model.Contratos, Model.GestorId, Model.Contrato)" />
+
+    <div class="d-flex gap-2">
+        <button type="submit" class="btn btn-primary"><i class="bi bi-link-45deg"></i> Vincular conta</button>
+        <a href="/Admin/FuncionariosSesi" class="btn btn-light">Cancelar</a>
+    </div>
+</form>
