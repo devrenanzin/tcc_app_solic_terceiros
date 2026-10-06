@@ -65,7 +65,7 @@
                             </td>
                             <td>
                                 <span class="selo-farol @Formatacao.ClasseFarol(demanda.Farol)">
-                                    @(demanda.Status == Contratacao.Web.Domain.Demandas.StatusDemanda.Cancelado ? "Cancelado" : Formatacao.Farol(demanda.Farol))
+                                    @Formatacao.Farol(demanda.Farol)
                                 </span>
                                 @if (demanda.Sla is { } sla)
                                 {

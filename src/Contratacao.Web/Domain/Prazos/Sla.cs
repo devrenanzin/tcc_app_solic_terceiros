@@ -27,7 +27,7 @@ internal sealed class Sla
 
     internal DateOnly DataInicioLocal => DataLimite.AddDays(-PrazoDias);
 
-    // SUPOSIÇÃO (S7): 45 dias corridos, contados sobre a data da aprovação em Brasília.
+    // 45 dias corridos, contados sobre a data da aprovação em Brasília (Cliente, S7).
     internal static Sla Iniciar(DateTime aprovacaoUtc, int prazoDias, ICalendarioSla calendario)
     {
         if (prazoDias <= 0)

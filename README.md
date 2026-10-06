@@ -33,7 +33,7 @@ Os requisitos estão em [docs/REQUISITOS_v3.1.md](docs/REQUISITOS_v3.1.md), a ú
 - **Anexos.** Gravados na pasta `Anexos:Pasta` (padrão `src/Contratacao.Web/App_Data/anexos`, fora do Git) com nome gerado pelo sistema; o banco guarda nome original, tipo, tamanho, etapa e o caminho. Nada é apagado. Cada upload gera registro no LogAuditoria.
 - **RACs.** A tabela `DemandaRac` é editada direto na correção (seção 8.1): a RAC desmarcada sai da tabela de ligação, e a mudança fica no HistoricoAlteracao. No banco a chave continua sem exclusão em cascata.
 - **Concorrência.** Se duas pessoas agem sobre a mesma demanda, a segunda recebe "Esta demanda foi alterada por outra pessoa... Recarregue a página" (RNF10).
-- **Antes de testar:** o Admin precisa cadastrar ao menos um gerente executivo em `/Admin/GerentesExecutivos` e ao menos uma OS do contrato em `/Admin/OrdensServico`, porque os dois campos são obrigatórios.
+- **Antes de testar:** o Admin precisa cadastrar ao menos um gerente executivo em `/Admin/GerentesExecutivos`, porque o campo é obrigatório. As OS 01 a 10 (contrato Norte) e 11 a 20 (Sudeste) já vêm na carga inicial.
 
 ## Usuários e acesso (Etapa 3)
 
@@ -146,9 +146,7 @@ Os testes de integração criam e apagam bancos temporários em `(localdb)\MSSQL
 
 Cada suposição usada no código (as abertas na seção "Suposições e pendências" do documento de requisitos) é listada aqui e marcada com `// SUPOSIÇÃO (S<n>)`.
 
-| # | Suposição | Onde |
-| --- | --- | --- |
-| S7 | 45 dias corridos; dia limite em laranja; demanda cancelada em cinza | `Sla.Iniciar`, `RegraFarol` |
+Nenhuma no momento: o cliente confirmou ou substituiu todas (S1 a S23).
 
 ## Pendências
 

@@ -107,6 +107,7 @@ internal static class Formatacao
         Domain.Prazos.Farol.Amarelo => "Atenção",
         Domain.Prazos.Farol.Laranja => "Vence logo",
         Domain.Prazos.Farol.Vermelho => "Atrasada",
+        Domain.Prazos.Farol.Cancelado => "Cancelado",
         _ => farol.ToString(),
     };
 

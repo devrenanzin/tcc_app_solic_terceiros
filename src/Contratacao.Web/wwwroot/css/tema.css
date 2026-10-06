@@ -475,6 +475,17 @@ a.cartao-atalho:hover {
 .farol-laranja { background: #fdeedf; color: var(--farol-laranja); }
 .farol-vermelho { background: #fbe5e5; color: var(--farol-vermelho); }
 
+/* Cancelada: X vermelho na frente do rótulo (Cliente, S7). */
+.farol-cancelado { background: #fbe5e5; color: var(--farol-vermelho); }
+.farol-cancelado::before {
+    content: "\2715";
+    width: auto;
+    height: auto;
+    border-radius: 0;
+    background: none;
+    font-weight: 800;
+}
+
 /* Trilha das 7 etapas */
 .trilha-etapas {
     display: flex;

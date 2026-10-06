@@ -8,4 +8,7 @@ internal enum Farol
     Amarelo = 3,
     Laranja = 4,
     Vermelho = 5,
+
+    /// <summary>Demanda cancelada: X vermelho com o rótulo Cancelado (Cliente).</summary>
+    Cancelado = 6,
 }

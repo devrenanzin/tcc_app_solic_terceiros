@@ -52,6 +52,13 @@ public sealed class CargaInicialTests(BancoFixture banco) : IClassFixture<BancoF
         Assert.Equal(["Híbrido", "Presencial", "Remoto"],
             await contexto.ModelosTrabalho.Select(m => m.Nome).OrderBy(n => n).ToListAsync(Cancelamento));
         Assert.Equal("Nova contratação", (await contexto.TiposDemanda.SingleAsync(Cancelamento)).Nome);
+        // OS da carga inicial (Cliente): 01 a 10 no Norte e 11 a 20 no Sudeste.
+        var ordens = await contexto.OrdensServico.OrderBy(o => o.Numero).Where(o => o.Numero.Length == 2)
+            .Select(o => new { o.Numero, o.ContratoId }).ToListAsync(Cancelamento);
+        Assert.Equal(Enumerable.Range(1, 20).Select(n => n.ToString("D2", System.Globalization.CultureInfo.InvariantCulture)), ordens.Select(o => o.Numero));
+        Assert.All(ordens.Take(10), o => Assert.Equal(IdsFixos.ContratoNorte, o.ContratoId));
+        Assert.All(ordens.Skip(10), o => Assert.Equal(IdsFixos.ContratoSudeste, o.ContratoId));
+
         // A carga não cria gerentes (são nomes de pessoas); o único é o fictício inserido pelo BancoFixture.
         Assert.Equal([BancoFixture.GerenteExecutivoId], await contexto.GerentesExecutivos.Select(g => g.Id).ToListAsync(Cancelamento));
 

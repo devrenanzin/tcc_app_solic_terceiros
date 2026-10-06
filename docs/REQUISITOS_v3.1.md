@@ -69,6 +69,8 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 51 | Sequencial do número (S3) | Suposição | Confirmado: recomeça do 1 a cada ano (a última de 2026 pode ser 2026-000123 e a primeira de 2027 é 2027-000001) | Cliente |
 | 52 | Informações contratuais (S11) | OS e coletor de custo (suposição) | OS, corredor e contrato. O coletor de custo é informação do solicitante: a mesma OS pode ter coletores diferentes | Cliente |
 | 53 | OS do contrato | Lista ou texto livre | Lista: cada OS pertence a um contrato, cadastrada pelo Admin (tabela OrdemServico); o formulário mostra só as OS do contrato do corredor | Cliente |
+| 54 | Farol da demanda cancelada (S7) | Cinza com o rótulo Cancelado (suposição) | X vermelho com o rótulo Cancelado; o restante da S7 confirmado: 45 dias corridos e dia limite em laranja | Cliente |
+| 55 | OS da carga inicial | Vazia | 01 a 10 no contrato Norte e 11 a 20 no contrato Sudeste | Cliente |
 | 47 | Custo na correção que muda quantidade ou equipamentos | Só a mudança no QQP recalculava (item 27) | Qualquer correção que mude o item QQP, a quantidade de vagas ou os equipamentos recalcula o custo inteiro com os valores atuais dos catálogos; sem essas mudanças, ficam os valores do envio | Cliente |
 
 ## 1–3. Objetivo e escopo
@@ -359,7 +361,7 @@ O SLA conta 45 dias corridos a partir da aprovação do Gestor, nunca reinicia n
 
 **RN03 — Início.** DataInicioSLA = data e hora da aprovação do Gestor.
 
-**RN04 — Prazo (Recomendação — confirmar).** Dias corridos, como no exemplo da própria v3.0 (01/09 + 45 = 16/10). DataLimiteSLA = data da aprovação, no horário de Brasília, + PrazoDiasSla. A demanda vence às 23:59:59 do dia limite.
+**RN04 — Prazo (Cliente, item 54).** Dias corridos, como no exemplo da própria v3.0 (01/09 + 45 = 16/10). DataLimiteSLA = data da aprovação, no horário de Brasília, + PrazoDiasSla. A demanda vence às 23:59:59 do dia limite.
 
 **RN05 — Sem reinício e sem pausa.** Devoluções e correções não alteram o início nem o limite.
 
@@ -383,9 +385,9 @@ No exemplo da v3.0, em 16/09 temos 15 dias decorridos e 30 restantes, o que cont
 | Prazo vencido (restantes negativos) | Vermelho |
 | Finalizada até o dia limite | Verde |
 | Finalizada após o dia limite | Vermelho |
-| Cancelada | Cinza, com o rótulo Cancelado |
+| Cancelada | X vermelho com o rótulo Cancelado (Cliente, item 54) |
 
-O dia limite (0 restantes) era uma lacuna na v3.0, que ia de "1 a 5" direto para "vencido"; na v3.1 ele fica laranja. A linha de demanda cancelada também é nova. **Confirmar** as duas.
+O dia limite (0 restantes) era uma lacuna na v3.0, que ia de "1 a 5" direto para "vencido"; na v3.1 ele fica laranja. A linha de demanda cancelada também é nova. As duas foram confirmadas pelo cliente (item 54).
 
 ## 12–15. Linha do tempo, congelamento e auditoria
 
@@ -1174,7 +1176,7 @@ O CNPJ da Contratada é opcional (Cliente); quando informado, não pode se repet
 | Corredor | As 7 combinações da RN13, cada uma com região e contrato | Completo (cliente) |
 | ItemEquipamento | Notebook, Segunda tela e Celular, com os valores da RN12 | Completo (cliente) |
 | GerenteExecutivo | Vazio na seed; o Admin cadastra pela tela (são nomes de pessoas) | Completo |
-| OrdemServico | Vazio na seed; o Admin cadastra as OS de cada contrato pela tela (Cliente) | Completo |
+| OrdemServico | 01 a 10 no contrato 5900125082 (Norte) e 11 a 20 no 5900118506 (Sudeste); o Admin mantém pela tela (Cliente) | Completo (cliente) |
 
 ## 24. Transições permitidas
 
@@ -1453,15 +1455,13 @@ O README do repositório deve repetir esses passos, ajustados ao que for de fato
 
 ## Suposições e pendências
 
-Uma suposição foi adotada para não travar o desenvolvimento e precisam de confirmação; duas decisões continuam abertas e serão necessárias em etapas específicas da implementação.
+Todas as suposições adotadas para não travar o desenvolvimento foram confirmadas ou substituídas pelo cliente; duas decisões continuam abertas.
 
 ### Suposições a confirmar
 
-| # | Suposição adotada | Seção |
-| --- | --- | --- |
-| S7 | 45 dias corridos; dia limite em laranja; demanda cancelada em cinza | 9–11 |
+Nenhuma no momento.
 
-S1, S2, S3, S4, S5, S6, S8, S9, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22 e S23 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32, 34, 36, 41 a 46 e 48 a 53).
+S1, S2, S3, S4, S5, S6, S7, S8, S9, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22 e S23 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32, 34, 36, 41 a 46 e 48 a 55).
 
 A antiga S10 (escolha do item QQP na demanda) foi confirmada pelo cliente.
 

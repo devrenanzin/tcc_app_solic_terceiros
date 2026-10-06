@@ -31,7 +31,7 @@ public sealed class CancelamentoTests
     }
 
     [Fact]
-    public void Cancelamento_nao_apaga_nada_e_o_farol_fica_cinza()
+    public void Cancelamento_nao_apaga_nada_e_o_farol_mostra_cancelado()
     {
         var demanda = _c.Aprovada();
         var (etapas, historico) = (demanda.Etapas.Count, demanda.Historico.Count);
@@ -41,7 +41,7 @@ public sealed class CancelamentoTests
         Assert.Equal(etapas, demanda.Etapas.Count);
         Assert.Equal(historico + 1, demanda.Historico.Count);
         Assert.NotNull(demanda.Sla);
-        Assert.Equal(Farol.Cinza, demanda.ObterFarol(_c.Relogio, _c.Calendario));
+        Assert.Equal(Farol.Cancelado, demanda.ObterFarol(_c.Relogio, _c.Calendario));
     }
 
     [Fact]

@@ -49,7 +49,7 @@ internal sealed class ConfiguracaoOrdemServico : IEntityTypeConfiguration<OrdemS
 {
     public void Configure(EntityTypeBuilder<OrdemServico> b)
     {
-        // OS de cada contrato (Cliente, revisão de 06/10/2026); vazia na carga inicial, cadastrada pelo Admin.
+        // OS de cada contrato (Cliente, revisão de 06/10/2026), mantidas pelo Admin.
         b.ToTable("OrdemServico");
         b.HasKey(o => o.Id);
         b.Property(o => o.ContratoId);
@@ -58,6 +58,15 @@ internal sealed class ConfiguracaoOrdemServico : IEntityTypeConfiguration<OrdemS
 
         b.HasIndex(o => new { o.ContratoId, o.Numero }).IsUnique().HasDatabaseName("UQ_OrdemServico_ContratoNumero");
         b.HasOne<Contrato>().WithMany().HasForeignKey(o => o.ContratoId).HasConstraintName("FK_OrdemServico_Contrato");
+
+        // Carga inicial (Cliente): OS 01 a 10 no contrato Norte e 11 a 20 no contrato Sudeste.
+        b.HasData(Enumerable.Range(1, 20).Select(numero => new
+        {
+            Id = IdsFixos.OrdemServico(numero),
+            ContratoId = numero <= 10 ? IdsFixos.ContratoNorte : IdsFixos.ContratoSudeste,
+            Numero = numero.ToString("D2", System.Globalization.CultureInfo.InvariantCulture),
+            Ativo = true,
+        }));
     }
 }
 

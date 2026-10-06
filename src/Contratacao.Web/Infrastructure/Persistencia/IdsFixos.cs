@@ -63,4 +63,7 @@ internal static class IdsFixos
     internal static readonly Guid CorredorSul = Guid.Parse("0000000b-0000-0000-0000-000000000005");
     internal static readonly Guid CorredorPelotizacaoSudeste = Guid.Parse("0000000b-0000-0000-0000-000000000006");
     internal static readonly Guid CorredorIntegradoSudeste = Guid.Parse("0000000b-0000-0000-0000-000000000007");
+
+    /// <summary>OS da carga inicial (Cliente): 01 a 10 no contrato Norte e 11 a 20 no Sudeste; o id termina no número.</summary>
+    internal static Guid OrdemServico(int numero) => Guid.Parse($"0000000c-0000-0000-0000-{numero:D12}");
 }

@@ -36,8 +36,8 @@ public sealed class FarolTests
         => Assert.Equal(Farol.Cinza, RegraFarol.Calcular(null, false, null, new DateOnly(2026, 9, 1)));
 
     [Fact]
-    public void Cancelada_fica_cinza_mesmo_vencida()
-        => Assert.Equal(Farol.Cinza, RegraFarol.Calcular(SlaExemplo, true, null, new DateOnly(2026, 12, 1)));
+    public void Cancelada_tem_marca_propria_mesmo_vencida()
+        => Assert.Equal(Farol.Cancelado, RegraFarol.Calcular(SlaExemplo, true, null, new DateOnly(2026, 12, 1)));
 
     [Theory]
     [InlineData(-10)]
