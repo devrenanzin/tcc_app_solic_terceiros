@@ -34,7 +34,7 @@ Os diagramas existem como código PlantUML e Mermaid dentro do documento; use-os
 5. **Tempo controlado.** Nada de `DateTime.Now` no domínio: use um relógio injetável. Datas gravadas em UTC; contagem de prazo no fuso `America/Sao_Paulo`.
 6. **Nada se apaga.** Demanda enviada, histórico, anexo e auditoria nunca são excluídos. Sem exclusão em cascata e sem nenhuma exclusão física: o rascunho existe só no navegador (UC02, UC17).
 7. **Tudo auditado.** Toda ação relevante gera registro em HistoricoDemanda, HistoricoAlteracao ou LogAuditoria, com usuário, perfil, IP e data/hora.
-8. **Dados pessoais e valores do cliente.** Nunca coloque nomes ou e-mails reais em código, seed ou testes. Use dados fictícios com e-mails `@ucl.br`. Os valores do QQP também não vão para o repositório: o arquivo `dados/tb_qqp_SESI.csv` fica fora do Git, e nenhum valor dele é copiado para código, testes ou documentos. Nomes reais (como os gerentes executivos) entram só no banco, pela tela ou direto no banco local, nunca no Git.
+8. **Dados pessoais e valores do cliente.** Nunca coloque nomes ou e-mails reais em código, seed ou testes. Use dados fictícios com e-mails `@ucl.br`. Os valores reais do QQP também não vão para o repositório: `dados/tb_qqp_SESI.csv` traz valores alterados pelo cliente, e nenhum valor real é copiado para código, testes ou documentos. Nomes reais (como os gerentes executivos) entram só no banco, pela tela ou direto no banco local, nunca no Git.
 
 ## Decisões já tomadas pelo cliente
 
@@ -59,7 +59,7 @@ Os diagramas existem como código PlantUML e Mermaid dentro do documento; use-os
 CLAUDE.md
 README.md
 docs/REQUISITOS_v3.1.md
-dados/tb_qqp_SESI.csv        catálogo QQP (1.019 itens), lido pela seed; NÃO vai para o Git (valores confidenciais)
+dados/tb_qqp_SESI.csv        catálogo QQP (1.019 itens), lido pela seed; valores alterados, não os reais
 dados/tb_racs.csv            13 RACs, lidas pela seed
 src/Contratacao.Web/
   Domain/                    entidades, máquina de estados, SLA, farol, custo

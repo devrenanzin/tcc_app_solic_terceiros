@@ -71,7 +71,7 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 53 | OS do contrato | Lista ou texto livre | Lista: cada OS pertence a um contrato, cadastrada pelo Admin (tabela OrdemServico); o formulário mostra só as OS do contrato do corredor | Cliente |
 | 54 | Farol da demanda cancelada (S7) | Cinza com o rótulo Cancelado (suposição) | X vermelho com o rótulo Cancelado; o restante da S7 confirmado: 45 dias corridos e dia limite em laranja | Cliente |
 | 55 | OS da carga inicial | Vazia | 01 a 10 no contrato Norte e 11 a 20 no contrato Sudeste | Cliente |
-| 56 | Valores do QQP | O arquivo tb\_qqp\_SESI.csv ia para o repositório | Os valores do QQP não vão para o GitHub: o arquivo fica só na máquina de quem instala, na pasta dados/, e nada no código ou nos testes repete esses valores | Cliente |
+| 56 | Valores do QQP | O arquivo tb\_qqp\_SESI.csv ia para o repositório com os valores reais | Os valores reais não vão para o GitHub: o repositório traz o arquivo com piso e preço alterados pelo cliente, e nada no código, nos testes ou nos documentos repete valores reais | Cliente |
 | 47 | Custo na correção que muda quantidade ou equipamentos | Só a mudança no QQP recalculava (item 27) | Qualquer correção que mude o item QQP, a quantidade de vagas ou os equipamentos recalcula o custo inteiro com os valores atuais dos catálogos; sem essas mudanças, ficam os valores do envio | Cliente |
 
 ## 1–3. Objetivo e escopo
@@ -1094,7 +1094,7 @@ CREATE INDEX IX_ItemQqp_Busca ON ItemQqp(RegiaoId, FuncaoId, ClassificacaoId, Ni
 
 Regras de importação:
 
-- O arquivo tb\_qqp\_SESI.csv é fornecido pelo cliente e **não vai para o repositório** (Cliente, item 56): os valores do QQP são confidenciais. Quem instala o sistema coloca o arquivo na pasta dados/ antes de preparar o banco; a seed lê o arquivo, nunca valores copiados para o código.
+- O arquivo tb\_qqp\_SESI.csv vai para o repositório com piso e preço alterados pelo cliente, para não expor os valores reais (item 56). Em produção, quem instala troca o arquivo pelo real antes de preparar o banco; a seed lê o arquivo, nunca valores copiados para o código.
 - Valores em reais são convertidos removendo o símbolo da moeda e o ponto de milhar e trocando a vírgula decimal por ponto: `R$ 12.345,67` vira `12345.67`.
 - **Classificação "-" (Cliente, item 50):** são funções que não têm classificação; vira ClassificacaoId nulo.
 - **Inconsistência na planilha:** os códigos 466 e 467 têm a mesma combinação (QQP SUDESTE, Médico, Pleno, II, 24 h) com valores diferentes. Pela sequência das linhas vizinhas, o 467 provavelmente seria nível III. A combinação não é única no banco até o cliente corrigir; o Código é a chave.

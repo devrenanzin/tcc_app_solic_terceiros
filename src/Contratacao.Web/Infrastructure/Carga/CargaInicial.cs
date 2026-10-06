@@ -45,13 +45,12 @@ internal sealed class CargaInicial(
             return;
         }
 
-        // O arquivo não vai para o Git (valores confidenciais do cliente): quem instala o coloca em dados/.
+        // O repositório traz o arquivo com valores alterados; em produção, quem instala o troca pelo real.
         var arquivo = Path.Combine(pastaDados, ArquivoQqp);
         if (!File.Exists(arquivo))
         {
             throw new InvalidOperationException(
-                $"Arquivo {ArquivoQqp} não encontrado em {pastaDados}. Ele não fica no repositório: peça ao cliente e " +
-                $"copie para a pasta dados/ na raiz do projeto antes de preparar o banco ou rodar os testes.");
+                $"Arquivo {ArquivoQqp} não encontrado em {pastaDados}. Copie-o para a pasta dados/ na raiz do projeto.");
         }
 
         var linhas = LeitorCsv.Ler(arquivo, colunasEsperadas: 8);
