@@ -66,6 +66,9 @@ Decisões tomadas pelo cliente depois da análise da v3.1. Elas prevalecem sobre
 | 48 | SESI que trata a demanda (S4) | Suposição | Confirmado: depois do aceite, qualquer Funcionário SESI ativo do contrato registra vaga, entrevistas, exames e finalização; o responsável SESI é a referência | Cliente |
 | 49 | Tipos de anexo (S8) | Suposição | Confirmado: imagens = .jpg, .jpeg e .png; e-mail = .eml e .msg | Cliente |
 | 50 | Classificação "-" no QQP (S9) | Suposição | Confirmado: são funções que não têm classificação | Cliente |
+| 51 | Sequencial do número (S3) | Suposição | Confirmado: recomeça do 1 a cada ano (a última de 2026 pode ser 2026-000123 e a primeira de 2027 é 2027-000001) | Cliente |
+| 52 | Informações contratuais (S11) | OS e coletor de custo (suposição) | OS, corredor e contrato. O coletor de custo é informação do solicitante: a mesma OS pode ter coletores diferentes | Cliente |
+| 53 | OS do contrato | Lista ou texto livre | Lista: cada OS pertence a um contrato, cadastrada pelo Admin (tabela OrdemServico); o formulário mostra só as OS do contrato do corredor | Cliente |
 | 47 | Custo na correção que muda quantidade ou equipamentos | Só a mudança no QQP recalculava (item 27) | Qualquer correção que mude o item QQP, a quantidade de vagas ou os equipamentos recalcula o custo inteiro com os valores atuais dos catálogos; sem essas mudanças, ficam os valores do envio | Cliente |
 
 ## 1–3. Objetivo e escopo
@@ -155,7 +158,7 @@ Diagrama de máquina de estados (UML): ● é o estado inicial, ◉ os estados f
 **RN02 — Devolução pelo SESI (revista pelo Cliente).** Na Validação SESI, o SESI pode devolver a demanda ao Solicitante, com motivo obrigatório, indicando o tipo da inconsistência:
 
 - nas informações do solicitante;
-- nas informações contratuais (OS e coletor de custo, S11).
+- nas informações contratuais: OS, corredor e contrato (Cliente, item 52).
 
 Em qualquer caso, quem corrige é o Solicitante; o Gestor não edita campos.
 
@@ -197,7 +200,7 @@ São 19 casos de uso ativos: os 15 da v3.0, com ajustes, e 4 novos (UC17 a UC20)
 
 ### UC02 — Numeração
 
-No envio, o sistema gera o número no formato AAAA-NNNNNN: o ano do envio e um sequencial de 6 dígitos (ex.: 2026-000123). **SUPOSIÇÃO — confirmar:** o sequencial reinicia a cada ano. Rascunhos não chegam ao sistema e por isso não têm número.
+No envio, o sistema gera o número no formato AAAA-NNNNNN: o ano do envio e um sequencial de 6 dígitos (ex.: 2026-000123). O sequencial recomeça do 1 a cada ano (Cliente, item 51). Rascunhos não chegam ao sistema e por isso não têm número.
 
 ### UC02 — Rascunho no navegador (Cliente)
 
@@ -275,14 +278,14 @@ Obrigatório = campo preenchido em todos os registros analisados (confirmado pel
 | Recursos | Categoria da CNH | Lista | Condicional | A, B, C, D, E, AB, AC, AD, AE; exigida quando Exige CNH = sim |
 | Segurança | RACs | Múltipla escolha | Não | Rac: RAC 01 a RAC 13, da lista tb\_racs (ex.: RAC 01 Trabalhos em altura) |
 | Contrato | Número do contrato | Automático | Sim | Definido pelo corredor (RN13); somente leitura |
-| Contrato | OS do contrato | Lista ou texto | Sim | Ex.: 01, 15, 31 |
+| Contrato | OS do contrato | Lista | Sim | OrdemServico: só as OS do contrato do corredor, cadastradas pelo Admin; ex.: 01, 15, 31 (Cliente) |
 | Contrato | Coletor de custo | Texto | Sim | Livre |
 | Contrato | Responsável efetivo: nome e e-mail | Texto | Sim | E-mail válido, sem restrição de domínio (é um contato, não um usuário) |
 | Contrato | Fiscal efetivo: nome e e-mail | Texto | Sim | Idem |
 | Outros | Observações | Texto longo | Não | Livre |
 | Outros | De acordo VP-2 | Anexo | Sim | Anexo de categoria própria; sem ele a demanda não pode ser enviada (Cliente) |
 
-**Informações contratuais (SUPOSIÇÃO S11 — confirmar):** OS e coletor de custo; o número do contrato vem do corredor (RN13). O Solicitante preenche todos os campos, inclusive esses, e é o único que os corrige; o Gestor não edita campos (Cliente). A distinção serve para a RN02a: correção de informação contratual volta à Validação do Gestor.
+**Informações contratuais (Cliente, item 52):** OS, corredor e contrato; o número do contrato vem do corredor (RN13). Cada OS pertence a um contrato, mas a mesma OS pode ter coletores de custo diferentes, por isso o coletor é informação do solicitante, preenchida em cada demanda. O Solicitante preenche todos os campos, inclusive esses, e é o único que os corrige; o Gestor não edita campos (Cliente). A distinção serve para a RN02a: correção de informação contratual volta à Validação do Gestor.
 
 **Listas em cascata.** Cada lista de cargo só mostra opções compatíveis com as escolhas anteriores. Escolhidos os cinco valores, o sistema mostra piso e preço do item. Se a combinação tiver mais de um item (caso dos códigos 466 e 467), o Solicitante escolhe pelo código.
 
@@ -532,7 +535,7 @@ Notação UML: cada classe tem nome, atributos e operações, com visibilidade p
 
 ### Modelo lógico
 
-O modelo lógico mostra 25 entidades (o físico tem 30 tabelas, contando as cinco listas do catálogo QQP); Demanda é o centro e todas as tabelas filhas apontam para ela sem exclusão em cascata. Notação de entidade-relacionamento: || = exatamente um, |o = zero ou um, o{ = zero ou muitos, |{ = um ou muitos.
+O modelo lógico mostra 26 entidades (o físico tem 31 tabelas, contando as cinco listas do catálogo QQP); Demanda é o centro e todas as tabelas filhas apontam para ela sem exclusão em cascata. Notação de entidade-relacionamento: || = exatamente um, |o = zero ou um, o{ = zero ou muitos, |{ = um ou muitos.
 
 ```mermaid
 erDiagram
@@ -564,6 +567,8 @@ erDiagram
   RAC ||--o{ DEMANDA_RAC : "aplicada em"
   CONTRATO ||--o{ DEMANDA : "vincula"
   CONTRATO ||--o{ CORREDOR : "atende"
+  CONTRATO ||--o{ ORDEM_SERVICO : "tem"
+  ORDEM_SERVICO ||--o{ DEMANDA : "referencia"
   CONTRATADA ||--o{ CONTRATO : "detem"
   CONTRATO |o--o{ USUARIO : "vincula SESI"
   USUARIO ||--o{ GESTOR_CONTRATO : "gestor"
@@ -641,7 +646,7 @@ erDiagram
     bool ExigeCnh
     string CategoriaCnh "nulo"
     guid ContratoId FK
-    string ContratoOs
+    guid OrdemServicoId FK
     string ColetorCusto
     string ResponsavelEfetivoNome
     string ResponsavelEfetivoEmail
@@ -794,6 +799,12 @@ erDiagram
     guid GestorId PK
     guid ContratoId PK
   }
+  ORDEM_SERVICO {
+    guid Id PK
+    guid ContratoId FK
+    string Numero "unico com o contrato"
+    bool Ativo
+  }
 ```
 
 SEQUENCIA\_NUMERO\_DEMANDA não se relaciona com outras tabelas: guarda o último sequencial de cada ano para gerar o número AAAA-NNNNNN sem repetição.
@@ -886,7 +897,7 @@ CREATE TABLE Demanda (
   ExigeCnh bit NOT NULL,
   CategoriaCnh varchar(2) NULL CONSTRAINT CK_Demanda_CategoriaCnh CHECK (CategoriaCnh IN ('A','B','C','D','E','AB','AC','AD','AE')),
   ContratoId uniqueidentifier NOT NULL CONSTRAINT FK_Demanda_Contrato REFERENCES Contrato(Id),
-  ContratoOs nvarchar(5) NOT NULL,
+  OrdemServicoId uniqueidentifier NOT NULL CONSTRAINT FK_Demanda_OrdemServico REFERENCES OrdemServico(Id),
   ColetorCusto nvarchar(30) NOT NULL,
   ResponsavelEfetivoNome nvarchar(150) NOT NULL,
   ResponsavelEfetivoEmail nvarchar(254) NOT NULL,
@@ -1089,7 +1100,7 @@ Regras de importação:
 
 ### Catálogos do formulário
 
-Sete catálogos alimentam as listas do formulário e o cálculo de custo, e a tabela DemandaRac liga as RACs à demanda; o Admin as mantém pela tela de parâmetros. Nas migrations, os catálogos são criados antes de Demanda.
+Oito catálogos alimentam as listas do formulário e o cálculo de custo, e a tabela DemandaRac liga as RACs à demanda; o Admin as mantém pela tela de parâmetros. Nas migrations, os catálogos são criados antes de Demanda.
 
 ```sql
 CREATE TABLE TipoDemanda (
@@ -1132,6 +1143,13 @@ CREATE TABLE Contrato (
   Ativo bit NOT NULL,
   CONSTRAINT CK_Contrato_Numero CHECK (Numero LIKE '59%' AND Numero NOT LIKE '%[^0-9]%')
 );
+CREATE TABLE OrdemServico (
+  Id uniqueidentifier NOT NULL CONSTRAINT PK_OrdemServico PRIMARY KEY,
+  ContratoId uniqueidentifier NOT NULL CONSTRAINT FK_OrdemServico_Contrato REFERENCES Contrato(Id),
+  Numero nvarchar(5) NOT NULL,
+  Ativo bit NOT NULL,
+  CONSTRAINT UQ_OrdemServico_ContratoNumero UNIQUE (ContratoId, Numero)
+);
 CREATE TABLE DemandaRac (
   DemandaId uniqueidentifier NOT NULL CONSTRAINT FK_DemandaRac_Demanda REFERENCES Demanda(Id),
   RacId uniqueidentifier NOT NULL CONSTRAINT FK_DemandaRac_Rac REFERENCES Rac(Id),
@@ -1156,6 +1174,7 @@ O CNPJ da Contratada é opcional (Cliente); quando informado, não pode se repet
 | Corredor | As 7 combinações da RN13, cada uma com região e contrato | Completo (cliente) |
 | ItemEquipamento | Notebook, Segunda tela e Celular, com os valores da RN12 | Completo (cliente) |
 | GerenteExecutivo | Vazio na seed; o Admin cadastra pela tela (são nomes de pessoas) | Completo |
+| OrdemServico | Vazio na seed; o Admin cadastra as OS de cada contrato pela tela (Cliente) | Completo |
 
 ## 24. Transições permitidas
 
@@ -1434,17 +1453,15 @@ O README do repositório deve repetir esses passos, ajustados ao que for de fato
 
 ## Suposições e pendências
 
-Três suposições foram adotadas para não travar o desenvolvimento e precisam de confirmação; duas decisões continuam abertas e serão necessárias em etapas específicas da implementação.
+Uma suposição foi adotada para não travar o desenvolvimento e precisam de confirmação; duas decisões continuam abertas e serão necessárias em etapas específicas da implementação.
 
 ### Suposições a confirmar
 
 | # | Suposição adotada | Seção |
 | --- | --- | --- |
-| S3 | O sequencial do número da demanda reinicia a cada ano | UC02 |
 | S7 | 45 dias corridos; dia limite em laranja; demanda cancelada em cinza | 9–11 |
-| S11 | Informações contratuais = OS e coletor de custo (o contrato vem do corredor) | 8.1 |
 
-S1, S2, S4, S5, S6, S8, S9, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22 e S23 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32, 34, 36, 41 a 46 e 48 a 50).
+S1, S2, S3, S4, S5, S6, S8, S9, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22 e S23 foram confirmadas ou substituídas por decisões do Cliente na revisão de 05/10/2026 (itens 28, 29, 31, 32, 34, 36, 41 a 46 e 48 a 53).
 
 A antiga S10 (escolha do item QQP na demanda) foi confirmada pelo cliente.
 

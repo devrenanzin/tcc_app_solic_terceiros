@@ -58,7 +58,7 @@
                     <optgroup label="@grupo.Key">
                         @foreach (var corredor in grupo)
                         {
-                            <option value="@corredor.Id" data-contrato="@corredor.Contrato" selected="@(e.CorredorId == corredor.Id)">@corredor.Nome</option>
+                            <option value="@corredor.Id" data-contrato="@corredor.Contrato" data-contrato-id="@corredor.ContratoId" selected="@(e.CorredorId == corredor.Id)">@corredor.Nome</option>
                         }
                     </optgroup>
                 }
@@ -195,10 +195,17 @@
             <span class="form-label d-block">Número do contrato</span>
             <div class="campo-automatico" id="contrato-do-corredor">Escolha o corredor</div>
         </div>
-        @* SUPOSIÇÃO (S11): informações contratuais = OS e coletor de custo. *@
         <div class="col-md-4">
             <label class="form-label" for="os">OS do contrato</label>
-            <input id="os" name="Entrada.ContratoOs" value="@e.ContratoOs" maxlength="5" class="form-control" placeholder="Ex.: 15" required />
+            @* Só as OS do contrato do corredor escolhido ficam visíveis (formulario-demanda.js); o domínio confere. *@
+            <select id="os" name="Entrada.OrdemServicoId" class="form-select" required data-os-do-contrato>
+                <option value="">Selecione</option>
+                @foreach (var os in c.OrdensServico)
+                {
+                    <option value="@os.Id" data-contrato-id="@os.ContratoId" selected="@(e.OrdemServicoId == os.Id)">@os.Numero</option>
+                }
+            </select>
+            <div class="ajuda mt-1" data-sem-os hidden><i class="bi bi-exclamation-circle"></i> Este contrato não tem OS cadastrada. Peça ao Admin.</div>
         </div>
         <div class="col-md-4">
             <label class="form-label" for="coletor">Coletor de custo</label>

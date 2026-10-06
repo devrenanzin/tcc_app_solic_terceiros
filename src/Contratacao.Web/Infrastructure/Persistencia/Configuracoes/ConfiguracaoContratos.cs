@@ -45,6 +45,22 @@ internal sealed class ConfiguracaoContrato : IEntityTypeConfiguration<Contrato>
     }
 }
 
+internal sealed class ConfiguracaoOrdemServico : IEntityTypeConfiguration<OrdemServico>
+{
+    public void Configure(EntityTypeBuilder<OrdemServico> b)
+    {
+        // OS de cada contrato (Cliente, revisão de 06/10/2026); vazia na carga inicial, cadastrada pelo Admin.
+        b.ToTable("OrdemServico");
+        b.HasKey(o => o.Id);
+        b.Property(o => o.ContratoId);
+        b.Property(o => o.Numero).HasMaxLength(OrdemServico.TamanhoMaximoNumero).IsRequired();
+        b.Property(o => o.Ativo);
+
+        b.HasIndex(o => new { o.ContratoId, o.Numero }).IsUnique().HasDatabaseName("UQ_OrdemServico_ContratoNumero");
+        b.HasOne<Contrato>().WithMany().HasForeignKey(o => o.ContratoId).HasConstraintName("FK_OrdemServico_Contrato");
+    }
+}
+
 internal sealed class ConfiguracaoCorredor : IEntityTypeConfiguration<Corredor>
 {
     public void Configure(EntityTypeBuilder<Corredor> b)

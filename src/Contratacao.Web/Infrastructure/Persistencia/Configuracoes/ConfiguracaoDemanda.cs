@@ -101,7 +101,7 @@ internal sealed class ConfiguracaoDemanda : IEntityTypeConfiguration<Demanda>
         b.Property(d => d.Celular);
         b.Property(d => d.ExigeCnh);
         b.Property(d => d.CategoriaCnh).HasMaxLength(2).IsUnicode(false);
-        b.Property(d => d.ContratoOs).HasMaxLength(5).IsRequired();
+        b.Property(d => d.OrdemServicoId);
         b.Property(d => d.ColetorCusto).HasMaxLength(30).IsRequired();
         b.Property(d => d.ResponsavelEfetivoNome).HasMaxLength(150).IsRequired();
         b.Property(d => d.ResponsavelEfetivoEmail).HasMaxLength(254).IsRequired();
@@ -118,6 +118,7 @@ internal sealed class ConfiguracaoDemanda : IEntityTypeConfiguration<Demanda>
         b.HasOne<Corredor>().WithMany().HasForeignKey(d => d.CorredorId).HasConstraintName("FK_Demanda_Corredor");
         b.HasOne<ModeloTrabalho>().WithMany().HasForeignKey(d => d.ModeloTrabalhoId).HasConstraintName("FK_Demanda_ModeloTrabalho");
         b.HasOne<ItemQqp>().WithMany().HasForeignKey(d => d.ItemQqpId).HasConstraintName("FK_Demanda_ItemQqp");
+        b.HasOne<OrdemServico>().WithMany().HasForeignKey(d => d.OrdemServicoId).HasConstraintName("FK_Demanda_OrdemServico");
     }
 }
 

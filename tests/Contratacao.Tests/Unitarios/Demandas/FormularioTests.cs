@@ -88,7 +88,7 @@ public sealed class FormularioTests
         => Assert.Equal("fiscal@empresa.com.br", (Cenario.Dados() with { FiscalEfetivoEmail = "fiscal@empresa.com.br" }).Validar().FiscalEfetivoEmail);
 
     [Theory]
-    [InlineData("ContratoOs", 6)]
+    [InlineData("AreaSolicitante", 151)]
     [InlineData("ColetorCusto", 31)]
     [InlineData("LocalidadeVaga", 201)]
     public void Textos_respeitam_o_tamanho_do_modelo_fisico(string campo, int tamanho)
@@ -96,7 +96,7 @@ public sealed class FormularioTests
         var texto = new string('x', tamanho);
         var dados = campo switch
         {
-            "ContratoOs" => Cenario.Dados() with { ContratoOs = texto },
+            "AreaSolicitante" => Cenario.Dados() with { AreaSolicitante = texto },
             "ColetorCusto" => Cenario.Dados() with { ColetorCusto = texto },
             _ => Cenario.Dados() with { LocalidadeVaga = texto },
         };

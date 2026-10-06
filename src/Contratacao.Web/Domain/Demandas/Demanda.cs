@@ -66,7 +66,7 @@ internal sealed class Demanda
     internal bool Celular { get; private set; }
     internal bool ExigeCnh { get; private set; }
     internal string? CategoriaCnh { get; private set; }
-    internal string ContratoOs { get; private set; } = string.Empty;
+    internal Guid OrdemServicoId { get; private set; }
     internal string ColetorCusto { get; private set; } = string.Empty;
     internal string ResponsavelEfetivoNome { get; private set; } = string.Empty;
     internal string ResponsavelEfetivoEmail { get; private set; } = string.Empty;
@@ -115,7 +115,7 @@ internal sealed class Demanda
         ExigeCnh = ExigeCnh,
         CategoriaCnh = CategoriaCnh,
         Racs = _racs.Select(r => r.RacId).ToHashSet(),
-        ContratoOs = ContratoOs,
+        OrdemServicoId = OrdemServicoId,
         ColetorCusto = ColetorCusto,
         ResponsavelEfetivoNome = ResponsavelEfetivoNome,
         ResponsavelEfetivoEmail = ResponsavelEfetivoEmail,
@@ -442,7 +442,7 @@ internal sealed class Demanda
         Celular = dados.Celular;
         ExigeCnh = dados.ExigeCnh;
         CategoriaCnh = dados.CategoriaCnh;
-        ContratoOs = dados.ContratoOs;
+        OrdemServicoId = dados.OrdemServicoId;
         ColetorCusto = dados.ColetorCusto;
         ResponsavelEfetivoNome = dados.ResponsavelEfetivoNome;
         ResponsavelEfetivoEmail = dados.ResponsavelEfetivoEmail;
@@ -493,13 +493,16 @@ internal sealed class Demanda
 
     /// <summary>
     /// Os catálogos lidos correspondem aos campos escolhidos: o corredor é o do formulário e está ativo,
-    /// o contrato é o desse corredor (RN13) e está ativo, e o preço é o do item QQP escolhido.
+    /// o contrato é o desse corredor (RN13) e está ativo, a OS é desse contrato e está ativa, e o preço é o do item
+    /// QQP escolhido.
     /// </summary>
     private static void ExigirReferencias(DadosSolicitacao dados, ReferenciasSolicitacao referencias)
     {
         Exigir(referencias.Corredor.Id == dados.CorredorId && referencias.Corredor.Ativo, "Escolha um corredor ativo.");
         Exigir(referencias.Contrato.Id == referencias.Corredor.ContratoId && referencias.Contrato.Ativo,
             "O corredor escolhido não tem contrato ativo.");
+        Exigir(referencias.Os.Id == dados.OrdemServicoId && referencias.Os.Ativo, "Escolha uma OS ativa.");
+        Exigir(referencias.Os.ContratoId == referencias.Contrato.Id, "A OS escolhida não é do contrato do corredor.");
         Exigir(referencias.Qqp.ItemQqpId == dados.ItemQqpId, "O preço não corresponde ao item QQP escolhido.");
     }
 

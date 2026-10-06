@@ -127,9 +127,29 @@
 
         const corredor = form.querySelector('[name="Entrada.CorredorId"]');
         const alvo = document.querySelector(corredor.dataset.contratoAlvo);
-        const contrato = corredor.selectedOptions[0]?.dataset.contrato;
+        const escolhido = corredor.selectedOptions[0];
+        const contrato = escolhido?.dataset.contrato;
         alvo.textContent = contrato ?? "Escolha o corredor";
         alvo.classList.toggle("preenchido", Boolean(contrato));
+
+        // A OS pertence a um contrato (Cliente): só as do contrato do corredor ficam disponíveis.
+        const listaOs = form.querySelector("[data-os-do-contrato]");
+        const contratoId = escolhido?.dataset.contratoId;
+        let disponiveis = 0;
+        for (const opcao of listaOs.options) {
+            if (!opcao.value) {
+                continue;
+            }
+            const doContrato = opcao.dataset.contratoId === contratoId;
+            opcao.hidden = !doContrato;
+            opcao.disabled = !doContrato;
+            disponiveis += doContrato ? 1 : 0;
+        }
+        if (listaOs.selectedOptions[0]?.disabled) {
+            listaOs.value = "";
+        }
+        listaOs.disabled = !contratoId;
+        form.querySelector("[data-sem-os]").hidden = !contratoId || disponiveis > 0;
     }
 
     form.addEventListener("change", atualizarCondicionais);

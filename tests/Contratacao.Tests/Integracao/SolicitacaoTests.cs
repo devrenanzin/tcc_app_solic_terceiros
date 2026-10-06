@@ -146,7 +146,7 @@ public sealed class SolicitacaoTests(BancoFixture banco) : IClassFixture<BancoFi
         }
 
         await banco.ExecutarAsync<CorrigirDemanda>(c => c.ExecutarAsync(
-            solicitante, id, dados with { CorredorId = IdsFixos.CorredorSul, ItemQqpId = outroItem }, Cancelamento));
+            solicitante, id, dados with { CorredorId = IdsFixos.CorredorSul, OrdemServicoId = BancoFixture.OsSudesteId, ItemQqpId = outroItem }, Cancelamento));
 
         var corrigida = await DemandaAsync(id);
         Assert.Equal(IdsFixos.ContratoSudeste, corrigida.ContratoId);

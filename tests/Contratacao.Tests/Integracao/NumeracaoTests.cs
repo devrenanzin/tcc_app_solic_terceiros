@@ -39,7 +39,7 @@ public sealed class NumeracaoTests(BancoFixture banco) : IClassFixture<BancoFixt
     [Fact]
     public async Task Numero_usa_o_ano_do_envio_no_horario_de_brasilia()
     {
-        // SUPOSIÇÃO (S3): o sequencial reinicia a cada ano. 31/12/2027 23:30 em Brasília já é 2028 em UTC.
+        // O sequencial recomeça do 1 a cada ano (Cliente). 31/12/2027 23:30 em Brasília já é 2028 em UTC.
         var solicitante = await banco.InserirUsuarioAsync(Perfil.Solicitante);
         var dados = await banco.DadosAsync();
         var antes = banco.Relogio.AgoraUtc;

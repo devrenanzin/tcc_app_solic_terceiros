@@ -42,8 +42,9 @@ internal sealed partial record DadosSolicitacao
     // Segurança
     internal IReadOnlySet<Guid> Racs { get; init; } = new HashSet<Guid>();
 
-    // Contrato: o número vem do corredor (RN13); OS e coletor de custo são preenchidos pelo Solicitante.
-    internal string ContratoOs { get; init; } = string.Empty;
+    // Contrato: o número vem do corredor (RN13); a OS é uma das OS desse contrato (Cliente). O coletor de custo
+    // é livre: a mesma OS pode ter coletores diferentes.
+    internal Guid OrdemServicoId { get; init; }
     internal string ColetorCusto { get; init; } = string.Empty;
     internal string ResponsavelEfetivoNome { get; init; } = string.Empty;
     internal string ResponsavelEfetivoEmail { get; init; } = string.Empty;
@@ -69,7 +70,6 @@ internal sealed partial record DadosSolicitacao
             Formacao = Opcional(Formacao, 300, "Formação exigida", erros),
             PeriodoTemporarioMeses = Temporaria ? PeriodoTemporarioMeses : null,
             CategoriaCnh = ExigeCnh ? CategoriaCnh?.Trim().ToUpperInvariant() : null,
-            ContratoOs = Obrigatorio(ContratoOs, 5, "OS do contrato", erros),
             ColetorCusto = Obrigatorio(ColetorCusto, 30, "Coletor de custo", erros),
             ResponsavelEfetivoNome = Obrigatorio(ResponsavelEfetivoNome, 150, "Nome do responsável efetivo", erros),
             ResponsavelEfetivoEmail = Email(ResponsavelEfetivoEmail, "E-mail do responsável efetivo", erros),
@@ -84,6 +84,7 @@ internal sealed partial record DadosSolicitacao
         Selecionado(CorredorId, "Corredor", erros);
         Selecionado(ModeloTrabalhoId, "Modelo de trabalho", erros);
         Selecionado(ItemQqpId, "Cargo e preço (QQP)", erros);
+        Selecionado(OrdemServicoId, "OS do contrato", erros);
 
         // Limite da coluna smallint; a regra de negócio é ser maior que zero.
         if (QuantidadeSolicitada is < 1 or > short.MaxValue)
@@ -143,7 +144,7 @@ internal sealed partial record DadosSolicitacao
         yield return (nameof(ExigeCnh), Texto(ExigeCnh));
         yield return (nameof(CategoriaCnh), CategoriaCnh);
         yield return (nameof(Racs), string.Join(";", Racs.Order().Select(Texto)));
-        yield return (nameof(ContratoOs), ContratoOs);
+        yield return (nameof(OrdemServicoId), Texto(OrdemServicoId));
         yield return (nameof(ColetorCusto), ColetorCusto);
         yield return (nameof(ResponsavelEfetivoNome), ResponsavelEfetivoNome);
         yield return (nameof(ResponsavelEfetivoEmail), ResponsavelEfetivoEmail);

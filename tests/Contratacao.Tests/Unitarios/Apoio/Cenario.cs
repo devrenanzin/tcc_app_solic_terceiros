@@ -19,6 +19,8 @@ internal sealed class Cenario
     internal static readonly Guid RegiaoSudeste = Guid.Parse("00000000-0000-0000-0000-00000000e002");
     internal static readonly Corredor CorredorNorte = Corredor.Criar(Guid.Parse("00000000-0000-0000-0000-00000000b001"), "Norte", RegiaoNorte, ContratoNorte.Id);
     internal static readonly Corredor CorredorSudeste = Corredor.Criar(Guid.Parse("00000000-0000-0000-0000-00000000b002"), "Sudeste", RegiaoSudeste, ContratoSudeste.Id);
+    internal static readonly OrdemServico OsNorte = OrdemServico.Criar(Guid.Parse("00000000-0000-0000-0000-00000000a501"), ContratoNorte.Id, "15");
+    internal static readonly OrdemServico OsSudeste = OrdemServico.Criar(Guid.Parse("00000000-0000-0000-0000-00000000a502"), ContratoSudeste.Id, "31");
 
     // Valores confirmados pelo cliente (RN12) e dois itens QQP fictícios.
     internal static readonly ValoresEquipamentos Equipamentos = new(444.35m, 53.93m, 118.64m);
@@ -61,7 +63,7 @@ internal sealed class Cenario
         ItemQqpId = ItemAnalista.ItemQqpId,
         Notebook = true,
         Racs = new HashSet<Guid> { Rac01 },
-        ContratoOs = "15",
+        OrdemServicoId = OsNorte.Id,
         ColetorCusto = "CC-1234",
         ResponsavelEfetivoNome = "Pessoa Responsável",
         ResponsavelEfetivoEmail = "responsavel@ucl.br",
@@ -70,7 +72,9 @@ internal sealed class Cenario
     };
 
     internal static ReferenciasSolicitacao Referencias(Corredor corredor, PrecoQqp? item = null, ValoresEquipamentos? equipamentos = null)
-        => new(corredor, corredor == CorredorSudeste ? ContratoSudeste : ContratoNorte, item ?? ItemAnalista, equipamentos ?? Equipamentos);
+        => corredor == CorredorSudeste
+            ? new(corredor, ContratoSudeste, OsSudeste, item ?? ItemAnalista, equipamentos ?? Equipamentos)
+            : new(corredor, ContratoNorte, OsNorte, item ?? ItemAnalista, equipamentos ?? Equipamentos);
 
     internal Demanda Enviar(string numero, Ator? solicitante = null)
         => Demanda.Enviar(numero, solicitante ?? Solicitante, Dados(), Referencias(CorredorNorte), true, Relogio);
@@ -79,7 +83,7 @@ internal sealed class Cenario
     internal void Corrigir(Demanda demanda, Ator? ator = null, bool paraSudeste = false)
         => demanda.Corrigir(
             ator ?? Solicitante,
-            paraSudeste ? Dados() with { CorredorId = CorredorSudeste.Id } : Dados(),
+            paraSudeste ? Dados() with { CorredorId = CorredorSudeste.Id, OrdemServicoId = OsSudeste.Id } : Dados(),
             Referencias(paraSudeste ? CorredorSudeste : CorredorNorte),
             Relogio);
 

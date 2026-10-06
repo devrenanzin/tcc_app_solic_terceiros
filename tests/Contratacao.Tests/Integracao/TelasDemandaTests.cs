@@ -162,6 +162,29 @@ public sealed partial class TelasDemandaTests(BancoFixture banco) : IClassFixtur
         Assert.True(await releitura.LogsAuditoria.AnyAsync(l => l.EntidadeId == gerente.Id && l.Acao == "Desativacao", Cancelamento));
     }
 
+    [Fact]
+    public async Task Admin_cadastra_os_no_contrato_e_o_formulario_a_oferece_so_para_esse_contrato()
+    {
+        await using var admin = new Navegador(banco);
+        await admin.EntrarAsync(BancoFixture.Admin.Email!.Trim().ToLowerInvariant(), BancoFixture.Admin.Senha!);
+        var numero = Random.Shared.Next(100, 99999).ToString(System.Globalization.CultureInfo.InvariantCulture);
+
+        using var cadastro = await admin.EnviarAsync("/Admin/OrdensServico", ("ContratoId", IdsFixos.ContratoSudeste.ToString()), ("Numero", numero));
+        Assert.Equal(HttpStatusCode.Redirect, cadastro.StatusCode);
+
+        using var repetida = await admin.EnviarAsync("/Admin/OrdensServico", ("ContratoId", IdsFixos.ContratoSudeste.ToString()), ("Numero", numero));
+        Assert.Contains($"A OS {numero} já existe no contrato 5900118506.", await repetida.Content.ReadAsStringAsync(Cancelamento), StringComparison.Ordinal);
+
+        await using var contexto = banco.NovoContexto();
+        var os = await contexto.OrdensServico.SingleAsync(o => o.Numero == numero, Cancelamento);
+        Assert.True(await contexto.LogsAuditoria.AnyAsync(l => l.EntidadeId == os.Id && l.Acao == "Cadastro", Cancelamento));
+
+        await using var solicitante = new Navegador(banco);
+        await CadastrarSolicitanteAsync(solicitante);
+        var formulario = await solicitante.HtmlAsync("/Demandas/Nova");
+        Assert.Contains($"<option value=\"{os.Id}\" data-contrato-id=\"{IdsFixos.ContratoSudeste}\"", formulario, StringComparison.Ordinal);
+    }
+
     /// <summary>Gestor do contrato (cadastrado pelo Admin) e um Funcionário SESI da equipe dele, ambos com senha inicial.</summary>
     private async Task<(string Gestor, string Sesi)> CadastrarEquipeAsync(Guid contrato)
     {
@@ -199,7 +222,7 @@ public sealed partial class TelasDemandaTests(BancoFixture banco) : IClassFixtur
             ("Entrada.ItemQqpId", dados.ItemQqpId.ToString()),
             ("Entrada.Notebook", "true"),
             ("Entrada.Racs", dados.Racs.Single().ToString()),
-            ("Entrada.ContratoOs", dados.ContratoOs),
+            ("Entrada.OrdemServicoId", dados.OrdemServicoId.ToString()),
             ("Entrada.ColetorCusto", dados.ColetorCusto),
             ("Entrada.ResponsavelEfetivoNome", dados.ResponsavelEfetivoNome),
             ("Entrada.ResponsavelEfetivoEmail", dados.ResponsavelEfetivoEmail),

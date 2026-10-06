@@ -27,7 +27,7 @@ internal static class RotulosDemanda
         [nameof(DadosSolicitacao.ExigeCnh)] = "Exige CNH",
         [nameof(DadosSolicitacao.CategoriaCnh)] = "Categoria da CNH",
         [nameof(DadosSolicitacao.Racs)] = "RACs",
-        [nameof(DadosSolicitacao.ContratoOs)] = "OS do contrato",
+        [nameof(DadosSolicitacao.OrdemServicoId)] = "OS do contrato",
         [nameof(DadosSolicitacao.ColetorCusto)] = "Coletor de custo",
         [nameof(DadosSolicitacao.ResponsavelEfetivoNome)] = "Responsável efetivo",
         [nameof(DadosSolicitacao.ResponsavelEfetivoEmail)] = "E-mail do responsável efetivo",
@@ -58,6 +58,7 @@ internal static class RotulosDemanda
             nameof(DadosSolicitacao.ModeloTrabalhoId) => Nome(nomes.ModelosTrabalho, valor),
             nameof(DadosSolicitacao.ItemQqpId) => Nome(nomes.ItensQqp, valor),
             nameof(Demanda.ContratoId) => Nome(nomes.Contratos, valor),
+            nameof(DadosSolicitacao.OrdemServicoId) => Nome(nomes.OrdensServico, valor),
             nameof(DadosSolicitacao.Racs) => string.Join(", ", valor.Split(';').Select(v => Nome(nomes.Racs, v))),
             nameof(Demanda.PisoSalarialQqp) or nameof(Demanda.PrecoUnitarioQqp) or nameof(Demanda.ValorEquipamentosPorPessoa) or nameof(Demanda.CustoTotal)
                 => decimal.TryParse(valor, NumberStyles.Number, CultureInfo.InvariantCulture, out var reais) ? Formatacao.Reais(reais) : valor,

@@ -4,6 +4,7 @@ using Contratacao.Web.Application.Demandas;
 using Contratacao.Web.Domain.Anexos;
 using Contratacao.Web.Domain.Catalogos;
 using Contratacao.Web.Domain.Comum;
+using Contratacao.Web.Domain.Contratos;
 using Contratacao.Web.Domain.Demandas;
 using Contratacao.Web.Domain.Parametros;
 using Microsoft.EntityFrameworkCore;
@@ -94,13 +95,15 @@ internal sealed class CatalogosDemanda(ContratacaoDbContext contexto) : ICatalog
             join ct in contexto.Contratos on c.ContratoId equals ct.Id
             where c.Ativo && ct.Ativo
             orderby r.Nome, c.Nome
-            select new OpcaoCorredor(c.Id, c.Nome, r.Nome, ct.Numero)).ToListAsync(cancelamento);
+            select new OpcaoCorredor(c.Id, c.Nome, r.Nome, ct.Id, ct.Numero)).ToListAsync(cancelamento);
         var modelos = await contexto.ModelosTrabalho.AsNoTracking().OrderBy(m => m.Nome)
             .Select(m => new Opcao(m.Id, m.Nome)).ToListAsync(cancelamento);
         var racs = await contexto.Racs.AsNoTracking().OrderBy(r => r.Codigo)
             .Select(r => new OpcaoRac(r.Id, r.Codigo, r.Nome)).ToListAsync(cancelamento);
 
-        return new CatalogosFormulario(tipos, gerentes, corredores, modelos, racs, await EquipamentosAsync(cancelamento));
+        var ordens = (await OrdensServicoAsync(cancelamento)).Where(o => o.Ativo).ToList();
+
+        return new CatalogosFormulario(tipos, gerentes, corredores, modelos, racs, ordens, await EquipamentosAsync(cancelamento));
     }
 
     public async Task<IReadOnlyList<OpcaoQqp>> ItensQqpAsync(CancellationToken cancelamento)
@@ -131,16 +134,17 @@ internal sealed class CatalogosDemanda(ContratacaoDbContext contexto) : ICatalog
     }
 
     public async Task<ReferenciasSolicitacao?> ReferenciasAsync(
-        Guid corredorId, PrecoQqp qqp, ValoresEquipamentos equipamentos, CancellationToken cancelamento)
+        Guid corredorId, Guid ordemServicoId, PrecoQqp qqp, ValoresEquipamentos equipamentos, CancellationToken cancelamento)
     {
         var corredor = await contexto.Corredores.AsNoTracking().SingleOrDefaultAsync(c => c.Id == corredorId, cancelamento);
-        if (corredor is null)
+        var os = await contexto.OrdensServico.AsNoTracking().SingleOrDefaultAsync(o => o.Id == ordemServicoId, cancelamento);
+        if (corredor is null || os is null)
         {
             return null;
         }
 
         var contrato = await contexto.Contratos.AsNoTracking().SingleAsync(c => c.Id == corredor.ContratoId, cancelamento);
-        return new ReferenciasSolicitacao(corredor, contrato, qqp, equipamentos);
+        return new ReferenciasSolicitacao(corredor, contrato, os, qqp, equipamentos);
     }
 
     public async Task<IReadOnlyList<string>> ConferirEscolhasAsync(DadosSolicitacao dados, CancellationToken cancelamento)
@@ -214,7 +218,8 @@ internal sealed class CatalogosDemanda(ContratacaoDbContext contexto) : ICatalog
                 string.Join(" ", new[] { i.Funcao, i.Classificacao, i.Nivel }.OfType<string>()),
                 $"{i.HorasSemanais.ToString(CultureInfo.InvariantCulture)} h",
                 i.Regiao)),
-            await contexto.Racs.AsNoTracking().ToDictionaryAsync(r => r.Id, r => $"{r.Codigo} — {r.Nome}", cancelamento));
+            await contexto.Racs.AsNoTracking().ToDictionaryAsync(r => r.Id, r => $"{r.Codigo} — {r.Nome}", cancelamento),
+            await contexto.OrdensServico.AsNoTracking().ToDictionaryAsync(o => o.Id, o => o.Numero, cancelamento));
     }
 
     public async Task<IReadOnlyList<GerenteExecutivo>> GerentesExecutivosAsync(CancellationToken cancelamento)
@@ -224,6 +229,21 @@ internal sealed class CatalogosDemanda(ContratacaoDbContext contexto) : ICatalog
         => contexto.GerentesExecutivos.SingleOrDefaultAsync(g => g.Id == id, cancelamento);
 
     public void Adicionar(GerenteExecutivo gerente) => contexto.GerentesExecutivos.Add(gerente);
+
+    public async Task<IReadOnlyList<OpcaoOs>> OrdensServicoAsync(CancellationToken cancelamento)
+        => await (
+            from o in contexto.OrdensServico.AsNoTracking()
+            join c in contexto.Contratos on o.ContratoId equals c.Id
+            orderby c.Numero, o.Numero
+            select new OpcaoOs(o.Id, o.Numero, c.Id, c.Numero, o.Ativo)).ToListAsync(cancelamento);
+
+    public Task<OrdemServico?> OrdemServicoAsync(Guid id, CancellationToken cancelamento)
+        => contexto.OrdensServico.SingleOrDefaultAsync(o => o.Id == id, cancelamento);
+
+    public Task<bool> OrdemServicoExisteAsync(Guid contratoId, string numero, CancellationToken cancelamento)
+        => contexto.OrdensServico.AnyAsync(o => o.ContratoId == contratoId && o.Numero == numero, cancelamento);
+
+    public void Adicionar(OrdemServico ordemServico) => contexto.OrdensServico.Add(ordemServico);
 }
 
 internal sealed class RepositorioAnexos(ContratacaoDbContext contexto) : IAnexos

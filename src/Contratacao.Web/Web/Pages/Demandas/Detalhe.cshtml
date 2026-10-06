@@ -103,7 +103,7 @@
                 <dl>
                     <div><dt>Número do contrato</dt><dd><span class="etiqueta-contrato">@Nome(nomes.Contratos, d.ContratoId)</span></dd></div>
                     <div><dt>Contratada</dt><dd>@Nome(nomes.Contratadas, d.ContratadaId)</dd></div>
-                    <div><dt>OS do contrato</dt><dd>@d.ContratoOs</dd></div>
+                    <div><dt>OS do contrato</dt><dd>@Nome(nomes.OrdensServico, d.OrdemServicoId)</dd></div>
                     <div><dt>Coletor de custo</dt><dd>@d.ColetorCusto</dd></div>
                     <div><dt>Responsável efetivo</dt><dd>@d.ResponsavelEfetivoNome<br /><span class="small text-body-secondary">@d.ResponsavelEfetivoEmail</span></dd></div>
                     <div><dt>Fiscal efetivo</dt><dd>@d.FiscalEfetivoNome<br /><span class="small text-body-secondary">@d.FiscalEfetivoEmail</span></dd></div>
@@ -234,8 +234,8 @@
                                         <label class="form-check-label" for="tipo-@tipo">@Formatacao.Tipo(tipo)</label>
                                     </div>
                                 }
-                                @* SUPOSIÇÃO (S11): informações contratuais = OS e coletor de custo. *@
-                                <div class="ajuda">Erro contratual (OS ou coletor de custo) faz a demanda passar de novo pelo Gestor.</div>
+                                @* Informações contratuais: OS, corredor e contrato (Cliente). *@
+                                <div class="ajuda">Erro contratual (OS, corredor ou contrato) faz a demanda passar de novo pelo Gestor.</div>
                             </fieldset>
                         }
                         <label class="form-label" for="motivo">Motivo</label>

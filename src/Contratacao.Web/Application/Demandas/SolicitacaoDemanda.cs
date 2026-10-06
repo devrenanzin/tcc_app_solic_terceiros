@@ -47,7 +47,7 @@ internal sealed class EnviarDemanda(
         {
             var agora = relogio.AgoraUtc;
 
-            // SUPOSIÇÃO (S3): o sequencial reinicia a cada ano; o ano é o do envio, no horário de Brasília.
+            // O sequencial recomeça do 1 a cada ano (Cliente); o ano é o do envio, no horário de Brasília.
             var ano = calendario.DataLocal(agora).Year;
             var numero = NumeroDemanda.Formatar(ano, await demandas.ProximoSequencialAsync(ano, cancelamento));
 
@@ -136,8 +136,8 @@ internal static class Formulario
         var preco = await catalogos.PrecoQqpAsync(conferidos.ItemQqpId, cancelamento)
             ?? throw new RegraNegocioException("O item QQP escolhido não existe ou está inativo.");
         var equipamentos = await catalogos.EquipamentosAsync(cancelamento);
-        var referencias = await catalogos.ReferenciasAsync(conferidos.CorredorId, preco, equipamentos, cancelamento)
-            ?? throw new RegraNegocioException("O corredor escolhido não existe.");
+        var referencias = await catalogos.ReferenciasAsync(conferidos.CorredorId, conferidos.OrdemServicoId, preco, equipamentos, cancelamento)
+            ?? throw new RegraNegocioException("O corredor ou a OS escolhida não existe.");
 
         return (conferidos, referencias);
     }

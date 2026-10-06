@@ -28,7 +28,7 @@ internal sealed class EntradaDemanda
     public bool ExigeCnh { get; set; }
     public string? CategoriaCnh { get; set; }
     public List<Guid> Racs { get; set; } = [];
-    public string? ContratoOs { get; set; }
+    public Guid? OrdemServicoId { get; set; }
     public string? ColetorCusto { get; set; }
     public string? ResponsavelEfetivoNome { get; set; }
     public string? ResponsavelEfetivoEmail { get; set; }
@@ -56,7 +56,7 @@ internal sealed class EntradaDemanda
         ExigeCnh = ExigeCnh,
         CategoriaCnh = CategoriaCnh,
         Racs = Racs.ToHashSet(),
-        ContratoOs = ContratoOs ?? string.Empty,
+        OrdemServicoId = OrdemServicoId ?? Guid.Empty,
         ColetorCusto = ColetorCusto ?? string.Empty,
         ResponsavelEfetivoNome = ResponsavelEfetivoNome ?? string.Empty,
         ResponsavelEfetivoEmail = ResponsavelEfetivoEmail ?? string.Empty,
@@ -85,7 +85,7 @@ internal sealed class EntradaDemanda
         ExigeCnh = dados.ExigeCnh,
         CategoriaCnh = dados.CategoriaCnh,
         Racs = [.. dados.Racs],
-        ContratoOs = dados.ContratoOs,
+        OrdemServicoId = dados.OrdemServicoId,
         ColetorCusto = dados.ColetorCusto,
         ResponsavelEfetivoNome = dados.ResponsavelEfetivoNome,
         ResponsavelEfetivoEmail = dados.ResponsavelEfetivoEmail,

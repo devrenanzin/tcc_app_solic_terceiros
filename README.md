@@ -26,13 +26,14 @@ Os requisitos estão em [docs/REQUISITOS_v3.1.md](docs/REQUISITOS_v3.1.md), a ú
 | `/Demandas/Detalhe/{id}` | Quem vê a demanda | Dados, anexos (download), linha do tempo, alterações das correções, SLA, custo. O Gestor do contrato aprova ou devolve (UC04, UC05); o SESI do contrato aceita ou devolve com o tipo da inconsistência (UC05, UC07). Só aparecem os botões que o domínio permite. |
 | `/Demandas/Corrigir/{id}` | Solicitante da demanda | UC06: o formulário preenchido, com o motivo da devolução. Cada campo alterado vai para o HistoricoAlteracao com usuário, perfil e IP. |
 | `/Admin/GerentesExecutivos` | Admin | Cadastra, desativa e reativa os gerentes executivos do formulário (o catálogo começa vazio). |
+| `/Admin/OrdensServico` | Admin | Cadastra, desativa e reativa as OS de cada contrato. O formulário mostra só as OS do contrato do corredor; o coletor de custo continua livre, porque a mesma OS pode ter coletores diferentes. |
 
 - **Domínio.** `DadosSolicitacao` confere obrigatórios, condicionais (período em meses na vaga temporária, categoria da CNH) e os tamanhos do modelo físico. `CustoDemanda` tem a fórmula da RN12. `Demanda.Enviar` exige o De acordo VP-2 e o contrato do corredor; `Demanda.Corrigir` registra cada alteração e recalcula o custo inteiro com os valores atuais quando mudam o item QQP, a quantidade ou os equipamentos (Cliente). `FiltroVisibilidade` diz quem vê o quê; `Demanda.AcoesDisponiveis` diz quais botões cada um vê. `RegraArquivo` confere extensão, conteúdo e tamanho dos anexos.
-- **Número AAAA-NNNNNN.** A tabela `SequenciaNumeroDemanda` é atualizada com `MERGE ... WITH (HOLDLOCK)` na mesma transação do envio: envios simultâneos não repetem número, e um envio recusado não gasta número.
+- **Número AAAA-NNNNNN.** O sequencial recomeça do 1 a cada ano (Cliente). A tabela `SequenciaNumeroDemanda` é atualizada com `MERGE ... WITH (HOLDLOCK)` na mesma transação do envio: envios simultâneos não repetem número, e um envio recusado não gasta número.
 - **Anexos.** Gravados na pasta `Anexos:Pasta` (padrão `src/Contratacao.Web/App_Data/anexos`, fora do Git) com nome gerado pelo sistema; o banco guarda nome original, tipo, tamanho, etapa e o caminho. Nada é apagado. Cada upload gera registro no LogAuditoria.
 - **RACs.** A tabela `DemandaRac` é editada direto na correção (seção 8.1): a RAC desmarcada sai da tabela de ligação, e a mudança fica no HistoricoAlteracao. No banco a chave continua sem exclusão em cascata.
 - **Concorrência.** Se duas pessoas agem sobre a mesma demanda, a segunda recebe "Esta demanda foi alterada por outra pessoa... Recarregue a página" (RNF10).
-- **Antes de testar:** o Admin precisa cadastrar ao menos um gerente executivo em `/Admin/GerentesExecutivos`, porque o campo é obrigatório.
+- **Antes de testar:** o Admin precisa cadastrar ao menos um gerente executivo em `/Admin/GerentesExecutivos` e ao menos uma OS do contrato em `/Admin/OrdensServico`, porque os dois campos são obrigatórios.
 
 ## Usuários e acesso (Etapa 3)
 
@@ -147,9 +148,7 @@ Cada suposição usada no código (as abertas na seção "Suposições e pendên
 
 | # | Suposição | Onde |
 | --- | --- | --- |
-| S3 | O sequencial do número da demanda reinicia a cada ano (o ano do envio, no horário de Brasília) | `EnviarDemanda` |
 | S7 | 45 dias corridos; dia limite em laranja; demanda cancelada em cinza | `Sla.Iniciar`, `RegraFarol` |
-| S11 | Informações contratuais = OS e coletor de custo (o contrato vem do corredor) | `_Formulario.cshtml` |
 
 ## Pendências
 

@@ -59,10 +59,39 @@ public sealed class EnvioECustoTests
     public void Contrato_vem_do_corredor_e_nao_pode_ser_outro()
     {
         var corredorNorteNoContratoErrado = new ReferenciasSolicitacao(
-            Cenario.CorredorNorte, Cenario.ContratoSudeste, Cenario.ItemAnalista, Cenario.Equipamentos);
+            Cenario.CorredorNorte, Cenario.ContratoSudeste, Cenario.OsSudeste, Cenario.ItemAnalista, Cenario.Equipamentos);
 
         Assert.Throws<RegraNegocioException>(() => Demanda.Enviar(
             Cenario.Numero, _c.Solicitante, Cenario.Dados(), corredorNorteNoContratoErrado, true, _c.Relogio));
+    }
+
+    [Fact]
+    public void Os_precisa_ser_do_contrato_do_corredor_e_estar_ativa()
+    {
+        // A OS pertence a um contrato (Cliente): OS do Sudeste num corredor do Norte é recusada.
+        var osDeOutroContrato = Cenario.Referencias(Cenario.CorredorNorte) with { Os = Cenario.OsSudeste };
+        var erro = Assert.Throws<RegraNegocioException>(() => Demanda.Enviar(Cenario.Numero, _c.Solicitante,
+            Cenario.Dados() with { OrdemServicoId = Cenario.OsSudeste.Id }, osDeOutroContrato, true, _c.Relogio));
+        Assert.Contains("contrato do corredor", erro.Message, StringComparison.Ordinal);
+
+        var inativa = OrdemServico.Criar(Guid.NewGuid(), Cenario.ContratoNorte.Id, "99", ativo: false);
+        Assert.Throws<RegraNegocioException>(() => Demanda.Enviar(Cenario.Numero, _c.Solicitante,
+            Cenario.Dados() with { OrdemServicoId = inativa.Id }, Cenario.Referencias(Cenario.CorredorNorte) with { Os = inativa }, true, _c.Relogio));
+    }
+
+    [Fact]
+    public void Correcao_que_troca_o_corredor_para_outro_contrato_exige_uma_os_desse_contrato()
+    {
+        var demanda = _c.Aprovada();
+        demanda.DevolverPeloSesi(_c.SesiNorte, TipoInconsistencia.Contratual, "Corredor errado.", _c.Relogio);
+
+        Assert.Throws<RegraNegocioException>(() => demanda.Corrigir(_c.Solicitante,
+            Cenario.Dados() with { CorredorId = Cenario.CorredorSudeste.Id },
+            Cenario.Referencias(Cenario.CorredorSudeste) with { Os = Cenario.OsNorte }, _c.Relogio));
+
+        _c.Corrigir(demanda, paraSudeste: true);
+        Assert.Equal(Cenario.OsSudeste.Id, demanda.OrdemServicoId);
+        Assert.Contains(demanda.Alteracoes, a => a.Campo == nameof(DadosSolicitacao.OrdemServicoId));
     }
 
     [Fact]

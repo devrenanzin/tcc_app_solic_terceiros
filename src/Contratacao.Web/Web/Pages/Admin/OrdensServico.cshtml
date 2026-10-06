@@ -1,0 +1,60 @@
+@page
+@using Contratacao.Web.Web.Pages.Shared
+@model Contratacao.Web.Web.Pages.Admin.OrdensServicoModel
+@{
+    ViewData["Title"] = "OS dos contratos";
+}
+
+<div class="cabecalho-pagina">
+    <div>
+        <h1>OS dos contratos</h1>
+        <p>Cada OS pertence a um contrato. No formulário, o Solicitante só vê as OS do contrato do corredor escolhido.</p>
+    </div>
+</div>
+
+<div class="row g-4">
+    <div class="col-lg-4">
+        <form method="post" class="cartao formulario" novalidate>
+            <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
+            <label class="form-label" for="contrato">Contrato</label>
+            <select id="contrato" name="ContratoId" class="form-select" required>
+                <option value="">Selecione</option>
+                @foreach (var contrato in Model.Contratos)
+                {
+                    <option value="@contrato.Id" selected="@(Model.ContratoId == contrato.Id)">@contrato.Numero</option>
+                }
+            </select>
+            <label class="form-label mt-3" for="numero">Número da OS</label>
+            <input id="numero" name="Numero" value="@Model.Numero" maxlength="5" class="form-control" placeholder="Ex.: 15" required />
+            <button type="submit" class="btn btn-primary mt-3"><i class="bi bi-plus-lg"></i> Cadastrar</button>
+        </form>
+    </div>
+    <div class="col-lg-8">
+        <div class="cartao">
+            @if (Model.Ordens.Count == 0)
+            {
+                <div class="vazio"><i class="bi bi-journal-text"></i>Nenhuma OS cadastrada. Sem elas, o Solicitante não consegue enviar demandas.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table tabela-cartao">
+                        <thead><tr><th>Contrato</th><th>OS</th><th>Situação</th><th class="text-end">Ações</th></tr></thead>
+                        <tbody>
+                            @foreach (var os in Model.Ordens)
+                            {
+                                var descricao = string.Concat("a OS ", os.Numero, " do contrato ", os.Contrato);
+                                <tr>
+                                    <td><span class="etiqueta-contrato">@os.Contrato</span></td>
+                                    <td class="fw-semibold">@os.Numero</td>
+                                    <td><partial name="_SituacaoUsuario" model="os.Ativo" /></td>
+                                    <td class="text-end"><partial name="_AcaoSituacao" model="new AcaoSituacao(os.Id, os.Ativo, descricao)" /></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div>
+    </div>
+</div>

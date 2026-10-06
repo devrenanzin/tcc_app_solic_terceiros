@@ -27,6 +27,10 @@ public sealed class BancoFixture : IAsyncLifetime
     /// <summary>Gerente executivo fictício: o catálogo começa vazio e o formulário o exige.</summary>
     internal static readonly Guid GerenteExecutivoId = Guid.Parse("00000000-0000-0000-0000-0000000000e1");
 
+    /// <summary>OS fictícias, uma por contrato: a lista começa vazia e o formulário exige a OS do contrato do corredor.</summary>
+    internal static readonly Guid OsNorteId = Guid.Parse("00000000-0000-0000-0000-0000000000f1");
+    internal static readonly Guid OsSudesteId = Guid.Parse("00000000-0000-0000-0000-0000000000f2");
+
     /// <summary>Pasta temporária dos anexos gravados pelos testes, apagada no fim.</summary>
     internal string PastaAnexos { get; } = Path.Combine(Path.GetTempPath(), $"contratacao-anexos-{Guid.NewGuid():N}");
 
@@ -124,20 +128,22 @@ public sealed class BancoFixture : IAsyncLifetime
         await using var contexto = NovoContexto();
         var item = await contexto.ItensQqp.OrderBy(i => i.Codigo).Select(i => i.Id).FirstAsync();
         var rac = await contexto.Racs.OrderBy(r => r.Codigo).Select(r => r.Id).FirstAsync();
+        var corredor = corredorId ?? IdsFixos.CorredorNorte;
+        var contrato = await contexto.Corredores.Where(c => c.Id == corredor).Select(c => c.ContratoId).SingleAsync();
 
         return new DadosSolicitacao
         {
             TipoDemandaId = IdsFixos.TipoNovaContratacao,
             GerenteExecutivoId = GerenteExecutivoId,
             LocalidadeVaga = "Vitória",
-            CorredorId = corredorId ?? IdsFixos.CorredorNorte,
+            CorredorId = corredor,
             ModeloTrabalhoId = IdsFixos.ModeloPresencial,
             QuantidadeSolicitada = 2,
             DescricaoAtividades = "Apoio à manutenção preventiva.",
             ItemQqpId = item,
             Notebook = true,
             Racs = new HashSet<Guid> { rac },
-            ContratoOs = "15",
+            OrdemServicoId = contrato == IdsFixos.ContratoNorte ? OsNorteId : OsSudesteId,
             ColetorCusto = "CC-1234",
             ResponsavelEfetivoNome = "Pessoa Responsável",
             ResponsavelEfetivoEmail = "responsavel@ucl.br",
@@ -153,7 +159,7 @@ public sealed class BancoFixture : IAsyncLifetime
         var catalogos = new CatalogosDemanda(contexto);
         var preco = await catalogos.PrecoQqpAsync(dados.ItemQqpId, CancellationToken.None);
         var equipamentos = await catalogos.EquipamentosAsync(CancellationToken.None);
-        return (await catalogos.ReferenciasAsync(dados.CorredorId, preco!, equipamentos, CancellationToken.None))!;
+        return (await catalogos.ReferenciasAsync(dados.CorredorId, dados.OrdemServicoId, preco!, equipamentos, CancellationToken.None))!;
     }
 
     public async ValueTask InitializeAsync()
@@ -163,6 +169,10 @@ public sealed class BancoFixture : IAsyncLifetime
         await NovaCarga(contexto).ExecutarAsync(CancellationToken.None);
         await contexto.Database.ExecuteSqlAsync(
             $"INSERT INTO GerenteExecutivo (Id, Nome, Ativo) VALUES ({GerenteExecutivoId}, {"Gerência Fictícia de Testes"}, 1)");
+        await contexto.Database.ExecuteSqlAsync($"""
+            INSERT INTO OrdemServico (Id, ContratoId, Numero, Ativo)
+            VALUES ({OsNorteId}, {IdsFixos.ContratoNorte}, {"15"}, 1), ({OsSudesteId}, {IdsFixos.ContratoSudeste}, {"31"}, 1)
+            """);
     }
 
     public async ValueTask DisposeAsync()

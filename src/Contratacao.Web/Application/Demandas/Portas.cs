@@ -1,5 +1,6 @@
 using Contratacao.Web.Domain.Anexos;
 using Contratacao.Web.Domain.Catalogos;
+using Contratacao.Web.Domain.Contratos;
 using Contratacao.Web.Domain.Demandas;
 using Contratacao.Web.Domain.Prazos;
 
@@ -36,8 +37,9 @@ internal interface ICatalogosDemanda
 
     Task<ValoresEquipamentos> EquipamentosAsync(CancellationToken cancelamento);
 
-    /// <summary>Corredor e o seu contrato (RN13), como estão hoje.</summary>
-    Task<ReferenciasSolicitacao?> ReferenciasAsync(Guid corredorId, PrecoQqp qqp, ValoresEquipamentos equipamentos, CancellationToken cancelamento);
+    /// <summary>Corredor e o seu contrato (RN13) e a OS escolhida, como estão hoje; nulo se algum não existir.</summary>
+    Task<ReferenciasSolicitacao?> ReferenciasAsync(
+        Guid corredorId, Guid ordemServicoId, PrecoQqp qqp, ValoresEquipamentos equipamentos, CancellationToken cancelamento);
 
     /// <summary>Mensagens para os catálogos escolhidos que não existem ou estão inativos (tipo, gerente, modelo, RACs).</summary>
     Task<IReadOnlyList<string>> ConferirEscolhasAsync(DadosSolicitacao dados, CancellationToken cancelamento);
@@ -50,6 +52,15 @@ internal interface ICatalogosDemanda
     Task<GerenteExecutivo?> GerenteExecutivoAsync(Guid id, CancellationToken cancelamento);
 
     void Adicionar(GerenteExecutivo gerente);
+
+    /// <summary>Todas as OS, ativas ou não, com o número do contrato.</summary>
+    Task<IReadOnlyList<OpcaoOs>> OrdensServicoAsync(CancellationToken cancelamento);
+
+    Task<OrdemServico?> OrdemServicoAsync(Guid id, CancellationToken cancelamento);
+
+    Task<bool> OrdemServicoExisteAsync(Guid contratoId, string numero, CancellationToken cancelamento);
+
+    void Adicionar(OrdemServico ordemServico);
 }
 
 internal interface IAnexos
@@ -81,9 +92,11 @@ internal sealed record ArquivoRecebido(string Nome, long Tamanho, Func<Stream> A
 
 internal sealed record Opcao(Guid Id, string Nome);
 
-internal sealed record OpcaoCorredor(Guid Id, string Nome, string Regiao, string Contrato);
+internal sealed record OpcaoCorredor(Guid Id, string Nome, string Regiao, Guid ContratoId, string Contrato);
 
 internal sealed record OpcaoRac(Guid Id, string Codigo, string Nome);
+
+internal sealed record OpcaoOs(Guid Id, string Numero, Guid ContratoId, string Contrato, bool Ativo);
 
 internal sealed record CatalogosFormulario(
     IReadOnlyList<Opcao> TiposDemanda,
@@ -91,6 +104,7 @@ internal sealed record CatalogosFormulario(
     IReadOnlyList<OpcaoCorredor> Corredores,
     IReadOnlyList<Opcao> ModelosTrabalho,
     IReadOnlyList<OpcaoRac> Racs,
+    IReadOnlyList<OpcaoOs> OrdensServico,
     ValoresEquipamentos Equipamentos);
 
 /// <summary>Um item do QQP com os nomes das cinco listas em cascata.</summary>
@@ -135,7 +149,8 @@ internal sealed record DescricoesDemanda(
     IReadOnlyDictionary<Guid, string> Corredores,
     IReadOnlyDictionary<Guid, string> ModelosTrabalho,
     IReadOnlyDictionary<Guid, string> ItensQqp,
-    IReadOnlyDictionary<Guid, string> Racs)
+    IReadOnlyDictionary<Guid, string> Racs,
+    IReadOnlyDictionary<Guid, string> OrdensServico)
 {
     internal static string Nome(IReadOnlyDictionary<Guid, string> nomes, Guid? id)
         => id is { } valor && nomes.TryGetValue(valor, out var nome) ? nome : "—";
