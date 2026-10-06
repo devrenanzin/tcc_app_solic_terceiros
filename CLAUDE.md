@@ -1,6 +1,6 @@
 # Sistema de Solicitação e Acompanhamento de Contratação
 
-Aplicação web em C#/.NET para registrar, validar e acompanhar demandas de contratação, do pedido do Solicitante até a contratação finalizada pelo SESI, com SLA de 45 dias, farol, linha do tempo e auditoria completa.
+Aplicação web em C#/.NET para registrar, validar e acompanhar demandas de contratação, do pedido do Solicitante até a contratação finalizada pela Gerenciadora, com SLA de 45 dias, farol, linha do tempo e auditoria completa.
 
 ## Fonte de verdade
 
@@ -42,14 +42,14 @@ Os diagramas existem como código PlantUML e Mermaid dentro do documento; use-os
 - **Interface:** tecnologia livre, a mais adequada ao ASP.NET Core e à regra de tipos internal. O front-end deve ser bonito, bem estruturado, responsivo e consistente entre os perfis.
 - **Login:** e-mail do domínio `@ucl.br` e senha própria do sistema, guardada só como hash. O domínio imita o Google Workspace da UCL, mas não há integração real com ele.
 - **Anexos:** imagem, PDF e e-mail, até 10 MB, numa pasta do servidor, nunca apagados. O anexo "De acordo VP-2" é obrigatório para enviar a demanda.
-- **Contrato:** definido pelo corredor (RN13), nunca escolhido pelo Solicitante. A Contratada vem do contrato; hoje só o SESI. Cada OS pertence a um contrato (lista mantida pelo Admin); o coletor de custo é livre, porque a mesma OS pode ter coletores diferentes. Informações contratuais = OS, corredor e contrato.
-- **Cadastro:** o Solicitante se cadastra sozinho com e-mail `@ucl.br`; o Admin e qualquer Gestor ativo o desativam e reativam. O Gestor cadastra os Funcionários SESI e vincula cada um ao grupo de um dos seus contratos (outro contrato, só pelo Admin); o SESI só vê e trata demandas desse contrato. Gestor e Funcionário SESI trocam a senha inicial no primeiro acesso.
+- **Contrato:** definido pelo corredor (RN13), nunca escolhido pelo Solicitante. A Contratada vem do contrato; hoje só a Gerenciadora. Cada OS pertence a um contrato (lista mantida pelo Admin); o coletor de custo é livre, porque a mesma OS pode ter coletores diferentes. Informações contratuais = OS, corredor e contrato.
+- **Cadastro:** o Solicitante se cadastra sozinho com e-mail `@ucl.br`; o Admin e qualquer Gestor ativo o desativam e reativam. O Gestor cadastra os Funcionários da Gerenciadora e vincula cada um ao grupo de um dos seus contratos (outro contrato, só pelo Admin); a Gerenciadora só vê e trata demandas desse contrato. Gestor e Funcionário da Gerenciadora trocam a senha inicial no primeiro acesso.
 - **Formulário e custo:** sem veículo e rastreador (melhoria futura). Custo mensal = Quantidade × (Preço QQP + equipamentos por pessoa). Período temporário em meses. Correção que muda item QQP, quantidade ou equipamentos recalcula o custo inteiro com os valores atuais; sem essas mudanças, ficam os valores do envio.
 - **Gestores e contratos:** o Admin vincula cada Gestor a um ou mais contratos (GestorContrato). Todo Gestor vê todas as demandas, mas só os Gestores do contrato da demanda a validam, devolvem e cancelam.
 - **Rascunho:** só no navegador do Solicitante, por 3 dias desde o último salvamento. Anexos são escolhidos no envio. A demanda passa a existir no sistema no envio.
 - **Gestor da demanda:** o Gestor que valida. O Gestor só aprova ou devolve; não edita campos.
-- **Correções:** só o Solicitante corrige (UC16 removido). Devolução do SESI informa o tipo: erro do solicitante volta ao SESI; erro contratual (ou troca de corredor que muda o contrato) volta à Validação do Gestor.
-- **Contratada:** hoje só o SESI; CNPJ opcional.
+- **Correções:** só o Solicitante corrige (UC16 removido). Devolução da Gerenciadora informa o tipo: erro do solicitante volta à Gerenciadora; erro contratual (ou troca de corredor que muda o contrato) volta à Validação do Gestor.
+- **Contratada:** hoje só a Gerenciadora; CNPJ opcional.
 - **Revisão de 05/10/2026:** a lista completa está na seção "Revisão de 05/10/2026" do documento de requisitos.
 - **Estrutura:** um projeto web único com camadas em pastas, mais um projeto de testes.
 

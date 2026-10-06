@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Contratacao.Web.Web.Pages.Demandas;
 
 /// <summary>
-/// UC03 e UC15 — Consultar a demanda; daqui o Gestor do contrato aprova ou devolve (UC04, UC05) e o SESI do
+/// UC03 e UC15 — Consultar a demanda; daqui o Gestor do contrato aprova ou devolve (UC04, UC05) e a Gerenciadora do
 /// contrato aceita ou devolve (UC05, UC07) e conduz o processo até a contratação (UC08–11). Só aparecem as
 /// ações que o domínio permite ao usuário.
 /// </summary>
@@ -81,7 +81,7 @@ internal sealed class DetalheModel(
 
     public Task<IActionResult> OnPostAprovarAsync(Guid id)
         => ExecutarAsync(async ator => await aprovar.ExecutarAsync(ator, id, Cancelamento),
-            "Demanda aprovada. Ela segue para a Validação SESI e o prazo de SLA começou.");
+            "Demanda aprovada. Ela segue para a Validação da Gerenciadora e o prazo de SLA começou.");
 
     public Task<IActionResult> OnPostDevolverGestorAsync(Guid id)
         => ExecutarAsync(async ator => await devolverPeloGestor.ExecutarAsync(ator, id, Motivo ?? string.Empty, Cancelamento),
@@ -89,7 +89,7 @@ internal sealed class DetalheModel(
 
     public Task<IActionResult> OnPostAceitarAsync(Guid id)
         => ExecutarAsync(async ator => await aceitar.ExecutarAsync(ator, id, Cancelamento),
-            "Demanda aceita. Você é o responsável SESI e ela está em Recrutamento.");
+            "Demanda aceita. Você é o responsável da Gerenciadora e ela está em Recrutamento.");
 
     public Task<IActionResult> OnPostDevolverSesiAsync(Guid id)
         => ExecutarAsync(async ator =>

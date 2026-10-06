@@ -1,6 +1,6 @@
 namespace Contratacao.Web.Domain.Demandas;
 
-/// <summary>Uma RAC marcada na demanda (tabela DemandaRac, seção 8.1).</summary>
+/// <summary>Um risco marcado na demanda (tabela DemandaRac, seção 8.1).</summary>
 internal sealed class DemandaRac
 {
     private DemandaRac() { } // EF Core

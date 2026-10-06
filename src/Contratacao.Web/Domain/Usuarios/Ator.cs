@@ -5,7 +5,7 @@ namespace Contratacao.Web.Domain.Usuarios;
 /// usados nas permissões e no registro de auditoria.
 /// </summary>
 /// <param name="Contratos">
-/// Gestor: os contratos da GestorContrato (um ou mais). Funcionário SESI: o contrato do seu grupo.
+/// Gestor: os contratos da GestorContrato (um ou mais). Funcionário da Gerenciadora: o contrato do seu grupo.
 /// Admin e Solicitante: vazio.
 /// </param>
 internal sealed record Ator(Guid Id, Perfil Perfil, bool Ativo, IReadOnlySet<Guid> Contratos, string? EnderecoIp)

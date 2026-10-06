@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Contratacao.Web.Web.Pages.Equipe;
 
-/// <summary>UC14 — Cadastrar Funcionário SESI na equipe do Gestor logado.</summary>
+/// <summary>UC14 — Cadastrar Funcionário da Gerenciadora na equipe do Gestor logado.</summary>
 internal sealed class NovoModel(IContratos contratos, AtorAtual atorAtual, CadastrarFuncionarioSesi cadastrar) : PaginaBase
 {
     [BindProperty]
@@ -24,7 +24,7 @@ internal sealed class NovoModel(IContratos contratos, AtorAtual atorAtual, Cadas
         await CarregarContratosAsync();
         if (Contrato is null)
         {
-            ModelState.AddModelError(string.Empty, "Escolha o contrato do Funcionário SESI.");
+            ModelState.AddModelError(string.Empty, "Escolha o contrato do Funcionário da Gerenciadora.");
         }
 
         if (!ModelState.IsValid)

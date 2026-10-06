@@ -56,7 +56,7 @@ internal sealed class ContratacaoDbContext(DbContextOptions<ContratacaoDbContext
             chave.DeleteBehavior = DeleteBehavior.Restrict;
         }
 
-        // DemandaRac é editada direto (seção 8.1): a RAC desmarcada na correção sai da tabela de ligação, com a
+        // DemandaRac é editada direto (seção 8.1): o risco desmarcado na correção sai da tabela de ligação, com a
         // mudança no HistoricoAlteracao. ClientCascade deixa o EF remover essa linha; no banco a chave continua
         // ON DELETE NO ACTION, e a Demanda nunca é excluída.
         modelBuilder.Entity<Demanda>().HasMany(d => d.Racs).WithOne().OnDelete(DeleteBehavior.ClientCascade);

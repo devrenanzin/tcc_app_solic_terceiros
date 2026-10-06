@@ -32,7 +32,7 @@ internal sealed class CadastrarGestor(
 }
 
 /// <summary>
-/// UC14 — Cadastrar Funcionário SESI: pelo Gestor, na sua equipe e num dos seus contratos; pelo Admin, na equipe
+/// UC14 — Cadastrar Funcionário da Gerenciadora: pelo Gestor, na sua equipe e num dos seus contratos; pelo Admin, na equipe
 /// do Gestor escolhido e em qualquer contrato (Cliente, revisão de 06/10/2026).
 /// </summary>
 internal sealed class CadastrarFuncionarioSesi(
@@ -68,7 +68,7 @@ internal sealed class CadastrarFuncionarioSesi(
 }
 
 /// <summary>
-/// Vincula uma conta já cadastrada de Solicitante como Funcionário SESI, mudando o perfil (Cliente, revisão de
+/// Vincula uma conta já cadastrada de Solicitante como Funcionário da Gerenciadora, mudando o perfil (Cliente, revisão de
 /// 06/10/2026): o Gestor, na própria equipe; o Admin, na equipe de qualquer Gestor. E-mail e senha continuam os mesmos.
 /// </summary>
 internal sealed class VincularContaComoSesi(
@@ -136,7 +136,7 @@ internal static class GestorResponsavel
 
         if (gestorId is not { } id)
         {
-            throw new RegraNegocioException("Escolha o Gestor responsável pelo Funcionário SESI.");
+            throw new RegraNegocioException("Escolha o Gestor responsável pelo Funcionário da Gerenciadora.");
         }
 
         return await obterAtor.ExecutarAsync(id, null, cancelamento)
@@ -191,7 +191,7 @@ internal sealed class DefinirContratosGestor(
     }
 }
 
-/// <summary>Troca o contrato do grupo de um Funcionário SESI, pelo Gestor responsável (UC14).</summary>
+/// <summary>Troca o contrato do grupo de um Funcionário da Gerenciadora, pelo Gestor responsável (UC14).</summary>
 internal sealed class AlterarContratoFuncionarioSesi(
     IUsuarios usuarios, IContratos contratos, IAuditoria auditoria, IUnidadeDeTrabalho unidade, IRelogio relogio)
 {
@@ -213,7 +213,7 @@ internal sealed class AlterarContratoFuncionarioSesi(
     }
 }
 
-/// <summary>UC19 — Transferir Vínculo de Usuário: Funcionários SESI de um Gestor para outro, com justificativa.</summary>
+/// <summary>UC19 — Transferir Vínculo de Usuário: Funcionários da Gerenciadora de um Gestor para outro, com justificativa.</summary>
 internal sealed class TransferirVinculo(IUsuarios usuarios, IAuditoria auditoria, IUnidadeDeTrabalho unidade, IRelogio relogio)
 {
     private const int TamanhoMaximoJustificativa = 1000;
@@ -228,7 +228,7 @@ internal sealed class TransferirVinculo(IUsuarios usuarios, IAuditoria auditoria
 
         if (funcionarios.Count == 0)
         {
-            throw new RegraNegocioException("Escolha pelo menos um Funcionário SESI.");
+            throw new RegraNegocioException("Escolha pelo menos um Funcionário da Gerenciadora.");
         }
 
         var destino = await usuarios.ObterAsync(gestorDestinoId, cancelamento)

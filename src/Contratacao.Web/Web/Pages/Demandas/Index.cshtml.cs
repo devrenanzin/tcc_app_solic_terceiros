@@ -11,7 +11,7 @@ namespace Contratacao.Web.Web.Pages.Demandas;
 
 /// <summary>
 /// UC03 e tela de acompanhamento (seções 21–22): as demandas no escopo do usuário (seção 4), com os campos e
-/// filtros da tela do SESI. Abre só com as em andamento; o filtro de situação mostra concluídas e canceladas (Cliente).
+/// filtros da tela da Gerenciadora. Abre só com as em andamento; o filtro de situação mostra concluídas e canceladas (Cliente).
 /// </summary>
 internal sealed class IndexModel(ConsultarDemandas consultar, AtorAtual atorAtual, IRelogio relogio, ICalendarioSla calendario) : PaginaBase
 {

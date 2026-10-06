@@ -21,7 +21,7 @@ internal sealed class ConfiguracaoPerfil : IEntityTypeConfiguration<LinhaPerfil>
             new LinhaPerfil { Id = Perfil.Admin, Nome = "Admin", Descricao = "Criador/Admin: gerencia Gestores, parâmetros e auditoria" },
             new LinhaPerfil { Id = Perfil.Gestor, Nome = "Gestor", Descricao = "Gestor do Contrato: valida, devolve e cancela demandas dos seus contratos" },
             new LinhaPerfil { Id = Perfil.Solicitante, Nome = "Solicitante", Descricao = "Usuário Solicitante: cria, envia e corrige demandas" },
-            new LinhaPerfil { Id = Perfil.FuncionarioSesi, Nome = "FuncionarioSesi", Descricao = "Funcionário SESI: conduz o processo das demandas do seu contrato" });
+            new LinhaPerfil { Id = Perfil.FuncionarioSesi, Nome = "FuncionarioSesi", Descricao = "Funcionário da Gerenciadora: conduz o processo das demandas do seu contrato" });
     }
 }
 

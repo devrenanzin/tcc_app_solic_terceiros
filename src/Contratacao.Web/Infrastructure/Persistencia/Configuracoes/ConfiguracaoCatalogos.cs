@@ -22,7 +22,7 @@ internal sealed class ConfiguracaoEtapa : IEntityTypeConfiguration<LinhaEtapa>
         b.HasData(
             new LinhaEtapa { Id = Etapa.Solicitacao, Nome = "Solicitação", Ordem = 1, Ativa = true },
             new LinhaEtapa { Id = Etapa.ValidacaoGestor, Nome = "Validação do Gestor", Ordem = 2, Ativa = true },
-            new LinhaEtapa { Id = Etapa.ValidacaoSesi, Nome = "Validação SESI", Ordem = 3, Ativa = true },
+            new LinhaEtapa { Id = Etapa.ValidacaoSesi, Nome = "Validação da Gerenciadora", Ordem = 3, Ativa = true },
             new LinhaEtapa { Id = Etapa.Recrutamento, Nome = "Recrutamento", Ordem = 4, Ativa = true },
             new LinhaEtapa { Id = Etapa.Entrevistas, Nome = "Entrevistas", Ordem = 5, Ativa = true },
             new LinhaEtapa { Id = Etapa.ExamesMedicos, Nome = "Exames Médicos", Ordem = 6, Ativa = true },

@@ -39,7 +39,7 @@ internal sealed class NovoModel(IContratos contratos, AtorAtual atorAtual, Cadas
     }
 }
 
-/// <summary>Dados comuns ao cadastro de Gestor e de Funcionário SESI.</summary>
+/// <summary>Dados comuns ao cadastro de Gestor e de Funcionário da Gerenciadora.</summary>
 internal sealed class EntradaNovoUsuario
 {
     [Required(ErrorMessage = "Informe o nome.")]

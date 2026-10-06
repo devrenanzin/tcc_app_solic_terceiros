@@ -44,7 +44,7 @@ internal static class Formatacao
         Domain.Usuarios.Perfil.Admin => "Admin",
         Domain.Usuarios.Perfil.Gestor => "Gestor do Contrato",
         Domain.Usuarios.Perfil.Solicitante => "Solicitante",
-        Domain.Usuarios.Perfil.FuncionarioSesi => "Funcionário SESI",
+        Domain.Usuarios.Perfil.FuncionarioSesi => "Funcionário da Gerenciadora",
         _ => perfil.ToString(),
     };
 
@@ -53,7 +53,7 @@ internal static class Formatacao
     {
         Domain.Demandas.Etapa.Solicitacao => "Solicitação",
         Domain.Demandas.Etapa.ValidacaoGestor => "Validação do Gestor",
-        Domain.Demandas.Etapa.ValidacaoSesi => "Validação SESI",
+        Domain.Demandas.Etapa.ValidacaoSesi => "Validação da Gerenciadora",
         Domain.Demandas.Etapa.Recrutamento => "Recrutamento",
         Domain.Demandas.Etapa.Entrevistas => "Entrevistas",
         Domain.Demandas.Etapa.ExamesMedicos => "Exames Médicos",
@@ -89,7 +89,7 @@ internal static class Formatacao
         EventoDemanda.AprovadaPeloGestor => "Aprovada pelo Gestor",
         EventoDemanda.DevolvidaParaCorrecao => "Devolvida para correção",
         EventoDemanda.CorrecaoEnviada => "Correção enviada",
-        EventoDemanda.AceitaPeloSesi => "Aceita pelo SESI",
+        EventoDemanda.AceitaPeloSesi => "Aceita pela Gerenciadora",
         EventoDemanda.VagaAberta => "Vaga aberta",
         EventoDemanda.EntrevistasIniciadas => "Entrevistas iniciadas",
         EventoDemanda.ExamesIniciados => "Exames iniciados",
@@ -136,17 +136,17 @@ internal static class Formatacao
     internal static (string Nome, string Icone, string Ajuda) Quadro(Quadro quadro) => quadro switch
     {
         Domain.Demandas.Quadro.MinhasDemandas => ("Minhas demandas", "bi-collection", "Todas as que você enviou"),
-        Domain.Demandas.Quadro.EmAndamento => ("Em andamento", "bi-arrow-repeat", "Em validação ou no processo SESI"),
+        Domain.Demandas.Quadro.EmAndamento => ("Em andamento", "bi-arrow-repeat", "Em validação ou no processo da Gerenciadora"),
         Domain.Demandas.Quadro.AguardandoCorrecao => ("Aguardando correção", "bi-pencil-square", "Devolvidas para você corrigir"),
         Domain.Demandas.Quadro.Finalizadas => ("Finalizadas", "bi-check2-all", "Contratação concluída"),
         Domain.Demandas.Quadro.Canceladas => ("Canceladas", "bi-x-circle", "Processo interrompido"),
         Domain.Demandas.Quadro.AguardandoValidacao => ("Aguardando validação", "bi-hourglass-split", "Dos seus contratos, para aprovar ou devolver"),
         Domain.Demandas.Quadro.CorrecoesPendentes => ("Correções pendentes", "bi-arrow-return-left", "Devolvidas ao Solicitante"),
-        Domain.Demandas.Quadro.Aprovadas => ("Aprovadas", "bi-check2-circle", "Aguardando o aceite do SESI"),
-        Domain.Demandas.Quadro.EmProcessoSesi => ("Em processo SESI", "bi-people", "Recrutamento, entrevistas e exames"),
+        Domain.Demandas.Quadro.Aprovadas => ("Aprovadas", "bi-check2-circle", "Aguardando o aceite da Gerenciadora"),
+        Domain.Demandas.Quadro.EmProcessoSesi => ("Em processo da Gerenciadora", "bi-people", "Recrutamento, entrevistas e exames"),
         Domain.Demandas.Quadro.ProximasDoVencimento => ("Próximas do vencimento", "bi-exclamation-triangle", "Farol amarelo ou laranja"),
         Domain.Demandas.Quadro.Atrasadas => ("Atrasadas", "bi-alarm", "Prazo vencido, não finalizadas"),
-        Domain.Demandas.Quadro.AguardandoAceite => ("Aguardando aceite", "bi-inbox", "Aprovadas pelo Gestor, à espera do SESI"),
+        Domain.Demandas.Quadro.AguardandoAceite => ("Aguardando aceite", "bi-inbox", "Aprovadas pelo Gestor, à espera da Gerenciadora"),
         Domain.Demandas.Quadro.Recrutamento => ("Recrutamento", "bi-megaphone", "Vaga a registrar ou aberta"),
         Domain.Demandas.Quadro.Entrevistas => ("Entrevistas", "bi-chat-square-text", "Entrevistas em andamento"),
         Domain.Demandas.Quadro.ExamesMedicos => ("Exames médicos", "bi-heart-pulse", "Exames em andamento"),

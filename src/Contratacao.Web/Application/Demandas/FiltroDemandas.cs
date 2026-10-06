@@ -7,7 +7,7 @@ namespace Contratacao.Web.Application.Demandas;
 
 /// <summary>
 /// Filtros da tela de acompanhamento (seção 21–22): status, etapa, contratada, Gestor, Solicitante, período
-/// (data de envio; Cliente), farol e responsável SESI, além do quadro do painel e da situação geral.
+/// (data de envio; Cliente), farol e responsável da Gerenciadora, além do quadro do painel e da situação geral.
 /// </summary>
 internal sealed record FiltroDemandas
 {

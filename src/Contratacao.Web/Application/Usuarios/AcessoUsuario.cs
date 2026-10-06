@@ -62,7 +62,7 @@ internal sealed class CadastrarSolicitante(
     }
 }
 
-/// <summary>Troca de senha pelo próprio usuário; obrigatória no primeiro acesso de Gestores e Funcionários SESI.</summary>
+/// <summary>Troca de senha pelo próprio usuário; obrigatória no primeiro acesso de Gestores e Funcionários da Gerenciadora.</summary>
 internal sealed class TrocarSenha(IUsuarios usuarios, IHashSenha hash, IAuditoria auditoria, IUnidadeDeTrabalho unidade, IRelogio relogio)
 {
     internal async Task<Usuario> ExecutarAsync(Ator ator, string senhaAtual, string novaSenha, CancellationToken cancelamento)

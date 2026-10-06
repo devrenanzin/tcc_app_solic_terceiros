@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Contratacao.Web.Web.Pages.Admin.FuncionariosSesi;
 
-/// <summary>Vincula uma conta já cadastrada de Solicitante como Funcionário SESI, pelo Admin (Cliente, revisão de 06/10/2026).</summary>
+/// <summary>Vincula uma conta já cadastrada de Solicitante como Funcionário da Gerenciadora, pelo Admin (Cliente, revisão de 06/10/2026).</summary>
 internal sealed class VincularModel(IUsuarios usuarios, IContratos contratos, AtorAtual atorAtual, VincularContaComoSesi vincular) : PaginaBase
 {
     [BindProperty]
@@ -34,7 +34,7 @@ internal sealed class VincularModel(IUsuarios usuarios, IContratos contratos, At
             return Page();
         }
 
-        Sucesso($"A conta de {conta!.Nome} agora é Funcionário SESI. Ela entra com o mesmo e-mail e senha.");
+        Sucesso($"A conta de {conta!.Nome} agora é Funcionário da Gerenciadora. Ela entra com o mesmo e-mail e senha.");
         return Redirect("/Admin/FuncionariosSesi");
     }
 

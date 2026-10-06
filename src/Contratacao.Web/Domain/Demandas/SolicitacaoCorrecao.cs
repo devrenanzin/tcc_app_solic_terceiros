@@ -20,7 +20,7 @@ internal sealed class SolicitacaoCorrecao
     internal Guid SolicitadoPorId { get; private set; }
     internal OrigemCorrecao Origem { get; private set; }
 
-    /// <summary>Nulo nas devoluções do Gestor; obrigatório nas do SESI.</summary>
+    /// <summary>Nulo nas devoluções do Gestor; obrigatório nas da Gerenciadora.</summary>
     internal TipoInconsistencia? Tipo { get; private set; }
 
     internal string Motivo { get; private set; } = string.Empty;

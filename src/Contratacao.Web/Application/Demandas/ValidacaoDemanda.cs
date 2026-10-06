@@ -4,7 +4,7 @@ using Contratacao.Web.Domain.Usuarios;
 
 namespace Contratacao.Web.Application.Demandas;
 
-// Validação do Gestor (UC04, UC05) e do SESI (UC05, UC07). As regras ficam na Demanda; cada caso de uso
+// Validação do Gestor (UC04, UC05) e da Gerenciadora (UC05, UC07). As regras ficam na Demanda; cada caso de uso
 // carrega, executa a ação e grava.
 
 internal sealed class AprovarDemanda(

@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Contratacao.Tests.Integracao;
 
-/// <summary>Telas da demanda pela aplicação web: envio com anexos, validação pelo Gestor e pelo SESI, correção e acesso.</summary>
+/// <summary>Telas da demanda pela aplicação web: envio com anexos, validação pelo Gestor e pela Gerenciadora, correção e acesso.</summary>
 // public: o xUnit exige classes de teste públicas (regra xUnit1000).
 public sealed partial class TelasDemandaTests(BancoFixture banco) : IClassFixture<BancoFixture>
 {
@@ -197,7 +197,7 @@ public sealed partial class TelasDemandaTests(BancoFixture banco) : IClassFixtur
         Assert.Contains($"<option value=\"{os.Id}\" data-contrato-id=\"{IdsFixos.ContratoSudeste}\"", formulario, StringComparison.Ordinal);
     }
 
-    /// <summary>Gestor do contrato (cadastrado pelo Admin) e um Funcionário SESI da equipe dele, ambos com senha inicial.</summary>
+    /// <summary>Gestor do contrato (cadastrado pelo Admin) e um Funcionário da Gerenciadora da equipe dele, ambos com senha inicial.</summary>
     private async Task<(string Gestor, string Sesi)> CadastrarEquipeAsync(Guid contrato)
     {
         var admin = await banco.AdminAsync();
@@ -206,7 +206,7 @@ public sealed partial class TelasDemandaTests(BancoFixture banco) : IClassFixtur
 
         var sesiEmail = $"sesi.{Guid.NewGuid():N}@ucl.br";
         var ator = await banco.AtorAsync(gestor.Id);
-        await banco.ExecutarAsync<CadastrarFuncionarioSesi, Usuario>(c => c.ExecutarAsync(ator, "SESI de Testes", sesiEmail, Senha, contrato, Cancelamento));
+        await banco.ExecutarAsync<CadastrarFuncionarioSesi, Usuario>(c => c.ExecutarAsync(ator, "Gerenciadora de Testes", sesiEmail, Senha, contrato, Cancelamento));
         return (gestorEmail, sesiEmail);
     }
 

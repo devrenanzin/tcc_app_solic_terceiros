@@ -51,7 +51,7 @@ public sealed class OperacoesExcepcionaisTests
         var registro = demanda.Historico[^1];
         Assert.Equal((EventoDemanda.TransicaoForcada, "Candidato reprovado nos exames."), (registro.Evento, registro.Observacao));
 
-        // A vaga continua registrada; o SESI segue a sequência a partir daqui.
+        // A vaga continua registrada; a Gerenciadora segue a sequência a partir daqui.
         Assert.NotNull(demanda.Vaga);
         Assert.Equal([AcaoDemanda.IniciarEntrevistas], demanda.AcoesDisponiveis(_c.SesiNorte).Except([AcaoDemanda.Cancelar]));
     }

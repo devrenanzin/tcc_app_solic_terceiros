@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Contratacao.Web.Web.Pages.Admin.FuncionariosSesi;
 
-/// <summary>UC14 pelo Admin: Funcionário SESI na equipe de qualquer Gestor ativo e em qualquer contrato (Cliente).</summary>
+/// <summary>UC14 pelo Admin: Funcionário da Gerenciadora na equipe de qualquer Gestor ativo e em qualquer contrato (Cliente).</summary>
 internal sealed class NovoModel(IUsuarios usuarios, IContratos contratos, AtorAtual atorAtual, CadastrarFuncionarioSesi cadastrar) : PaginaBase
 {
     [BindProperty]

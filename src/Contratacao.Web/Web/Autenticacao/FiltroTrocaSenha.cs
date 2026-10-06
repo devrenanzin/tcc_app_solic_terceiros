@@ -5,7 +5,7 @@ namespace Contratacao.Web.Web.Autenticacao;
 
 /// <summary>
 /// Enquanto a senha inicial não for trocada, toda página leva à troca de senha
-/// (primeiro acesso de Gestores e Funcionários SESI; Cliente, revisão de 05/10/2026).
+/// (primeiro acesso de Gestores e Funcionários da Gerenciadora; Cliente, revisão de 05/10/2026).
 /// </summary>
 internal sealed class FiltroTrocaSenha : IAsyncPageFilter
 {

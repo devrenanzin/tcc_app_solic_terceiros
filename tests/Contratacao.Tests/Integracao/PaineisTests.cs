@@ -27,7 +27,7 @@ public sealed class PaineisTests(PaineisTests.Cenario cenario) : IClassFixture<P
     public async Task Acompanhamento_abre_so_com_as_em_andamento_e_o_filtro_mostra_as_outras()
     {
         var padrao = await FiltrarAsync(_solicitante, new FiltroDemandas());
-        Assert.Equal([_ids.EmAnalise, _ids.Recrutamento], padrao.Order());
+        Assert.Equal(new[] { _ids.EmAnalise, _ids.Recrutamento }.Order(), padrao.Order());
 
         Assert.Equal([_ids.Finalizada], await FiltrarAsync(_solicitante, new FiltroDemandas { Situacao = Situacao.Concluidas }));
         Assert.Equal([_ids.Cancelada], await FiltrarAsync(_solicitante, new FiltroDemandas { Situacao = Situacao.Canceladas }));

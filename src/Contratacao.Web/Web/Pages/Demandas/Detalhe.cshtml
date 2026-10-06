@@ -50,7 +50,7 @@
         <div class="flex-grow-1">
             <h2>Devolvida para correção</h2>
             <p class="mb-1">
-                Por @Nome(nomes.Usuarios, pendente.SolicitadoPorId) (@(pendente.Origem == OrigemCorrecao.Gestor ? "Gestor" : "SESI"))
+                Por @Nome(nomes.Usuarios, pendente.SolicitadoPorId) (@(pendente.Origem == OrigemCorrecao.Gestor ? "Gestor" : "Gerenciadora"))
                 em @Formatacao.DataHora(pendente.DataSolicitacao)@(pendente.Tipo is { } tipo ? $" · {Formatacao.Tipo(tipo)}" : string.Empty)
             </p>
             <blockquote class="mb-0">@pendente.Motivo</blockquote>
@@ -95,7 +95,7 @@
                     <div><dt>Notebook · Segunda tela · Celular</dt><dd>@Formatacao.SimNao(d.Notebook) · @Formatacao.SimNao(d.SegundaTela) · @Formatacao.SimNao(d.Celular)</dd></div>
                     <div><dt>CNH</dt><dd>@(d.ExigeCnh ? $"Exige, categoria {d.CategoriaCnh}" : "Não exige")</dd></div>
                     <div class="largo">
-                        <dt>RACs</dt>
+                        <dt>Riscos</dt>
                         <dd>
                             @if (d.Racs.Count == 0)
                             {
@@ -261,7 +261,7 @@
         @if (acoes.Overlaps([AcaoDemanda.RegistrarVaga, AcaoDemanda.IniciarEntrevistas, AcaoDemanda.IniciarExames, AcaoDemanda.Finalizar]))
         {
             <section class="cartao bloco painel-acoes">
-                <h2>Processo SESI · próximo passo</h2>
+                <h2>Processo da Gerenciadora · próximo passo</h2>
                 @if (acoes.Contains(AcaoDemanda.RegistrarVaga))
                 {
                     <form method="post" asp-page-handler="RegistrarVaga" asp-route-id="@d.Id">
@@ -295,7 +295,7 @@
         @if (acoes.Overlaps([AcaoDemanda.Aprovar, AcaoDemanda.DevolverPeloGestor, AcaoDemanda.Aceitar, AcaoDemanda.DevolverPeloSesi]))
         {
             <section class="cartao bloco painel-acoes">
-                <h2>@(acoes.Contains(AcaoDemanda.Aprovar) ? "Validação do Gestor" : "Validação SESI")</h2>
+                <h2>@(acoes.Contains(AcaoDemanda.Aprovar) ? "Validação do Gestor" : "Validação da Gerenciadora")</h2>
                 @if (acoes.Contains(AcaoDemanda.Aprovar))
                 {
                     <form method="post" asp-page-handler="Aprovar" asp-route-id="@d.Id" onsubmit="return confirm('Aprovar a demanda @d.Numero? O prazo de SLA começa agora.')">
@@ -304,7 +304,7 @@
                 }
                 @if (acoes.Contains(AcaoDemanda.Aceitar))
                 {
-                    <form method="post" asp-page-handler="Aceitar" asp-route-id="@d.Id" onsubmit="return confirm('Aceitar a demanda @d.Numero? Você será o responsável SESI.')">
+                    <form method="post" asp-page-handler="Aceitar" asp-route-id="@d.Id" onsubmit="return confirm('Aceitar a demanda @d.Numero? Você será o responsável da Gerenciadora.')">
                         <button type="submit" class="btn btn-success w-100"><i class="bi bi-person-check"></i> Aceitar e assumir</button>
                     </form>
                 }
@@ -456,7 +456,7 @@
             <dl class="lista-simples">
                 <div><dt>Enviada em</dt><dd>@Formatacao.DataHora(d.DataEnvio)</dd></div>
                 <div><dt>Gestor da demanda</dt><dd>@(d.GestorId is null ? "Aguardando validação" : Nome(nomes.Usuarios, d.GestorId))</dd></div>
-                <div><dt>Responsável SESI</dt><dd>@(d.ResponsavelSesiId is null ? "Aguardando aceite" : Nome(nomes.Usuarios, d.ResponsavelSesiId))</dd></div>
+                <div><dt>Responsável da Gerenciadora</dt><dd>@(d.ResponsavelSesiId is null ? "Aguardando aceite" : Nome(nomes.Usuarios, d.ResponsavelSesiId))</dd></div>
             </dl>
         </section>
     </div>

@@ -51,7 +51,7 @@ internal sealed class Cenario
     internal static Ator Novo(Perfil perfil, params Contrato[] contratos)
         => new(Guid.NewGuid(), perfil, true, contratos.Select(c => c.Id).ToHashSet(), "10.0.0.1");
 
-    /// <summary>Formulário completo, no corredor Norte, com notebook, 2 vagas e uma RAC.</summary>
+    /// <summary>Formulário completo, no corredor Norte, com notebook, 2 vagas e um risco.</summary>
     internal static DadosSolicitacao Dados() => new()
     {
         AreaSolicitante = "Engenharia de Manutenção",

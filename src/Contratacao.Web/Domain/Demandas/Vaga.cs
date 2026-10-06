@@ -1,6 +1,6 @@
 namespace Contratacao.Web.Domain.Demandas;
 
-/// <summary>Vaga aberta na plataforma externa do SESI (UC08). Uma por demanda.</summary>
+/// <summary>Vaga aberta na plataforma externa da Gerenciadora (UC08). Uma por demanda.</summary>
 internal sealed class Vaga
 {
     private Vaga() { } // EF Core

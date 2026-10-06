@@ -4,9 +4,9 @@ namespace Contratacao.Web.Domain.Usuarios;
 
 /// <summary>
 /// Usuário do sistema (seções 4 e 4.5). Nunca é excluído, só desativado.
-/// Quem cadastra e gerencia quem: Admin → Gestores e qualquer Funcionário SESI; Gestor → Funcionários SESI da sua
+/// Quem cadastra e gerencia quem: Admin → Gestores e qualquer Funcionário da Gerenciadora; Gestor → Funcionários da Gerenciadora da sua
 /// equipe; o Solicitante se cadastra sozinho e é desativado pelo Admin ou por qualquer Gestor. Uma conta de
-/// Solicitante pode ser vinculada como Funcionário SESI ou Gestor, mudando o perfil (Cliente, revisão de 06/10/2026).
+/// Solicitante pode ser vinculada como Funcionário da Gerenciadora ou Gestor, mudando o perfil (Cliente, revisão de 06/10/2026).
 /// </summary>
 internal sealed class Usuario
 {
@@ -17,12 +17,12 @@ internal sealed class Usuario
     internal Guid Id { get; private set; }
     internal Perfil Perfil { get; private set; }
 
-    /// <summary>Gestor que gerencia o cadastro; só para Funcionário SESI.</summary>
+    /// <summary>Gestor que gerencia o cadastro; só para Funcionário da Gerenciadora.</summary>
     internal Guid? GestorResponsavelId { get; private set; }
 
     internal Guid? CriadoPorUsuarioId { get; private set; }
 
-    /// <summary>Contrato do grupo do Funcionário SESI.</summary>
+    /// <summary>Contrato do grupo do Funcionário da Gerenciadora.</summary>
     internal Guid? ContratoId { get; private set; }
 
     internal string Nome { get; private set; } = string.Empty;
@@ -39,7 +39,7 @@ internal sealed class Usuario
     internal string SenhaHash { get; private set; } = string.Empty;
 
     /// <summary>
-    /// Senha inicial definida por quem cadastrou (Gestor e Funcionário SESI): o usuário troca no primeiro
+    /// Senha inicial definida por quem cadastrou (Gestor e Funcionário da Gerenciadora): o usuário troca no primeiro
     /// acesso, antes de usar o sistema (Cliente, revisão de 05/10/2026).
     /// </summary>
     internal bool DeveTrocarSenha { get; private set; }
@@ -62,7 +62,7 @@ internal sealed class Usuario
     }
 
     /// <summary>
-    /// Cadastro de Funcionário SESI (UC14): pelo Gestor, na sua equipe e num dos seus contratos; pelo Admin, na
+    /// Cadastro de Funcionário da Gerenciadora (UC14): pelo Gestor, na sua equipe e num dos seus contratos; pelo Admin, na
     /// equipe de qualquer Gestor ativo e em qualquer contrato (Cliente, revisão de 06/10/2026).
     /// </summary>
     internal static Usuario CadastrarFuncionarioSesi(
@@ -78,7 +78,7 @@ internal sealed class Usuario
     }
 
     /// <summary>
-    /// Vincula uma conta já cadastrada de Solicitante como Funcionário SESI: o perfil muda, com o mesmo e-mail e senha
+    /// Vincula uma conta já cadastrada de Solicitante como Funcionário da Gerenciadora: o perfil muda, com o mesmo e-mail e senha
     /// (Cliente, revisão de 06/10/2026). Mesmas regras do cadastro: o Gestor, na própria equipe e nos seus contratos;
     /// o Admin, para qualquer Gestor e contrato. Recusado se a conta tem demandas em andamento, porque só o
     /// Solicitante as corrige.
@@ -111,20 +111,20 @@ internal sealed class Usuario
     /// <summary>Gestor: só na própria equipe e nos seus contratos. Admin: qualquer Gestor ativo e qualquer contrato.</summary>
     private static void ExigirQuemVinculaSesi(Ator ator, Guid contratoId, Ator gestorResponsavel)
     {
-        Exigir(ator.Eh(Perfil.Gestor) || ator.Eh(Perfil.Admin), "Só um Gestor ativo ou o Admin cadastra Funcionários SESI.");
-        Exigir(contratoId != Guid.Empty, "Escolha o contrato do Funcionário SESI.");
+        Exigir(ator.Eh(Perfil.Gestor) || ator.Eh(Perfil.Admin), "Só um Gestor ativo ou o Admin cadastra Funcionários da Gerenciadora.");
+        Exigir(contratoId != Guid.Empty, "Escolha o contrato do Funcionário da Gerenciadora.");
         Exigir(gestorResponsavel.Eh(Perfil.Gestor), "Escolha um Gestor ativo como responsável.");
 
         if (ator.Eh(Perfil.Gestor))
         {
-            Exigir(gestorResponsavel.Id == ator.Id, "O Gestor cadastra Funcionários SESI só na própria equipe.");
+            Exigir(gestorResponsavel.Id == ator.Id, "O Gestor cadastra Funcionários da Gerenciadora só na própria equipe.");
             Exigir(ator.AtuaNoContrato(contratoId), "Escolha um dos seus contratos. Para outro contrato, peça ao Admin.");
         }
     }
 
     /// <summary>
     /// Quem gerencia o cadastro deste usuário (seções 4.5 e 19): o Admin gerencia Gestores e qualquer Funcionário
-    /// SESI (Cliente); o Gestor, só os Funcionários SESI da sua equipe; Solicitantes, o Admin e qualquer Gestor.
+    /// Gerenciadora (Cliente); o Gestor, só os Funcionários da Gerenciadora da sua equipe; Solicitantes, o Admin e qualquer Gestor.
     /// Ninguém gerencia o Admin.
     /// </summary>
     internal bool PodeSerGerenciadoPor(Ator ator) => Perfil switch
@@ -150,12 +150,12 @@ internal sealed class Usuario
     }
 
     /// <summary>
-    /// Troca o contrato do grupo do Funcionário SESI (Cliente, revisão de 05/10/2026): o Gestor responsável,
+    /// Troca o contrato do grupo do Funcionário da Gerenciadora (Cliente, revisão de 05/10/2026): o Gestor responsável,
     /// só entre os seus contratos; o Admin, para qualquer contrato.
     /// </summary>
     internal void AlterarContrato(Ator ator, Guid contratoId)
     {
-        Exigir(Perfil == Perfil.FuncionarioSesi, "Só Funcionários SESI têm contrato próprio.");
+        Exigir(Perfil == Perfil.FuncionarioSesi, "Só Funcionários da Gerenciadora têm contrato próprio.");
         Exigir(contratoId != Guid.Empty, "Escolha o contrato.");
 
         if (!ator.Eh(Perfil.Admin))
@@ -175,13 +175,13 @@ internal sealed class Usuario
     }
 
     /// <summary>
-    /// Transferência do Funcionário SESI para outro Gestor (UC19), pelo Admin.
+    /// Transferência do Funcionário da Gerenciadora para outro Gestor (UC19), pelo Admin.
     /// A equipe de um Gestor desativado continua ativa e pode ser transferida (Cliente).
     /// </summary>
     internal void TransferirPara(Ator admin, Usuario novoGestor)
     {
         Exigir(admin.Eh(Perfil.Admin), "Só o Admin transfere o vínculo de usuários.");
-        Exigir(Perfil == Perfil.FuncionarioSesi, "Só Funcionários SESI têm Gestor responsável.");
+        Exigir(Perfil == Perfil.FuncionarioSesi, "Só Funcionários da Gerenciadora têm Gestor responsável.");
         Exigir(novoGestor.Perfil == Perfil.Gestor && novoGestor.Ativo, "O destino precisa ser um Gestor ativo.");
         Exigir(novoGestor.Id != GestorResponsavelId, "O usuário já pertence a este Gestor.");
         GestorResponsavelId = novoGestor.Id;

@@ -7,7 +7,7 @@
 <div class="cabecalho-pagina">
     <div>
         <h1>Transferir vínculo</h1>
-        <p>Mova Funcionários SESI para outro Gestor, por exemplo quando o Gestor responsável for desativado.</p>
+        <p>Mova Funcionários da Gerenciadora para outro Gestor, por exemplo quando o Gestor responsável for desativado.</p>
     </div>
 </div>
 
@@ -32,10 +32,10 @@
         <input type="hidden" asp-for="Origem" />
 
         <fieldset class="mb-4">
-            <legend class="form-label fs-6">Funcionários SESI da equipe</legend>
+            <legend class="form-label fs-6">Funcionários da Gerenciadora da equipe</legend>
             @if (Model.Equipe.Count == 0)
             {
-                <div class="vazio py-3"><i class="bi bi-people"></i>Este Gestor não tem Funcionários SESI.</div>
+                <div class="vazio py-3"><i class="bi bi-people"></i>Este Gestor não tem Funcionários da Gerenciadora.</div>
             }
             @foreach (var funcionario in Model.Equipe)
             {

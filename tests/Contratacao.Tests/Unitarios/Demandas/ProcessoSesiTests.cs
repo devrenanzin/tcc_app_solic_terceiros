@@ -5,7 +5,7 @@ using Contratacao.Web.Domain.Prazos;
 
 namespace Contratacao.Tests.Unitarios.Demandas;
 
-/// <summary>Processo SESI (UC08–11): sequência obrigatória, quem conduz, responsáveis e congelamento de datas.</summary>
+/// <summary>Processo da Gerenciadora (UC08–11): sequência obrigatória, quem conduz, responsáveis e congelamento de datas.</summary>
 // public: o xUnit exige classes de teste públicas (regra xUnit1000).
 public sealed class ProcessoSesiTests
 {
@@ -20,7 +20,7 @@ public sealed class ProcessoSesiTests
         Assert.Equal([AcaoDemanda.Finalizar], _c.EmExames().AcoesDisponiveis(_c.SesiNorte));
         Assert.Empty(_c.Finalizada().AcoesDisponiveis(_c.SesiNorte));
 
-        // Qualquer SESI ativo do contrato conduz (Cliente, S4); o de outro contrato e os demais perfis, não.
+        // Qualquer Funcionário da Gerenciadora ativo do contrato conduz (Cliente, S4); o de outro contrato e os demais perfis, não.
         Assert.Equal([AcaoDemanda.RegistrarVaga], _c.EmRecrutamento().AcoesDisponiveis(_c.OutroSesiNorte));
         foreach (var ator in new[] { _c.SesiSudeste, _c.Solicitante, _c.Admin, _c.SesiNorte with { Ativo = false } })
         {
@@ -89,7 +89,7 @@ public sealed class ProcessoSesiTests
         Assert.Equal(horario["Recrutamento"], Passagem(Etapa.Entrevistas).DataInicio);
 
         Assert.All(demanda.Etapas, e => Assert.False(e.Aberta));
-        Assert.Equal(_c.SesiNorte.Id, demanda.ResponsavelSesiId); // quem aceitou continua o responsável SESI
+        Assert.Equal(_c.SesiNorte.Id, demanda.ResponsavelSesiId); // quem aceitou continua o responsável da Gerenciadora
         Assert.Equal(horario["Exames"], demanda.DataFinalizacao);
         Assert.Equal(Farol.Verde, demanda.ObterFarol(_c.Relogio, _c.Calendario));
         Assert.Equal(EventoDemanda.ContratacaoFinalizada, demanda.Historico[^1].Evento);

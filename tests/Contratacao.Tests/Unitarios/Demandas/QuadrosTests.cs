@@ -105,6 +105,6 @@ public sealed class QuadrosTests
 
     private static ResumoDemanda Resumo(DateTime envioUtc, Guid gestorId)
         => new(Guid.NewGuid(), "2026-000123", Guid.NewGuid(), "Solicitante", Cenario.ContratoNorte.Id, "5900125082",
-            Cenario.ContratadaSesi, "SESI", gestorId, "Gestor", Guid.NewGuid(), "SESI de testes", Etapa.Entrevistas, StatusDemanda.EmAndamento,
+            Cenario.ContratadaSesi, "Gerenciadora", gestorId, "Gestor", Guid.NewGuid(), "Gerenciadora de testes", Etapa.Entrevistas, StatusDemanda.EmAndamento,
             envioUtc, "Vitória", "Analista", 2, 1000m, null, null) { Farol = Farol.Verde };
 }

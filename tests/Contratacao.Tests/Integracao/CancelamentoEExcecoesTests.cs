@@ -25,7 +25,7 @@ public sealed class CancelamentoEExcecoesTests(BancoFixture banco) : IClassFixtu
     {
         var (id, gestor, sesi) = await EmRecrutamentoAsync();
 
-        await Assert.ThrowsAsync<RegraNegocioException>(() => banco.ExecutarAsync<CancelarDemanda>(c => c.ExecutarAsync(sesi, id, "SESI não cancela.", Cancelamento)));
+        await Assert.ThrowsAsync<RegraNegocioException>(() => banco.ExecutarAsync<CancelarDemanda>(c => c.ExecutarAsync(sesi, id, "Gerenciadora não cancela.", Cancelamento)));
         await Assert.ThrowsAsync<RegraNegocioException>(() => banco.ExecutarAsync<CancelarDemanda>(c => c.ExecutarAsync(gestor, id, " ", Cancelamento)));
         await banco.ExecutarAsync<CancelarDemanda>(c => c.ExecutarAsync(gestor, id, "Vaga suspensa pela área.", Cancelamento));
 
@@ -143,7 +143,7 @@ public sealed class CancelamentoEExcecoesTests(BancoFixture banco) : IClassFixtu
         Assert.Equal(novaUtc, gravada.Etapas.Single(e => e.Id == vaga.Id).DataConclusao);
     }
 
-    /// <summary>Demanda do contrato Norte aceita pelo SESI (em Recrutamento), com os atores usados.</summary>
+    /// <summary>Demanda do contrato Norte aceita pela Gerenciadora (em Recrutamento), com os atores usados.</summary>
     private async Task<(Guid Id, Ator Gestor, Ator Sesi)> EmRecrutamentoAsync()
     {
         var solicitante = await banco.InserirUsuarioAsync(Perfil.Solicitante);

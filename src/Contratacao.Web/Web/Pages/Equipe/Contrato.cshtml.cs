@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Contratacao.Web.Web.Pages.Equipe;
 
-/// <summary>Troca o contrato do grupo de um Funcionário SESI da equipe.</summary>
+/// <summary>Troca o contrato do grupo de um Funcionário da Gerenciadora da equipe.</summary>
 internal sealed class ContratoModel(IUsuarios usuarios, IContratos contratos, AtorAtual atorAtual, AlterarContratoFuncionarioSesi alterar) : PaginaBase
 {
     [BindProperty(SupportsGet = true)]

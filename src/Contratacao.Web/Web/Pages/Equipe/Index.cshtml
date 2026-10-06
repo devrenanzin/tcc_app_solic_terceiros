@@ -2,24 +2,24 @@
 @using Contratacao.Web.Web.Pages.Shared
 @model Contratacao.Web.Web.Pages.Equipe.IndexModel
 @{
-    ViewData["Title"] = "Equipe SESI";
+    ViewData["Title"] = "Equipe da Gerenciadora";
 }
 
 <div class="cabecalho-pagina">
     <div>
-        <h1>Equipe SESI</h1>
-        <p>Funcionários SESI que você cadastrou. Cada um vê e trata só as demandas do seu contrato.</p>
+        <h1>Equipe da Gerenciadora</h1>
+        <p>Funcionários da Gerenciadora que você cadastrou. Cada um vê e trata só as demandas do seu contrato.</p>
     </div>
     <div class="d-flex flex-wrap gap-2">
         <a href="/Equipe/Vincular" class="btn btn-outline-primary"><i class="bi bi-link-45deg"></i> Vincular conta existente</a>
-        <a href="/Equipe/Novo" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Novo Funcionário SESI</a>
+        <a href="/Equipe/Novo" class="btn btn-primary"><i class="bi bi-plus-lg"></i> Novo Funcionário da Gerenciadora</a>
     </div>
 </div>
 
 <div class="cartao">
     @if (Model.Funcionarios.Count == 0)
     {
-        <div class="vazio"><i class="bi bi-people-fill"></i>Sua equipe ainda não tem Funcionários SESI.</div>
+        <div class="vazio"><i class="bi bi-people-fill"></i>Sua equipe ainda não tem Funcionários da Gerenciadora.</div>
     }
     else
     {

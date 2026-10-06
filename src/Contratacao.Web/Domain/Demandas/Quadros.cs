@@ -70,7 +70,7 @@ internal static class Quadros
         Quadro.Finalizadas => d.Status == StatusDemanda.Concluido,
         Quadro.Canceladas => d.Status == StatusDemanda.Cancelado,
         Quadro.AguardandoValidacao => d is { Etapa: Etapa.ValidacaoGestor, Status: StatusDemanda.EmAnalise } && ator.AtuaNoContrato(d.ContratoId),
-        // "Aprovadas": aprovadas pelo Gestor e ainda à espera do aceite do SESI (Cliente).
+        // "Aprovadas": aprovadas pelo Gestor e ainda à espera do aceite da Gerenciadora (Cliente).
         Quadro.Aprovadas or Quadro.AguardandoAceite => d is { Etapa: Etapa.ValidacaoSesi, Status: StatusDemanda.AguardandoResponsavel },
         Quadro.EmProcessoSesi => d.Status == StatusDemanda.EmAndamento,
         Quadro.Recrutamento => d is { Etapa: Etapa.Recrutamento, Status: StatusDemanda.EmAndamento },

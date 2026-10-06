@@ -104,7 +104,7 @@ internal sealed partial record DadosSolicitacao
 
         if (dados.Racs.Contains(Guid.Empty))
         {
-            erros.Add("RAC inválida.");
+            erros.Add("Risco inválido.");
         }
 
         if (erros.Count > 0)

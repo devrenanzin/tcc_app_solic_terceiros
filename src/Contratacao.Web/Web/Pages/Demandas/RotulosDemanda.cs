@@ -26,7 +26,7 @@ internal static class RotulosDemanda
         [nameof(DadosSolicitacao.Celular)] = "Celular",
         [nameof(DadosSolicitacao.ExigeCnh)] = "Exige CNH",
         [nameof(DadosSolicitacao.CategoriaCnh)] = "Categoria da CNH",
-        [nameof(DadosSolicitacao.Racs)] = "RACs",
+        [nameof(DadosSolicitacao.Racs)] = "Riscos",
         [nameof(DadosSolicitacao.OrdemServicoId)] = "OS do contrato",
         [nameof(DadosSolicitacao.ColetorCusto)] = "Coletor de custo",
         [nameof(DadosSolicitacao.ResponsavelEfetivoNome)] = "Responsável efetivo",

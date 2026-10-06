@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Contratacao.Web.Web.Pages.Admin.FuncionariosSesi;
 
-/// <summary>Admin troca o contrato de qualquer Funcionário SESI, para qualquer contrato ativo.</summary>
+/// <summary>Admin troca o contrato de qualquer Funcionário da Gerenciadora, para qualquer contrato ativo.</summary>
 internal sealed class ContratoModel(IUsuarios usuarios, IContratos contratos, AtorAtual atorAtual, AlterarContratoFuncionarioSesi alterar) : PaginaBase
 {
     [BindProperty(SupportsGet = true)]

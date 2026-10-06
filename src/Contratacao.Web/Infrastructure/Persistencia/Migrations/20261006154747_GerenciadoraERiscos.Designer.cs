@@ -4,6 +4,7 @@ using Contratacao.Web.Infrastructure.Persistencia;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Contratacao.Web.Infrastructure.Persistencia.Migrations
 {
     [DbContext(typeof(ContratacaoDbContext))]
-    partial class ContratacaoDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261006154747_GerenciadoraERiscos")]
+    partial class GerenciadoraERiscos
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

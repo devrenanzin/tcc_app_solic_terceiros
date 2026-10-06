@@ -3,7 +3,7 @@ using Contratacao.Web.Domain.Usuarios;
 
 namespace Contratacao.Web.Application.Demandas;
 
-// Processo SESI (UC08–11), depois do aceite. A sequência obrigatória e as permissões ficam na Demanda;
+// Processo da Gerenciadora (UC08–11), depois do aceite. A sequência obrigatória e as permissões ficam na Demanda;
 // cada caso de uso carrega, executa a ação e grava. Datas de etapas concluídas não mudam (seção 12–15).
 
 /// <summary>UC08 — Registrar a vaga com o link da plataforma externa; é um evento em Recrutamento.</summary>

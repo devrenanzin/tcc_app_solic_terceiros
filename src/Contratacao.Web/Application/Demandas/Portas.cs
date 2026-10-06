@@ -10,7 +10,7 @@ namespace Contratacao.Web.Application.Demandas;
 
 internal interface IDemandas
 {
-    /// <summary>A demanda com etapas, devoluções, histórico, vaga, RACs e alterações, para ser alterada.</summary>
+    /// <summary>A demanda com etapas, devoluções, histórico, vaga, Riscos e alterações, para ser alterada.</summary>
     Task<Demanda?> ObterAsync(Guid id, CancellationToken cancelamento);
 
     void Adicionar(Demanda demanda);
@@ -41,7 +41,7 @@ internal interface ICatalogosDemanda
     Task<ReferenciasSolicitacao?> ReferenciasAsync(
         DadosSolicitacao dados, PrecoQqp qqp, ValoresEquipamentos equipamentos, CancellationToken cancelamento);
 
-    /// <summary>Mensagens para os catálogos escolhidos que não existem ou estão inativos (tipo, modelo, RACs).</summary>
+    /// <summary>Mensagens para os catálogos escolhidos que não existem ou estão inativos (tipo, modelo, Riscos).</summary>
     Task<IReadOnlyList<string>> ConferirEscolhasAsync(DadosSolicitacao dados, CancellationToken cancelamento);
 
     /// <summary>Nomes legíveis dos catálogos e usuários citados pela demanda, para a tela.</summary>

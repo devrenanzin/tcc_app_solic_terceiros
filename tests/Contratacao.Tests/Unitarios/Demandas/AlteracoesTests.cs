@@ -14,7 +14,7 @@ public sealed class AlteracoesTests
     public void Correcao_registra_so_os_campos_que_mudaram_com_usuario_perfil_e_ip()
     {
         var demanda = _c.Enviada();
-        demanda.DevolverPeloGestor(_c.GestorNorte, "Localidade e RACs.", _c.Relogio);
+        demanda.DevolverPeloGestor(_c.GestorNorte, "Localidade e Riscos.", _c.Relogio);
         _c.Relogio.Avancar(TimeSpan.FromHours(1));
 
         demanda.Corrigir(_c.Solicitante, Cenario.Dados() with

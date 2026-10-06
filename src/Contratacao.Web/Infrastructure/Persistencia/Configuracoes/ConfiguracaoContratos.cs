@@ -19,7 +19,7 @@ internal sealed class ConfiguracaoContratada : IEntityTypeConfiguration<Contrata
         // CNPJ opcional (Cliente); quando informado, não se repete.
         b.HasIndex(c => c.Cnpj).IsUnique().HasFilter("[CNPJ] IS NOT NULL").HasDatabaseName("UQ_Contratada_CNPJ");
 
-        b.HasData(new { Id = IdsFixos.ContratadaSesi, RazaoSocial = "SESI", Ativo = true });
+        b.HasData(new { Id = IdsFixos.ContratadaSesi, RazaoSocial = "Gerenciadora", Ativo = true });
     }
 }
 

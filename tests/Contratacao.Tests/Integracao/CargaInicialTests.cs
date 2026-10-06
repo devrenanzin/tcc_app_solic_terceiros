@@ -36,7 +36,7 @@ public sealed class CargaInicialTests(BancoFixture banco) : IClassFixture<BancoF
             ["Admin", "FuncionarioSesi", "Gestor", "Solicitante"],
             await contexto.Set<LinhaPerfil>().Select(p => p.Nome).OrderBy(n => n).ToListAsync(Cancelamento));
         Assert.Equal(
-            ["Solicitação", "Validação do Gestor", "Validação SESI", "Recrutamento", "Entrevistas", "Exames Médicos", "Contratação"],
+            ["Solicitação", "Validação do Gestor", "Validação da Gerenciadora", "Recrutamento", "Entrevistas", "Exames Médicos", "Contratação"],
             await contexto.Set<LinhaEtapa>().OrderBy(e => e.Ordem).Select(e => e.Nome).ToListAsync(Cancelamento));
         Assert.Equal(6, await contexto.Set<LinhaStatus>().CountAsync(Cancelamento));
 
@@ -88,7 +88,7 @@ public sealed class CargaInicialTests(BancoFixture banco) : IClassFixture<BancoF
         await using var contexto = banco.NovoContexto();
 
         var contratada = await contexto.Contratadas.SingleAsync(Cancelamento);
-        Assert.Equal("SESI", contratada.RazaoSocial);
+        Assert.Equal("Gerenciadora", contratada.RazaoSocial);
         Assert.Null(contratada.Cnpj);
 
         var contratos = await contexto.Contratos.OrderBy(c => c.Numero).ToListAsync(Cancelamento);
@@ -179,8 +179,8 @@ public sealed class CargaInicialTests(BancoFixture banco) : IClassFixture<BancoF
         var racs = await contexto.Racs.OrderBy(r => r.Codigo).ToListAsync(Cancelamento);
 
         Assert.Equal(13, racs.Count);
-        Assert.Equal(("RAC 01", "Trabalhos em altura"), (racs[0].Codigo, racs[0].Nome));
-        Assert.Equal(("RAC 13", "Aberturas de Linha e Equipamentos"), (racs[12].Codigo, racs[12].Nome));
+        Assert.Equal(("RISCO 01", "Trabalhos em altura"), (racs[0].Codigo, racs[0].Nome));
+        Assert.Equal(("RISCO 13", "Aberturas de Linha e Equipamentos"), (racs[12].Codigo, racs[12].Nome));
         Assert.All(racs, r => Assert.Equal(r.Nome.Trim(), r.Nome));
     }
 
@@ -226,7 +226,7 @@ public sealed class CargaInicialTests(BancoFixture banco) : IClassFixture<BancoF
         await using var contexto = banco.NovoContexto();
 
         var idValidacaoSesi = await contexto.Database
-            .SqlQuery<Guid>($"SELECT Id AS Value FROM Etapa WHERE Nome = {"Validação SESI"}")
+            .SqlQuery<Guid>($"SELECT Id AS Value FROM Etapa WHERE Nome = {"Validação da Gerenciadora"}")
             .SingleAsync(Cancelamento);
 
         Assert.Equal(IdsFixos.Etapas[Etapa.ValidacaoSesi], idValidacaoSesi);

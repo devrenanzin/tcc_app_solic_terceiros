@@ -174,7 +174,7 @@ internal sealed class CatalogosDemanda(ContratacaoDbContext contexto) : ICatalog
         var racs = dados.Racs.ToList();
         if (racs.Count > 0 && await contexto.Racs.CountAsync(r => racs.Contains(r.Id), cancelamento) != racs.Count)
         {
-            erros.Add("Uma das RACs escolhidas não existe.");
+            erros.Add("Um dos riscos escolhidos não existe.");
         }
 
         return erros;

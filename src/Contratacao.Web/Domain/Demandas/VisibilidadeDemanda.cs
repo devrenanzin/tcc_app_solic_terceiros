@@ -4,7 +4,7 @@ namespace Contratacao.Web.Domain.Demandas;
 
 /// <summary>
 /// Quais demandas cada perfil vê (seções 4 e 19): Admin e Gestor, todas; Solicitante, as que criou;
-/// Funcionário SESI, as do contrato do seu grupo. Usuário desativado não vê nenhuma.
+/// Funcionário da Gerenciadora, as do contrato do seu grupo. Usuário desativado não vê nenhuma.
 /// </summary>
 /// <param name="SolicitanteId">Quando preenchido, só as demandas deste Solicitante.</param>
 /// <param name="Contratos">Quando preenchido, só as demandas destes contratos.</param>

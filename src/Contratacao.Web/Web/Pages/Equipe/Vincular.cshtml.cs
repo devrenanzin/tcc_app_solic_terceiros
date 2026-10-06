@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Contratacao.Web.Web.Pages.Equipe;
 
 /// <summary>
-/// O Gestor vincula uma conta já cadastrada de Solicitante como Funcionário SESI da sua equipe, num dos seus contratos
+/// O Gestor vincula uma conta já cadastrada de Solicitante como Funcionário da Gerenciadora da sua equipe, num dos seus contratos
 /// (Cliente, revisão de 06/10/2026).
 /// </summary>
 internal sealed class VincularModel(IContratos contratos, AtorAtual atorAtual, VincularContaComoSesi vincular) : PaginaBase
@@ -33,7 +33,7 @@ internal sealed class VincularModel(IContratos contratos, AtorAtual atorAtual, V
             return Page();
         }
 
-        Sucesso($"A conta de {conta!.Nome} agora faz parte da sua equipe SESI, com o mesmo e-mail e senha.");
+        Sucesso($"A conta de {conta!.Nome} agora faz parte da sua equipe da Gerenciadora, com o mesmo e-mail e senha.");
         return Redirect("/Equipe");
     }
 

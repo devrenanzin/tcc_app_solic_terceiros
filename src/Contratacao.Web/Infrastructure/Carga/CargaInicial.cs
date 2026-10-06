@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Contratacao.Web.Infrastructure.Carga;
 
 /// <summary>
-/// Carga dos dados que não cabem na migration: catálogo QQP e RACs, lidos dos CSV da pasta dados
+/// Carga dos dados que não cabem na migration: catálogo QQP e Riscos, lidos dos CSV da pasta dados
 /// (a carga lê o arquivo, não valores copiados para o código), e o Admin inicial, lido da configuração.
 /// Pode rodar várias vezes: só insere o que ainda não existe.
 /// </summary>
@@ -119,7 +119,7 @@ internal sealed class CargaInicial(
         // Espaços no início dos nomes são removidos (seção 23).
         contexto.Racs.AddRange(linhas.Select(campos => new Rac(campos[1].Trim(), campos[2].Trim())));
         contexto.LogsAuditoria.Add(LogAuditoria.DoSistema(
-            "Rac", null, "CargaInicial", $"{linhas.Count} RACs de {ArquivoRacs}", relogio.AgoraUtc));
+            "Rac", null, "CargaInicial", $"{linhas.Count} Riscos de {ArquivoRacs}", relogio.AgoraUtc));
     }
 
     private async Task CriarAdminInicialAsync(CancellationToken cancelamento)

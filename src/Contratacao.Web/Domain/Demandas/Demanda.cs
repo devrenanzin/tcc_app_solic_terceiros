@@ -207,7 +207,7 @@ internal sealed class Demanda
         MudarStatus(StatusDemanda.AguardandoCorrecao, EventoDemanda.DevolvidaParaCorrecao, gestor, agora, motivo.Trim());
     }
 
-    /// <summary>Devolução pelo SESI ao Solicitante, com motivo e tipo da inconsistência (RN02, UC05).</summary>
+    /// <summary>Devolução pela Gerenciadora ao Solicitante, com motivo e tipo da inconsistência (RN02, UC05).</summary>
     internal void DevolverPeloSesi(Ator sesi, TipoInconsistencia tipo, string motivo, IRelogio relogio)
     {
         ExigirSesiDoContrato(sesi);
@@ -224,7 +224,7 @@ internal sealed class Demanda
     /// Correção pelo Solicitante (UC06): grava os campos corrigidos, cada alteração no HistoricoAlteracao, e
     /// recalcula o contrato pelo corredor (RN13). Se mudar o item QQP, a quantidade ou os equipamentos, o custo
     /// inteiro é recalculado com os valores atuais (Cliente). Devolvida pelo Gestor: volta à Validação do Gestor.
-    /// Devolvida pelo SESI: volta ao SESI, salvo inconsistência contratual ou mudança de contrato, que voltam
+    /// Devolvida pela Gerenciadora: volta à Gerenciadora, salvo inconsistência contratual ou mudança de contrato, que voltam
     /// ao Gestor (RN02a).
     /// </summary>
     internal void Corrigir(Ator solicitante, DadosSolicitacao dados, ReferenciasSolicitacao referencias, IRelogio relogio)
@@ -269,7 +269,7 @@ internal sealed class Demanda
         }
         else if (correcao.Tipo == TipoInconsistencia.Contratual || contratoMudou)
         {
-            // A passagem pela Validação SESI termina sem conclusão: a demanda volta uma etapa.
+            // A passagem pela Validação da Gerenciadora termina sem conclusão: a demanda volta uma etapa.
             MudarPara(Etapa.ValidacaoGestor, StatusDemanda.EmAnalise, StatusDemanda.AguardandoCorrecao,
                 EventoDemanda.CorrecaoEnviada, solicitante, agora, null);
         }
@@ -279,7 +279,7 @@ internal sealed class Demanda
         }
     }
 
-    /// <summary>Aceite pelo SESI (UC07): quem aceita vira o responsável SESI (RF38).</summary>
+    /// <summary>Aceite pela Gerenciadora (UC07): quem aceita vira o responsável da Gerenciadora (RF38).</summary>
     internal void Aceitar(Ator sesi, IRelogio relogio)
     {
         ExigirSesiDoContrato(sesi);
@@ -346,7 +346,7 @@ internal sealed class Demanda
 
     /// <summary>
     /// Cancelamento (UC18, RN10): Gestor do contrato ou Admin, com justificativa. A demanda fica Cancelado
-    /// na etapa em que estava e o SLA é encerrado. O SESI não cancela.
+    /// na etapa em que estava e o SLA é encerrado. A Gerenciadora não cancela.
     /// </summary>
     internal void Cancelar(Ator ator, string justificativa, IRelogio relogio)
     {
@@ -466,7 +466,7 @@ internal sealed class Demanda
     }
 
     /// <summary>
-    /// As ações de validação, correção e do processo SESI que este ator pode executar agora, para a tela mostrar
+    /// As ações de validação, correção e do processo da Gerenciadora que este ator pode executar agora, para a tela mostrar
     /// só os botões permitidos. Os métodos de cada ação exigem as mesmas condições.
     /// </summary>
     internal IReadOnlySet<AcaoDemanda> AcoesDisponiveis(Ator ator)
@@ -495,7 +495,7 @@ internal sealed class Demanda
             acoes.Add(AcaoDemanda.Cancelar);
         }
 
-        // Processo SESI (UC08–11): sempre a próxima da sequência, sem pular nem voltar.
+        // Processo da Gerenciadora (UC08–11): sempre a próxima da sequência, sem pular nem voltar.
         if (EhSesiDoContrato(ator) && Status == StatusDemanda.EmAndamento)
         {
             var proxima = Etapa switch
@@ -608,8 +608,8 @@ internal sealed class Demanda
 
     private bool EhGestorDoContrato(Ator ator) => ator.Eh(Perfil.Gestor) && ator.AtuaNoContrato(ContratoId);
 
-    // Qualquer Funcionário SESI ativo do contrato executa as ações do SESI (Cliente);
-    // o responsável SESI é a referência, não o único autorizado.
+    // Qualquer Funcionário da Gerenciadora ativo do contrato executa as ações da Gerenciadora (Cliente);
+    // o responsável da Gerenciadora é a referência, não o único autorizado.
     private bool EhSesiDoContrato(Ator ator) => ator.Eh(Perfil.FuncionarioSesi) && ator.AtuaNoContrato(ContratoId);
 
     private void ExigirSituacao(Etapa etapa, StatusDemanda status)
@@ -619,7 +619,7 @@ internal sealed class Demanda
         => Exigir(EhGestorDoContrato(ator), "Só um Gestor ativo vinculado ao contrato da demanda pode executar esta ação.");
 
     private void ExigirSesiDoContrato(Ator ator)
-        => Exigir(EhSesiDoContrato(ator), "Só um Funcionário SESI ativo do contrato da demanda pode executar esta ação.");
+        => Exigir(EhSesiDoContrato(ator), "Só um Funcionário da Gerenciadora ativo do contrato da demanda pode executar esta ação.");
 
     /// <summary>
     /// Os catálogos lidos correspondem aos campos escolhidos: o corredor é o do formulário e está ativo,

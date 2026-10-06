@@ -57,7 +57,7 @@ public sealed class VinculoContaTests(BancoFixture banco) : IClassFixture<BancoF
 
         var sesiEmail = $"sesi.{Guid.NewGuid():N}@ucl.br";
         using var cadastro = await admin.EnviarAsync("/Admin/FuncionariosSesi/Novo",
-            ("Entrada.Nome", "SESI pelo Admin"), ("Entrada.Email", sesiEmail), ("Entrada.SenhaInicial", Senha),
+            ("Entrada.Nome", "Gerenciadora pelo Admin"), ("Entrada.Email", sesiEmail), ("Entrada.SenhaInicial", Senha),
             ("GestorId", gestorId.ToString()), ("Contrato", IdsFixos.ContratoSudeste.ToString()));
         Assert.Equal(HttpStatusCode.Redirect, cadastro.StatusCode);
 

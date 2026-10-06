@@ -20,7 +20,7 @@
     <div>
         <h2>Motivo da devolução</h2>
         <p class="mb-1">
-            @(pendente.Origem == OrigemCorrecao.Gestor ? "Gestor" : "SESI") em @Formatacao.DataHora(pendente.DataSolicitacao)@(pendente.Tipo is { } tipo ? $" · {Formatacao.Tipo(tipo)}" : string.Empty)
+            @(pendente.Origem == OrigemCorrecao.Gestor ? "Gestor" : "Gerenciadora") em @Formatacao.DataHora(pendente.DataSolicitacao)@(pendente.Tipo is { } tipo ? $" · {Formatacao.Tipo(tipo)}" : string.Empty)
         </p>
         <blockquote class="mb-0">@pendente.Motivo</blockquote>
         @if (pendente.Origem == OrigemCorrecao.Sesi)

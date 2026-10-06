@@ -79,7 +79,7 @@ public sealed class SolicitacaoTests(BancoFixture banco) : IClassFixture<BancoFi
             () => EnviarAsync(solicitante, dados with { Racs = new HashSet<Guid> { Guid.NewGuid() } }, Vp2(), []));
 
         Assert.Contains("gerente executivo", semGerente.Message, StringComparison.Ordinal);
-        Assert.Contains("RAC", semRac.Message, StringComparison.Ordinal);
+        Assert.Contains("riscos", semRac.Message, StringComparison.Ordinal);
     }
 
     [Fact]

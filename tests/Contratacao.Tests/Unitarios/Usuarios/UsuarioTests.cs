@@ -82,18 +82,18 @@ public sealed class UsuarioTests
         var solicitante = Usuario.CadastrarSolicitante("Sol", "sol@ucl.br", Agora);
         var admin = Usuario.CriarAdminInicial("Admin", "admin@ucl.br", Agora);
 
-        // Admin: Gestores, Solicitantes e qualquer Funcionário SESI (Cliente, revisão de 06/10/2026).
+        // Admin: Gestores, Solicitantes e qualquer Funcionário da Gerenciadora (Cliente, revisão de 06/10/2026).
         Assert.True(gestor.PodeSerGerenciadoPor(_c.Admin));
         Assert.True(solicitante.PodeSerGerenciadoPor(_c.Admin));
         Assert.True(sesiDoNorte.PodeSerGerenciadoPor(_c.Admin));
 
-        // Gestor: a própria equipe SESI e qualquer Solicitante; nunca outro Gestor.
+        // Gestor: a própria equipe da Gerenciadora e qualquer Solicitante; nunca outro Gestor.
         Assert.True(sesiDoNorte.PodeSerGerenciadoPor(_c.GestorNorte));
         Assert.False(sesiDoNorte.PodeSerGerenciadoPor(_c.GestorSudeste));
         Assert.True(solicitante.PodeSerGerenciadoPor(_c.GestorSudeste));
         Assert.False(gestor.PodeSerGerenciadoPor(_c.GestorNorte));
 
-        // Ninguém gerencia o Admin; SESI e Solicitante não gerenciam ninguém; inativo não gerencia.
+        // Ninguém gerencia o Admin; Gerenciadora e Solicitante não gerenciam ninguém; inativo não gerencia.
         Assert.False(admin.PodeSerGerenciadoPor(_c.Admin));
         Assert.False(solicitante.PodeSerGerenciadoPor(_c.SesiNorte));
         Assert.False(solicitante.PodeSerGerenciadoPor(_c.OutroSolicitante));
@@ -198,7 +198,7 @@ public sealed class UsuarioTests
         Assert.Throws<RegraNegocioException>(() => Conta().TornarFuncionarioSesi(_c.GestorNorte, Cenario.ContratoNorte.Id, _c.GestorDosDois, 0));
         Conta().TornarFuncionarioSesi(_c.Admin, Cenario.ContratoSudeste.Id, _c.GestorNorte, 0);
 
-        // Só o Admin torna alguém Gestor; Solicitante e SESI não vinculam ninguém.
+        // Só o Admin torna alguém Gestor; Solicitante e Gerenciadora não vinculam ninguém.
         Assert.Throws<RegraNegocioException>(() => Conta().TornarGestor(_c.GestorNorte, 0));
         Assert.Throws<RegraNegocioException>(() => Conta().TornarFuncionarioSesi(_c.SesiNorte, Cenario.ContratoNorte.Id, _c.GestorNorte, 0));
     }

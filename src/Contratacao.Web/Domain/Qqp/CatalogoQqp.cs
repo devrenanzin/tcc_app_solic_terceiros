@@ -1,6 +1,6 @@
 namespace Contratacao.Web.Domain.Qqp;
 
-// Catálogo QQP SESI (seção 23): cada combinação de região, função, classificação, nível e carga horária
+// Catálogo QQP da Gerenciadora (seção 23): cada combinação de região, função, classificação, nível e carga horária
 // tem um piso salarial e um preço unitário.
 
 internal sealed class QqpRegiao

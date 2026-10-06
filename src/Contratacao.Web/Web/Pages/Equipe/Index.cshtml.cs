@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Contratacao.Web.Web.Pages.Equipe;
 
-/// <summary>Equipe SESI do Gestor logado (UC14): só os funcionários que ele gerencia.</summary>
+/// <summary>Equipe da Gerenciadora do Gestor logado (UC14): só os funcionários que ele gerencia.</summary>
 internal sealed class IndexModel(IUsuarios usuarios, AtorAtual atorAtual, AlterarSituacaoUsuario alterarSituacao) : PaginaBase
 {
     internal IReadOnlyList<ResumoUsuario> Funcionarios { get; private set; } = [];

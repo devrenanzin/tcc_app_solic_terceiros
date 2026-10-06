@@ -11,7 +11,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Contratacao.Tests.Integracao;
 
-/// <summary>Processo SESI (UC08–11) com SQL Server real: sequência, datas congeladas gravadas e telas.</summary>
+/// <summary>Processo da Gerenciadora (UC08–11) com SQL Server real: sequência, datas congeladas gravadas e telas.</summary>
 // public: o xUnit exige classes de teste públicas (regra xUnit1000).
 public sealed class ProcessoSesiTests(BancoFixture banco) : IClassFixture<BancoFixture>
 {
@@ -98,11 +98,11 @@ public sealed class ProcessoSesiTests(BancoFixture banco) : IClassFixture<BancoF
         var final = await sesi.HtmlAsync(caminho);
         Assert.Contains("https://vagas.exemplo.ucl.br/88", final, StringComparison.Ordinal);
         Assert.Contains("Contratação finalizada", final, StringComparison.Ordinal);
-        Assert.DoesNotContain("Processo SESI · próximo passo", final, StringComparison.Ordinal);
+        Assert.DoesNotContain("Processo da Gerenciadora · próximo passo", final, StringComparison.Ordinal);
         Assert.Contains("bi-lock-fill", final, StringComparison.Ordinal);
     }
 
-    /// <summary>Demanda enviada, aprovada pelo Gestor e aceita pelo SESI do contrato Norte.</summary>
+    /// <summary>Demanda enviada, aprovada pelo Gestor e aceita pela Gerenciadora do contrato Norte.</summary>
     private async Task<(Guid Id, Ator Sesi, Ator OutroSesi)> AceitaAsync()
     {
         var solicitante = await banco.InserirUsuarioAsync(Perfil.Solicitante);
@@ -118,7 +118,7 @@ public sealed class ProcessoSesiTests(BancoFixture banco) : IClassFixture<BancoF
         return (demanda.Id, sesi, outroSesi);
     }
 
-    /// <summary>Funcionário SESI do contrato Norte com login, cadastrado por um Gestor desse contrato.</summary>
+    /// <summary>Funcionário da Gerenciadora do contrato Norte com login, cadastrado por um Gestor desse contrato.</summary>
     private async Task<(string Email, string Senha)> CadastrarSesiComSenhaAsync()
     {
         const string senha = "senha-segura-1";
@@ -128,7 +128,7 @@ public sealed class ProcessoSesiTests(BancoFixture banco) : IClassFixture<BancoF
         var ator = await banco.AtorAsync(gestor.Id);
         var email = $"sesi.{Guid.NewGuid():N}@ucl.br";
         await banco.ExecutarAsync<Contratacao.Web.Application.Usuarios.CadastrarFuncionarioSesi, Usuario>(c => c.ExecutarAsync(
-            ator, "SESI de Testes", email, senha, IdsFixos.ContratoNorte, Cancelamento));
+            ator, "Gerenciadora de Testes", email, senha, IdsFixos.ContratoNorte, Cancelamento));
         return (email, senha);
     }
 }

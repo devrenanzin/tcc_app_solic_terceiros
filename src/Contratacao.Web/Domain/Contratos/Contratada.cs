@@ -1,6 +1,6 @@
 namespace Contratacao.Web.Domain.Contratos;
 
-/// <summary>Empresa que fornece os funcionários. Hoje só o SESI; CNPJ opcional (revisão de 05/10/2026).</summary>
+/// <summary>Empresa que fornece os funcionários. Hoje só a Gerenciadora; CNPJ opcional (revisão de 05/10/2026).</summary>
 internal sealed class Contratada
 {
     private Contratada() { } // EF Core

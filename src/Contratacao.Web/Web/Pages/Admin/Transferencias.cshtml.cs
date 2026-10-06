@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Contratacao.Web.Web.Pages.Admin;
 
-/// <summary>UC19 — Transferir Vínculo de Usuário: Funcionários SESI de um Gestor para outro.</summary>
+/// <summary>UC19 — Transferir Vínculo de Usuário: Funcionários da Gerenciadora de um Gestor para outro.</summary>
 internal sealed class TransferenciasModel(IUsuarios usuarios, AtorAtual atorAtual, TransferirVinculo transferir) : PaginaBase
 {
     [BindProperty(SupportsGet = true)]

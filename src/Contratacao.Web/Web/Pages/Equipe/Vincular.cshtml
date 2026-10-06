@@ -7,15 +7,15 @@
 
 <div class="cabecalho-pagina">
     <div>
-        <a href="/Equipe" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Equipe SESI</a>
+        <a href="/Equipe" class="small text-decoration-none"><i class="bi bi-arrow-left"></i> Equipe da Gerenciadora</a>
         <h1 class="mt-1">Vincular conta existente</h1>
-        <p>Traz para a sua equipe SESI uma pessoa que já tem conta no sistema, num dos seus contratos.</p>
+        <p>Traz para a sua equipe da Gerenciadora uma pessoa que já tem conta no sistema, num dos seus contratos.</p>
     </div>
 </div>
 
 <form method="post" class="cartao formulario" novalidate>
     <div asp-validation-summary="ModelOnly" class="alert alert-danger py-2" role="alert"></div>
-    <partial name="_AvisoVinculo" model="@("Funcionário SESI")" />
+    <partial name="_AvisoVinculo" model="@("Funcionário da Gerenciadora")" />
 
     <div class="mb-3">
         <label class="form-label" for="email">E-mail da conta</label>

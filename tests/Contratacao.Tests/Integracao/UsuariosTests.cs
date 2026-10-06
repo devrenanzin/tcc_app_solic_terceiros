@@ -172,7 +172,7 @@ public sealed class UsuariosTests(BancoFixture banco) : IClassFixture<BancoFixtu
         await Assert.ThrowsAsync<RegraNegocioException>(() => AlterarSituacaoAsync(gestorB, sesiDeA.Id, false));
         await Assert.ThrowsAsync<RegraNegocioException>(() => banco.ExecutarAsync<AlterarContratoFuncionarioSesi>(a =>
             a.ExecutarAsync(gestorB, sesiDeA.Id, IdsFixos.ContratoSudeste, Cancelamento)));
-        await AlterarSituacaoAsync(admin, sesiDeA.Id, false); // o Admin gerencia qualquer SESI (Cliente)
+        await AlterarSituacaoAsync(admin, sesiDeA.Id, false); // o Admin gerencia qualquer Gerenciadora (Cliente)
 
         await AlterarSituacaoAsync(gestorB, solicitante.Id, false);
         await AlterarSituacaoAsync(gestorA, solicitante.Id, true);

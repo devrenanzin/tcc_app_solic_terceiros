@@ -122,7 +122,7 @@ public sealed class BancoFixture : IAsyncLifetime
         => await new RepositorioDemandas(contexto).ObterAsync(id, CancellationToken.None)
             ?? throw new InvalidOperationException("Demanda não encontrada.");
 
-    /// <summary>Formulário completo com os catálogos reais da carga: corredor Norte, primeiro item QQP e RAC 01.</summary>
+    /// <summary>Formulário completo com os catálogos reais da carga: corredor Norte, primeiro item QQP e RISCO 01.</summary>
     internal async Task<DadosSolicitacao> DadosAsync(Guid? corredorId = null)
     {
         await using var contexto = NovoContexto();

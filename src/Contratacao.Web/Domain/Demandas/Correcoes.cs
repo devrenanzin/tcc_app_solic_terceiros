@@ -7,7 +7,7 @@ internal enum OrigemCorrecao
     Sesi = 2,
 }
 
-/// <summary>Tipo da inconsistência apontada pelo SESI (RN02). Define para onde a demanda volta (RN02a).</summary>
+/// <summary>Tipo da inconsistência apontada pela Gerenciadora (RN02). Define para onde a demanda volta (RN02a).</summary>
 internal enum TipoInconsistencia
 {
     Solicitante = 1,
